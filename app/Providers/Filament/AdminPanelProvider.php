@@ -30,7 +30,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->colors([
-                'primary' => Color::Teal,
+                'primary' => Color::Green,
                 'danger' => Color::Rose,
                 'gray' => Color::Gray,
                 'info' => Color::Blue,
@@ -38,10 +38,10 @@ class AdminPanelProvider extends PanelProvider
                 'warning' => Color::Orange,
             ])
             ->brandLogo(
-                url('images/Logo-Garuda-Color.png'),
+                url('images/logo/Maxg-ent_Green.gif'),
             )
-            ->brandName('Garuda Entertaintment Hub')
-            ->darkModeBrandLogo(url('images/Logo-Garuda.png'))
+            ->brandName('MaxG Entertainment Hub')
+            ->darkModeBrandLogo(url('images/logo/Maxg-ent_white.gif'))
             ->brandLogoHeight('3rem')
             ->defaultThemeMode(\Filament\Enums\ThemeMode::Dark)
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')

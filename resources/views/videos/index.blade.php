@@ -1,7 +1,7 @@
-@extends('layouts.app', ['title' => 'Garuda Cinema'])
+@extends('layouts.app', ['title' => 'Maxg Cinema'])
 
 @section('content')
-<div class="min-h-screen text-gray-800" style="background-image: url('{{ asset('images/background/BG1.jpg') }}'); background-size: cover; background-position: center;">
+<div class="min-h-screen text-gray-800" style="background-image: url('{{ asset('images/background/Background_Color.png') }}'); background-size: cover; background-position: center;">
     <!-- Header Section -->
     <div class="relative px-4 md:px-6 pt-6 md:pt-8 pb-4 md:pb-6 mx-4 md:mx-8 lg:mx-14">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -23,15 +23,15 @@
                 </button>
                 </div>
                 <p class="text-gray-200 text-sm md:text-md mt-2">
-                    Need something to watch while flight? I have some for you!
+                    Biar ga bosen di jalan, yuk nonton film seru di MaxG Cinema!
                 </p>
             </div>
 
-            <!-- Garuda Logo -->
+            <!-- Grab Logo -->
             <div class="flex items-center space-x-6 -mt-2 md:-mt-8 -mr-2 md:-mr-7">
                 <div class="flex items-center space-x-3 rounded-xl px-2 md:px-4 py-2 md:py-3 group">
                     <div class="relative">
-                        <img src="{{ asset('Logo-Garuda-Animasi.gif') }}" alt="Garuda Airlines" class="w-32 sm:w-48 md:w-64 lg:w-80 h-auto object-contain">
+                        <img src="{{ asset('images/logo/Maxg-ent_white.gif') }}" alt="MaxG Entertainment Hub" class="w-32 sm:w-48 md:w-64 lg:w-80 h-auto object-contain">
                     </div>
                 </div>
             </div>
@@ -43,7 +43,7 @@
         <!-- Search Bar -->
         <div class="flex-1">
             <form action="/search-movie" method="GET" class="relative max-w-full lg:max-w-lg">
-                <input type="text" name="q" placeholder="Search for movies..."
+                <input type="text" name="q" placeholder="Lagi mau nonton apa nih?...."
                     class="w-full px-4 py-2.5 md:py-3 bg-white border border-gray-300 rounded-3xl text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 shadow-sm text-sm md:text-base"
                     value="{{ old('q') }}"
                     onfocus="this.setAttribute('readonly', false);">
@@ -62,7 +62,7 @@
                 <div class="flex flex-col space-y-1">
                     <label class="text-xs font-medium text-gray-200 uppercase tracking-wider">Genre</label>
                     <select name="category" class="px-3 md:px-4 py-2.5 md:py-3 bg-white/50 border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:bg-gray-50 min-w-[120px] md:min-w-[150px] shadow-sm text-sm">
-                        <option value="">All Genre's</option>
+                        <option value="">Semua Genre's</option>
                         <option value="Action" {{ request('category') == 'Action' ? 'selected' : '' }}>Action</option>
                         <option value="Drama" {{ request('category') == 'Drama' ? 'selected' : '' }}>Drama</option>
                         <option value="Adventure" {{ request('category') == 'Adventure' ? 'selected' : '' }}>Adventure</option>
@@ -83,7 +83,7 @@
                         <svg class="w-3 h-3 md:w-4 md:h-4" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd" />
                         </svg>
-                        <span class="hidden sm:inline">Apply Filters</span>
+                        <span class="hidden sm:inline">Terapkan filter</span>
                         <span class="sm:hidden">Filter</span>
                     </button>
 
@@ -93,7 +93,7 @@
                         <svg class="w-3 h-3 md:w-4 md:h-4" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
                         </svg>
-                        <span>Clear</span>
+                        <span>Hapus filter</span>
                     </a>
                     @endif
                 </div>
@@ -102,7 +102,7 @@
             <!-- Active Filters Display -->
             @if(request()->hasAny(['category', 'genre', 'year', 'rating']))
             <div class="mt-3 flex flex-wrap items-center gap-2">
-                <span class="text-sm text-gray-200 font-medium">Active filters:</span>
+                <span class="text-sm text-gray-200 font-medium">Filter aktif:</span>
 
                 @if(request('category'))
                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
@@ -121,8 +121,8 @@
 
     <!-- Category Result Info -->
     @if($category)
-        <div class="px-4 md:px-8 py-2 text-teal-600 mx-4 md:mx-8 lg:mx-14">
-            <p class="text-sm md:text-base">Showing results for Genre: <span class="font-bold text-teal-700">{{ $category }}</span></p>
+        <div class="px-4 md:px-8 py-2 text-white mx-4 md:mx-8 lg:mx-14">
+            <p class="text-sm md:text-base">Hasil untuk Genre: <span class="font-bold text-white">{{ $category }}</span></p>
         </div>
     @endif
 
@@ -130,7 +130,7 @@
     <div class="px-4 md:px-8 py-4 mx-4 md:mx-8 lg:mx-14">
         <h2 class="text-lg md:text-xl font-bold text-gray-200 mb-4 md:mb-6 flex items-center">
             <span class="w-1 h-5 md:h-6 bg-gradient-to-b from-blue-500 to-blue-600 rounded-full mr-3"></span>
-            Browse All Movies
+            List semua film
         </h2>
     </div>
 
@@ -144,8 +144,7 @@
                     <!-- Default State -->
                     <div id="mobile-default-thumbnail" class="absolute inset-0 flex items-center justify-center">
                         <div class="text-center text-white/70">
-                            <img src="{{ asset('Logo-Garuda-Animasi.gif') }}" alt="Logo Garuda" class="w-32 sm:w-48 mx-auto">
-                            <p class="text-sm mt-2">Hover over a movie to preview</p>
+                            <img src="{{ asset('images/logo/Logo-MaxG-White.gif') }}" alt="Logo Grab" class="w-32 sm:w-48 mx-auto">
                         </div>
                     </div>
 
@@ -158,12 +157,12 @@
                             <span id="mobile-thumbnail-category" class="inline-block px-3 py-1 bg-red-500/90 text-xs font-medium rounded-full text-white mb-2">
                                 Featured
                             </span>
-                            <h3 id="mobile-thumbnail-title" class="text-white font-bold text-lg mb-1">Movie Title</h3>
+                            <h3 id="mobile-thumbnail-title" class="text-white font-bold text-lg mb-1">Judul Film</h3>
                             <div class="flex items-center gap-2 text-gray-200">
                                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.414-1.415L11 9.586V6z" clip-rule="evenodd"/>
                                 </svg>
-                                <span id="mobile-thumbnail-duration" class="text-sm">Duration</span>
+                                <span id="mobile-thumbnail-duration" class="text-sm">Durasi</span>
                             </div>
                         </div>
                     </div>
@@ -175,7 +174,7 @@
 
                 @foreach($videos as $video)
                 <div class="mobile-movie-item group relative bg-gradient-to-r from-blue-200 to-blue-400
-                hover:bg-gradient-to-r hover:from-blue-950 hover:to-blue-950 rounded-e-full hover:shadow-slate-100 hover:shadow-2xl overflow-hidden transition-all duration-300 border border-gray-200 cursor-pointer"
+                hover:bg-gradient-to-r hover:from-green-950 hover:to-green-950 rounded-e-full hover:shadow-slate-100 hover:shadow-2xl overflow-hidden transition-all duration-300 border border-gray-200 cursor-pointer"
                      data-thumbnail="{{ $video->thumbnail }}"
                      data-title="{{ $video->title }}"
                      data-description="{{ $video->description ?? 'Movie description...' }}"
@@ -212,11 +211,11 @@
 
                             <!-- Arrow -->
                             <div class="opacity-100 group-hover:opacity-0 transition-opacity duration-300 -ml-36 mr-10 mb-5">
-                                <img src="{{ asset('images/logo-kepala-garuda-putih.png') }}" alt="kepala garuda" class="w-24 h-auto">
+                                <img src="{{ asset('images/logo/Logo-MaxG-Green.gif') }}" alt="MaxG Logo" class="w-24 h-auto">
                             </div>
 
                             <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 -ml-36 mr-10 mb-5">
-                                <img src="{{ asset('Kepala Garuda Biru.png') }}" alt="kepala garuda" class="w-20 h-auto">
+                                <img src="{{ asset('images/logo/Logo-MaxG-White.gif') }}" alt="MaxG white Logo" class="w-20 h-auto">
                             </div>
                         </div>
                     </a>
@@ -238,7 +237,7 @@
                         <!-- Left Grid - Movie List -->
                         <div class="w-1/2 space-y-4" id="movies-container-section-{{ $loop->index }}">
                             @foreach($videoChunk as $video)
-                            <div class="group relative bg-blue-400 hover:bg-blue-700 rounded-xl overflow-hidden transition-all duration-500 hover:scale-[1.02] border border-gray-200 cursor-pointer movie-item mt-5"
+                            <div class="group relative bg-blue-400 hover:bg-green-700 rounded-xl overflow-hidden transition-all duration-500 hover:scale-[1.02] border border-gray-200 cursor-pointer movie-item mt-5"
                                 data-thumbnail="{{ $video->thumbnail }}"
                                 data-title="{{ $video->title }}"
                                 data-description="{{ $video->description ?? 'Movie description...' }}"
@@ -271,13 +270,13 @@
                                             </div>
                                         </div>
 
-                                        <!-- Garuda Icons -->
+                                        <!-- Grab Icons -->
                                         <div class="opacity-100 group-hover:opacity-0 transition-opacity duration-300 -ml-36 mr-10 mb-5">
-                                            <img src="{{ asset('images/logo-kepala-garuda-putih.png') }}" alt="kepala garuda" class="w-24 h-auto">
+                                            <img src="{{ asset('images/logo/Logo-MaxG-Green.gif') }}" alt="MaxG Logo" class="w-24 h-auto">
                                         </div>
 
                                         <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 -ml-36 mr-10 mb-5">
-                                            <img src="{{ asset('Kepala Garuda Biru.png') }}" alt="kepala garuda" class="w-20 h-auto">
+                                            <img src="{{ asset('images/logo/Logo-MaxG-White.gif') }}" alt="MaxG Logo" class="w-20 h-auto">
                                         </div>
                                     </div>
                                 </a>
@@ -290,7 +289,7 @@
                             <!-- Default State -->
                             <div id="default-thumbnail-{{ $loop->index }}" class="default-thumbnail-section absolute inset-0 flex items-center justify-center">
                                 <div class="text-center text-white/70">
-                                    <img src="{{ asset('Logo-Garuda-Animasi.gif') }}" alt="Logo Garuda" class="w-96 mx-auto">
+                                    <img src="{{ asset('images/logo/Logo-MaxG-White.gif') }}" alt="Logo Grab" class="w-96 mx-auto">
                                 </div>
                             </div>
 
@@ -305,13 +304,13 @@
                                             Featured
                                         </span>
 
-                                        <h3 id="thumbnail-title-{{ $loop->index }}" class="text-2xl font-bold text-white mb-2">Movie Title</h3>
+                                        <h3 id="thumbnail-title-{{ $loop->index }}" class="text-2xl font-bold text-white mb-2">Judul film</h3>
 
                                         <div class="flex items-center gap-2 text-gray-200">
                                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.414-1.415L11 9.586V6z" clip-rule="evenodd"/>
                                             </svg>
-                                            <span id="thumbnail-duration-{{ $loop->index }}" class="thumbnail-duration text-sm font-medium">Duration</span>
+                                            <span id="thumbnail-duration-{{ $loop->index }}" class="thumbnail-duration text-sm font-medium">Durasi</span>
                                         </div>
                                     </div>
                                 </div>

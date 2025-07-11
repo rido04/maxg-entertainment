@@ -1,7 +1,7 @@
 @extends('layouts.app', ['title' => 'Games Zone'] )
 
 @section('content')
-<div class="min-h-screen" style="background-image: url('{{ asset('images/background/BG1.jpg') }}'); background-size: cover; background-position: center;">
+<div class="min-h-screen" style="background-image: url('{{ asset('images/background/Background_Color.png') }}'); background-size: cover; background-position: center;">
   <!-- Header Section -->
   <div class="relative px-3 sm:px-6 pt-4 sm:pt-6 pb-3 sm:pb-4">
     <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -11,14 +11,14 @@
         <h1 class="text-xl sm:text-2xl md:text-3xl text-gray-200 font-semibold mb-1" id="greeting">
           Good Evening
         </h1>
-        <p class="text-gray-200 text-xs sm:text-sm">Welcome to Garuda Indonesia Entertainment</p>
+        <p class="text-gray-200 text-xs sm:text-sm">Welcome to MaxG Entertainment Hub</p>
       </div>
 
       <!-- Garuda Logo & Text -->
       <div class="flex items-center space-x-3">
         <div class="flex items-center space-x-3 rounded-lg px-2 sm:px-4 py-2">
           <div class="relative">
-            <img src="{{ asset('Logo-Garuda-Animasi.gif') }}" alt="Garuda Airlines" class="w-32 sm:w-48 md:w-64 h-6 sm:h-9 md:h-12 object-contain">
+            <img src="{{ asset('images/logo/Maxg-ent_white.gif') }}" alt="MaxG Logo" class="w-32 sm:w-48 md:w-64 h-6 sm:h-9 md:h-12 object-contain">
           </div>
         </div>
       </div>
@@ -32,7 +32,7 @@
         Mini Games Collection
       </h1>
       <p class="text-gray-200 text-sm sm:text-base max-w-2xl mx-auto px-4">
-        Enjoy our curated selection of entertainment games during your flight experience
+        Mainkan MIni Games Seru selama perjalalananmu!
       </p>
       <div class="w-12 sm:w-16 h-0.5 bg-blue-600 mx-auto mt-3 sm:mt-4"></div>
     </div>
@@ -149,15 +149,6 @@
         @endif
       @endforeach
 
-    </div>
-  </div>
-
-  <!-- Footer Info -->
-  <div class="mt-8 sm:mt-12">
-    <div class="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-6">
-      <div class="text-center text-gray-200 text-xs sm:text-sm">
-        <p>Enjoy your flight with our complimentary games collection</p>
-      </div>
     </div>
   </div>
 

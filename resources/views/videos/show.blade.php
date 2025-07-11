@@ -2,7 +2,7 @@
 
 @section('content')
 <!-- Background with gradient effect -->
-<div class="min-h-screen flex text-gray-700 overflow-hidden relative" style="background-image: url('{{ asset('images/background/BG1.jpg') }}'); background-size: cover; background-position: center;">
+<div class="min-h-screen flex text-gray-700 overflow-hidden relative" style="background-image: url('{{ asset('images/background/Background_Color.png') }}'); background-size: cover; background-position: center;">
   <!-- Enhanced overlay pattern -->
   <div class="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-slate-800/10 to-slate-900/30"></div>
 
@@ -16,7 +16,7 @@
   <!-- Logo Space - Enhanced responsive positioning -->
   <div class="absolute top-3 right-3 sm:top-4 sm:right-4 md:top-6 md:right-6 z-30">
     <div class="w-32 h-8 sm:w-48 sm:h-10 md:w-60 md:h-12 lg:w-80 lg:h-16 bg-transparent">
-        <img src="{{ asset('Logo-Garuda-Animasi.gif') }}" alt="Logo Garuda Airlines" class="drop-shadow-lg w-full h-full object-contain">
+        <img src="{{ asset('images/logo/Logo-MaxG-White.gif') }}" alt="MaxG Logo" class="drop-shadow-lg w-full h-full object-contain">
     </div>
   </div>
 
@@ -58,16 +58,16 @@
         <!-- Rating and Info Tags - Enhanced responsive layout -->
         <div class="flex items-center justify-center lg:justify-start gap-1.5 sm:gap-2 md:gap-3 mb-4 sm:mb-5 md:mb-6 flex-wrap">
           <span class="px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs sm:text-sm font-bold rounded-full shadow-lg hover:shadow-amber-500/25 transition-all duration-300 hover:scale-105">
-            ⭐ {{ $video->rating ?? 'N/A' }}/10
+            {{ $video->rating ?? 'N/A' }}/10
           </span>
           <span class="px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 bg-gray-800/90 backdrop-blur-sm border border-gray-600/50 text-gray-100 text-xs sm:text-sm rounded-full hover:bg-gray-700/90 transition-all duration-300">
-            📅 {{ $video->release_date ? \Carbon\Carbon::parse($video->release_date)->format('Y') : 'N/A' }}
+            {{ $video->release_date ? \Carbon\Carbon::parse($video->release_date)->format('Y') : 'N/A' }}
           </span>
           <span class="px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 bg-gradient-to-r from-teal-600 to-teal-700 text-white text-xs sm:text-sm rounded-full shadow-lg hover:shadow-teal-500/25 transition-all duration-300 hover:scale-105">
-            ⏱️ {{ $video->duration ?? 'N/A' }} Min
+            {{ $video->duration ?? 'N/A' }} Min
           </span>
           <span class="px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs sm:text-sm font-bold rounded-full shadow-lg hover:shadow-blue-500/25 transition-all duration-300 hover:scale-105">
-            🎬 {{ ucfirst($video->category ?? 'N/A') }}
+            {{ ucfirst($video->category ?? 'N/A') }}
           </span>
         </div>
 
@@ -75,7 +75,7 @@
         <div class="bg-white/95 backdrop-blur-md border border-gray-300/50 rounded-xl md:rounded-2xl p-3 sm:p-4 md:p-5 lg:p-6 mb-4 sm:mb-5 md:mb-6 lg:mb-8 shadow-xl hover:shadow-2xl transition-all duration-300">
           <div class="flex items-start gap-3 mb-2">
             <div class="w-1 h-6 bg-gradient-to-b from-blue-500 to-blue-700 rounded-full flex-shrink-0 mt-1"></div>
-            <h3 class="text-sm sm:text-base font-semibold text-gray-800">Synopsis</h3>
+            <h3 class="text-sm sm:text-base font-semibold text-gray-800">Sinopsis</h3>
           </div>
           <p class="text-gray-700 text-sm sm:text-base lg:text-lg leading-relaxed text-justify pl-4">
             {{ $video->description ?? 'No description available for this movie. Please contact support for more information.' }}
@@ -90,7 +90,7 @@
               <svg class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white transition-transform group-hover:scale-110" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M8 5v14l11-7z"/>
               </svg>
-              <span class="font-semibold text-sm sm:text-base md:text-lg text-white">Play Now</span>
+              <span class="font-semibold text-sm sm:text-base md:text-lg text-white">Mainkan</span>
             </button>
             @else
             <button disabled class="w-full sm:w-auto flex items-center justify-center gap-2 sm:gap-2.5 md:gap-3 bg-gray-700/70 px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 md:py-4 rounded-xl md:rounded-2xl cursor-not-allowed opacity-50 border border-gray-600/30">
@@ -106,7 +106,7 @@
                 <svg class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                 </svg>
-                <span class="font-semibold text-sm sm:text-base md:text-lg text-white">Back</span>
+                <span class="font-semibold text-sm sm:text-base md:text-lg text-white">Kembali</span>
             </button>
         </div>
     </div>

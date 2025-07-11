@@ -27,7 +27,7 @@
 }
 
 .main-content-scroll::-webkit-scrollbar-thumb:hover {
-    background: rgba(23, 37, 84, 0.8);
+    background: rgba(0, 82, 52, 0.8);
 }
 
 /* HIDE SCROLLBAR - Jika ingin menyembunyikan scrollbar */
@@ -56,7 +56,7 @@
     scroll-snap-type: y mandatory; /* Snap ke setiap section */
 }
 
-/* Movie item transitions - PERBAIKAN */
+/* Movie item transitions */
 .movie-item {
     background: linear-gradient(
         135deg,
@@ -77,9 +77,9 @@
 .movie-item:hover {
     background: linear-gradient(
         135deg,
-        #172554 0%,
-        /* blue-950 */ #1e3a8a 50%,
-        /* blue-900 */ #172554 100% /* blue-800 */
+        #005234 0%,
+        /* blue-950 */ #005234 50%,
+        /* blue-900 */ #005234 100% /* blue-800 */
     ) !important;
     transform: translateX(20px) scale(1.02) !important;
     box-shadow: 0 8px 25px rgba(255, 255, 255, 0.5) !important; /* shadow blue-950 */
@@ -141,7 +141,15 @@
     }
 
     .movie-item:hover {
-        transform: translateX(10px) scale(1.01) !important; /* Reduced transform untuk tablet */
+        background: linear-gradient(
+            135deg,
+            #005234 0%,
+            /* blue-950 */ #005234 50%,
+            /* blue-900 */ #005234 100% /* blue-800 */
+        ) !important;
+        transform: translateX(20px) scale(1.02) !important;
+        box-shadow: 0 8px 25px rgba(255, 255, 255, 0.5) !important; /* shadow blue-950 */
+        border-color: rgba(30, 58, 138, 0.4) !important; /* border blue-900 */
     }
 }
 

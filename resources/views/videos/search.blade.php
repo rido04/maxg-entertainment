@@ -14,7 +14,7 @@
   <div class="absolute inset-0"></div>
 
   <div class="absolute top-4 right-4">
-    <img src="{{ asset('Logo-Garuda-Animasi.gif') }}" alt="Logo" class="w-80 h-auto">
+    <img src="{{ asset('images/logo/Maxg-ent_white.gif') }}" alt="Logo" class="w-80 h-auto">
     </div>
   <!-- Main Content -->
   <div class="relative z-10 p-6">
@@ -26,16 +26,16 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
           </svg>
         </div>
-        <span class="font-medium text-gray-200 group-hover:text-white transition-colors">Back</span>
+        <span class="font-medium text-gray-200 group-hover:text-white transition-colors">Kembali</span>
       </button>
     </div>
 
     <!-- Enhanced Title with animated underline -->
     <div class="mb-12 text-center">
       <h2 class="text-4xl md:text-5xl font-bold mb-4 bg-gray-200 bg-clip-text text-transparent">
-        Search Results
+        Hasil Pencarian
       </h2>
-      <div class="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto rounded-full"></div>
+      <div class="w-24 h-1 bg-gradient-to-r from-blue-500 to-blue-500 mx-auto rounded-full"></div>
     </div>
 
     @if($videos->isNotEmpty())
@@ -43,7 +43,7 @@
       <div class="mb-8 text-center">
         <div class="inline-flex items-center gap-2 px-4 py-2 bg-gray-200 backdrop-blur-sm rounded-full border border-gray-700/30">
           <div class="w-2 h-2 bg-blue-700 rounded-full animate-pulse"></div>
-          <span class="text-gray-900 text-sm font-medium">{{ $videos->count() }} Results Found</span>
+          <span class="text-gray-900 text-sm font-medium">{{ $videos->count() }} Hasil Ditemukan</span>
         </div>
       </div>
 
@@ -104,8 +104,8 @@
                   </p>
                   <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <div class="w-1 h-1 bg-blue-400 rounded-full animate-pulse"></div>
-                    <div class="w-1 h-1 bg-purple-400 rounded-full animate-pulse" style="animation-delay: 0.2s;"></div>
-                    <div class="w-1 h-1 bg-indigo-400 rounded-full animate-pulse" style="animation-delay: 0.4s;"></div>
+                    <div class="w-1 h-1 bg-green-400 rounded-full animate-pulse" style="animation-delay: 0.2s;"></div>
+                    <div class="w-1 h-1 bg-yellow-400 rounded-full animate-pulse" style="animation-delay: 0.4s;"></div>
                   </div>
                 </div>
               </div>
@@ -122,10 +122,10 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
             </svg>
           </div>
-          <h3 class="text-2xl font-bold text-white mb-3">No Results Found</h3>
-          <p class="text-gray-200 mb-6">The content you're looking for might not be available. Try searching with different keywords!</p>
-          <button onclick="history.back()" class="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white rounded-xl font-medium transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
-            Try Again
+          <h3 class="text-2xl font-bold text-white mb-3">Hasil tidak ditemukan</h3>
+          <p class="text-gray-200 mb-6">Yah konten yang kamu cari tidak ada...., coba kata kunci lain yaa</p>
+          <button onclick="history.back()" class="px-6 py-3 bg-gradient-to-r from-yellow-600 to-green-600 hover:from-blue-500 hover:to-green-500 text-white rounded-xl font-medium transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
+            Cari yang lain
           </button>
         </div>
       </div>

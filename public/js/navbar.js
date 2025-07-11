@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
             toggleIcon.style.transform = "rotate(180deg)";
 
             // Change button background slightly when active
-            navToggle.classList.add("bg-blue-500");
+            navToggle.classList.add("bg-green-500");
         } else {
             // Hide menu
             navigationMenu.classList.remove(
@@ -55,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
             toggleIcon.style.transform = "rotate(0deg)";
 
             // Remove active background
-            navToggle.classList.remove("bg-blue-500/20");
+            navToggle.classList.remove("bg-green-500/20");
         }
     });
 
@@ -79,7 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
             );
             toggleContainer.style.transform = "translate(0, -50%)";
             toggleIcon.style.transform = "rotate(0deg)";
-            navToggle.classList.remove("bg-blue-500/20");
+            navToggle.classList.remove("bg-green-500/20");
         }
     });
 
@@ -87,7 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function setActiveNav() {
         navLinks.forEach((link) => {
             const href = link.getAttribute("href");
-            link.classList.remove("text-blue-400", "bg-blue-500/20");
+            link.classList.remove("text-green-400", "bg-green-500/20");
             link.classList.add("text-slate-400");
 
             let isActive = false;
@@ -132,7 +132,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (isActive) {
                 link.classList.remove("text-slate-400");
-                link.classList.add("text-blue-400", "bg-blue-500/20");
+                link.classList.add("text-green-400", "bg-green-500/20");
             }
         });
     }
@@ -142,13 +142,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // Add smooth hover animation for nav links
     navLinks.forEach((link) => {
         link.addEventListener("mouseenter", () => {
-            if (!link.classList.contains("text-blue-400")) {
+            if (!link.classList.contains("text-green-400")) {
                 link.style.transform = "scale(1.1)";
             }
         });
 
         link.addEventListener("mouseleave", () => {
-            if (!link.classList.contains("text-blue-400")) {
+            if (!link.classList.contains("text-green-400")) {
                 link.style.transform = "scale(1)";
             }
         });

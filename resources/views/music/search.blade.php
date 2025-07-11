@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="min-h-screen text-gray-800" style="background-image: url('{{ asset('images/background/BG1.jpg') }}'); background-size: cover; background-position: center;">
+<div class="min-h-screen text-gray-800" style="background-image: url('{{ asset('images/background/Background_Color.png') }}'); background-size: cover; background-position: center;">
     <div class="flex items-center justify-between p-6 pb-4">
         <a href="{{ route('music.index') }}" class="flex items-center space-x-2 text-gray-200 hover:text-red-700 transition-colors group">
           <svg class="w-6 h-6 transform group-hover:-translate-x-1 transition-transform" fill="currentColor" viewBox="0 0 20 20">

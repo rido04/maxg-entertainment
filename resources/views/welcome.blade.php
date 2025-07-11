@@ -1,4 +1,4 @@
-@extends('layouts.app', ['title' => 'Welcome Aboard'])
+@extends('layouts.app', ['title' => 'Welcome'])
 
 @section('content')
 <div class="min-h-screen m-0 p-0">
@@ -6,8 +6,10 @@
 <div class="fixed inset-0 bg-gradient-to-br from-slate-900/25 via-blue-900/15 to-slate-800/25 overflow-hidden">
     <!-- Airplane background -->
     <div class="absolute inset-0">
-        <img src="{{asset('images/background/Background_Color.png')}}"
-             alt="Langit" class="w-full h-full object-cover">
+        <video autoplay muted playsinline class="w-full h-full object-cover">
+            <source src="{{asset('video/Background_MaxG.mp4')}}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
     </div>
     <!-- Overlay gradient -->
     <div class="absolute inset-0 bg-gradient-to-r"></div>
@@ -17,15 +19,15 @@
 <header class="relative z-20 flex flex-col sm:flex-row justify-between items-center px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
     <!-- Logo Garuda -->
     <div class="flex items-center -ml-14 space-x-3 mb-4 sm:mb-0">
-        <div class="w-72 sm:w-96 lg:w-[500px] h-12 sm:h-16 lg:h-20 flex items-center justify-center">
-            <img src="{{ asset('Logo-Garuda-Animasi.gif') }}" alt="Garuda Airlines" class="w-full h-full object-contain">
+        <div class="w-72 sm:w-96 lg:w-[500px] h-12 sm:h-16 lg:h-20 flex items-center justify-center sm:px-3 py-1">
+            <img src="{{ asset('images/logo/Maxg-ent_white.gif') }}" alt="MaxG Entertainment Hub" class="w-full h-full object-contain">
         </div>
     </div>
 
     <!-- Top navigation icons -->
     <div class="flex items-center space-x-4">
         <div class="w-36 sm:w-48 lg:w-60 h-12 sm:h-16 lg:h-20 text-sm px-2 sm:px-3 py-1">
-            <img src="{{ asset('5 Star Airline White.png') }}" alt="5 star skytrax" class="w-full h-full object-contain">
+            <img src="{{ asset('images/logo/mcm x grab_.png') }}" alt="grab dan mcm logo" class="w-full h-full object-contain">
         </div>
     </div>
 </header>
@@ -35,26 +37,29 @@
     <!-- Left Section - Welcome -->
     <div class="flex-1 flex flex-col justify-center px-4 sm:px-6 lg:px-12 py-8 sm:py-12 lg:py-20 -mt-8 sm:-mt-16 lg:-mt-32">
         <div class="max-w-xl fade-in text-center lg:text-left">
-            <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 sm:mb-6 leading-tight">
-                Welcome Aboard
-                <span class="bg-blue-400 bg-clip-text block font-bold text-transparent bg-gradient-to-r from-blue-300 to-blue-500">
-                    Garuda Indonesia
+            <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-medium text-white mb-4 sm:mb-6 leading-tight">
+                Welcome to
+                <span class="text-9xl bg-clip-text block font-bold text-transparent bg-gradient-to-r from-green-300 to-green-500">
+                    MaxG
+                </span>
+                <span class="bg-clip-text block font-medium text-transparent bg-white">
+                    Entertainment Hub
                 </span>
             </h2>
             <p class="text-base sm:text-lg lg:text-xl text-gray-100 mb-6 sm:mb-8 leading-relaxed px-2 sm:px-0">
-                Enjoy your entertainment journey with the best experience in movies, music, games, etc.
+                Your Everyday everything App
             </p>
         </div>
     </div>
 
     <!-- Right Section - Flight Info -->
-    <div class="w-full lg:w-1/2 flex flex-col justify-center px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-20 -mt-8 sm:-mt-16 lg:-mt-0">
+    {{-- <div class="w-full lg:w-1/2 flex flex-col justify-center px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-20 -mt-8 sm:-mt-16 lg:-mt-0 mr-48">
         <div class="flex justify-center lg:justify-start">
-            <img src="{{ asset('Pesawat Garuda.png') }}"
-                 alt="Pesawat Garuda"
+            <img src="{{ asset('images/background/Car.png') }}"
+                 alt="Mobil Grab"
                  class="w-64 sm:w-80 md:w-96 lg:w-full h-auto max-w-md lg:max-w-none lg:-mt-44 lg:-ml-12 animate-fly-in">
         </div>
-    </div>
+    </div> --}}
 </div>
 
 <!-- Current Time Display -->

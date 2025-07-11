@@ -5,7 +5,7 @@
     <!-- Artist Hero Section -->
     <div class="relative">
         <!-- Background Gradient -->
-        <div class="absolute inset-0 bg-gradient-to-b from-teal-400 via-blue-800 to-blue-950"></div>
+        <div class="absolute inset-0 bg-gradient-to-b from-green-400 via-green-800 to-green-950"></div>
 
         <!-- Artist Header -->
         <div class="relative px-6 pt-16 pb-8">
@@ -23,7 +23,7 @@
                 <div class="flex items-end space-x-6">
                     <!-- Artist Image -->
                     <div class="flex-shrink-0">
-                        <div class="w-40 h-40 md:w-56 md:h-56 rounded-full bg-gradient-to-br from-blue-600 via-blue-700 to-gray-800 flex items-center justify-center shadow-2xl overflow-hidden border-4 border-blue-500/30">
+                        <div class="w-40 h-40 md:w-56 md:h-56 rounded-full bg-gradient-to-br from-yellow-600 via-yellow-700 to-gray-800 flex items-center justify-center shadow-2xl overflow-hidden border-4 border-blue-500/30">
                             @php
                                 $artistSong = $music->first();
                             @endphp

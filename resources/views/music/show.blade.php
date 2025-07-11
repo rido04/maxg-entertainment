@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="min-h-screen text-gray-900" style="background-image: url('{{ asset('images/background/BG1.jpg') }}'); background-size: cover; background-position: center;">
+<div class="min-h-screen text-gray-900" style="background-image: url('{{ asset('images/background/Background_Color.png') }}'); background-size: cover; background-position: center;">
   <!-- Top Navigation -->
   <div class="flex items-center justify-between p-4 sm:p-6 pb-2 sm:pb-4">
     <a href="{{ route('music.index') }}" class="flex items-center space-x-2 text-gray-200 hover:text-red-700 transition-colors group">
@@ -15,7 +15,7 @@
   <!-- Main Content -->
   <div class="px-4 sm:px-6 pb-32">
     <!-- Hero Section with Modern Gradient Background -->
-    <div class="bg-gradient-to-r from-indigo-600 via-sky-600 to-teal-600 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8 shadow-2xl">
+    <div class="bg-gradient-to-r from-blue-800 via-greeen-800 to-green-600 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8 shadow-2xl">
       <div class="flex flex-col items-center text-center space-y-6 sm:space-y-8 lg:flex-row lg:items-end lg:text-left lg:space-y-0 lg:space-x-8">
         <!-- Album Art -->
         <div class="flex-shrink-0">
@@ -23,7 +23,7 @@
             @if($music->thumbnail)
               <img src="{{ $music->thumbnail }}" alt="{{ $music->title }}" class="w-full h-full object-cover">
             @else
-              <div class="w-full h-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+              <div class="w-full h-full bg-gradient-to-br from-green-500 to-yellow-600 flex items-center justify-center">
                 <svg class="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 text-white/80" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M18 3a1 1 0 00-1.447-.894L8.763 6H5a3 3 0 000 6h.28l1.771 5.316A1 1 0 008 18h1a1 1 0 001-1v-4.382l6.553 3.276A1 1 0 0018 15V3z" clip-rule="evenodd" />
                 </svg>
@@ -32,7 +32,7 @@
             <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
               <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 <div class="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white hover:scale-110 transition-all duration-200 shadow-lg">
-                  <svg class="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-indigo-600 ml-1" fill="currentColor" viewBox="0 0 20 20">
+                  <svg class="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-green-600 ml-1" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
                   </svg>
                 </div>
@@ -90,14 +90,14 @@
     <div class="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6 mb-6 sm:mb-8">
       <div class="flex items-center space-x-6">
         <!-- Play Button -->
-        <button id="mainPlayBtn" class="relative w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 rounded-full flex items-center justify-center shadow-lg transform hover:scale-105 transition-all duration-200">
+        <button id="mainPlayBtn" class="relative w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-r from-green-500 to-yellow-600 hover:from-green-600 hover:to-yellow-700 rounded-full flex items-center justify-center shadow-lg transform hover:scale-105 transition-all duration-200">
           <svg id="mainPlayIcon" class="w-5 h-5 sm:w-6 sm:h-6 text-white ml-1" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
           </svg>
           <svg id="mainPauseIcon" class="w-5 h-5 sm:w-6 sm:h-6 text-white hidden" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
           </svg>
-          <div class="absolute inset-0 rounded-full border-2 border-indigo-400 opacity-50 pulse-ring" id="pulseRing" style="display: none;"></div>
+          <div class="absolute inset-0 rounded-full border-2 border-green-400 opacity-50 pulse-ring" id="pulseRing" style="display: none;"></div>
         </button>
       </div>
 
@@ -108,7 +108,7 @@
         </svg>
         <div class="relative w-24 sm:w-32">
             <input type="range" id="volumeSlider" min="0" max="100" value="70" class="volume-slider w-full h-2 sm:h-3 bg-gray-300 rounded-full appearance-none cursor-pointer">
-            <div id="volumeBar" class="absolute top-1/2 left-0 h-2 sm:h-3 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full pointer-events-none transform -translate-y-1/2" style="width: 70%"></div>
+            <div id="volumeBar" class="absolute top-1/2 left-0 h-2 sm:h-3 bg-gradient-to-r from-green-500 to-yellow-600 rounded-full pointer-events-none transform -translate-y-1/2" style="width: 70%"></div>
         </div>
       </div>
     </div>
@@ -121,7 +121,7 @@
       </div>
       <div class="relative group">
         <div class="w-full h-1.5 sm:h-2 bg-gray-300 rounded-full overflow-hidden">
-          <div id="progressBar" class="h-full bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full transition-all duration-100" style="width: 0%"></div>
+          <div id="progressBar" class="h-full bg-gradient-to-r from-green-500 to-yellow-600 rounded-full transition-all duration-100" style="width: 0%"></div>
         </div>
         <input type="range" id="progressSlider" min="0" max="100" value="0" class="absolute inset-0 w-full h-1.5 sm:h-2 opacity-0 cursor-pointer">
       </div>
@@ -193,7 +193,7 @@
         <!-- Song Info Row -->
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-3 flex-1 min-w-0">
-            <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex-shrink-0 shadow-lg">
+            <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-green-500 to-yellow-600 flex-shrink-0 shadow-lg">
               <img id="miniThumbnailMobile" src="" alt="" class="w-full h-full object-cover rounded-lg hidden">
               <div id="miniThumbnailPlaceholderMobile" class="w-full h-full flex items-center justify-center">
                 <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -221,7 +221,7 @@
         </div>
         <!-- Controls Row -->
         <div class="flex items-center justify-center">
-          <button id="miniPlayBtn" class="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-full flex items-center justify-center hover:from-indigo-600 hover:to-purple-700 hover:scale-105 transition-all duration-200 shadow-lg">
+          <button id="miniPlayBtn" class="w-10 h-10 bg-gradient-to-r from-green-500 to-yellow-600 text-white rounded-full flex items-center justify-center hover:from-green-600 hover:to-yellow-700 hover:scale-105 transition-all duration-200 shadow-lg">
             <svg id="miniPlayIcon" class="w-4 h-4 ml-0.5" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
             </svg>
@@ -236,7 +236,7 @@
       <div class="hidden sm:flex items-center justify-between">
         <!-- Song Info -->
         <div class="flex items-center space-x-4 flex-1 min-w-0">
-          <div class="w-14 h-14 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex-shrink-0 shadow-lg">
+          <div class="w-14 h-14 rounded-lg bg-gradient-to-br from-green-500 to-yellow-600 flex-shrink-0 shadow-lg">
             <img id="miniThumbnail" src="" alt="" class="w-full h-full object-cover rounded-lg hidden">
             <div id="miniThumbnailPlaceholder" class="w-full h-full flex items-center justify-center">
               <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -257,7 +257,7 @@
 
         <!-- Controls -->
         <div class="flex items-center space-x-4 flex-1 justify-end">
-          <button id="miniPlayBtnDesktop" class="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-full flex items-center justify-center hover:from-indigo-600 hover:to-purple-700 hover:scale-105 transition-all duration-200 shadow-lg">
+          <button id="miniPlayBtnDesktop" class="w-10 h-10 bg-gradient-to-r from-green-500 to-yellow-600 text-white rounded-full flex items-center justify-center hover:from-indigo-600 hover:to-yellow-700 hover:scale-105 transition-all duration-200 shadow-lg">
             <svg id="miniPlayIconDesktop" class="w-4 h-4 ml-0.5" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
             </svg>

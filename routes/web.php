@@ -99,8 +99,11 @@ Route::get('/run-scheduler', function () {
     return response()->json(['status' => 'scheduler triggered']);
 });
 
-// Inflight Routes
-Route::view('/inflight-map', 'inflight-map');
+// Leaflet Map Route
+Route::get('/map', function () {
+    return view('map');
+});
+
 
 // Feedback Routes
 Route::get('/feedback', [FeedbackController::class, 'create'])->name('feedback.create');

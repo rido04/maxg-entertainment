@@ -1,7 +1,7 @@
 @extends('layouts.app', ['title' => 'Music Library'])
 
 @section('content')
-<div class="min-h-screen text-gray-800" style="background-image: url('{{ asset('images/background/BG1.jpg') }}'); background-size: cover; background-position: center;">
+<div class="min-h-screen text-gray-800" style="background-image: url('{{ asset('images/background/Background_Color.png') }}'); background-size: cover; background-position: center;">
 
   <!-- Header Section -->
     <div class="relative pt-4 md:pt-8 pb-4 md:pb-6 md:mx-14">
@@ -23,14 +23,14 @@
                 Sync Music
             </button>
         </div>
-        <p class="text-gray-200 text-sm sm:text-lg mt-2">Let's find something for you to listen to</p>
+        <p class="text-gray-200 text-sm sm:text-lg mt-2">Lagi Bosen dan pengen ngelamun?, dengerin koleksi musik kami aja!</p>
         </div>
 
         <!-- Garuda Logo & Text -->
         <div class="flex items-center justify-between md:justify-end w-full md:w-auto -mt-4 md:-mt-8 -mr-0 md:-mr-7">
             <div class="flex items-center space-x-3 rounded-xl px-2 md:px-4 py-3 group">
                 <div class="relative">
-                    <img src="{{ asset('Logo-Garuda-Animasi.gif') }}" alt="Garuda Airlines" class="w-40 sm:w-60 md:w-80 h-8 sm:h-10 md:h-14 object-contain">
+                    <img src="{{ asset('images/logo/Maxg-ent_white.gif') }}" alt="Grab Logo" class="w-40 sm:w-60 md:w-80 h-8 sm:h-10 md:h-14 object-contain">
                 </div>
             </div>
         </div>
@@ -98,8 +98,8 @@
     <div class="px-4 md:px-6 mb-6 md:mb-8 mx-8">
         <div class="max-w-7xl mx-auto">
             <div class="flex items-center justify-between mb-4 md:mb-6">
-                <h2 class="text-xl md:text-2xl font-bold text-teal-400 hover:underline cursor-pointer">Featured Artists</h2>
-                <a href="{{ route('music.all-artist') }}" class="text-teal-400 hover:text-blue-900 text-xs md:text-sm font-semibold uppercase tracking-wider transition-colors">
+                <h2 class="text-xl md:text-2xl font-bold text-yellow-500 hover:underline cursor-pointer">Featured Artists</h2>
+                <a href="{{ route('music.all-artist') }}" class="text-[#005572] hover:text-blue-900 text-xs md:text-sm font-semibold uppercase tracking-wider transition-colors">
                     Show all
                 </a>
             </div>
@@ -157,7 +157,7 @@
     <div class="px-4 md:px-6 mb-6 md:mb-8 mx-8">
         <div class="max-w-7xl mx-auto">
         <div class="flex items-center justify-between mb-4 md:mb-6">
-            <h2 class="text-xl md:text-2xl font-bold text-teal-400 hover:underline cursor-pointer">Recently played</h2>
+            <h2 class="text-xl md:text-2xl font-bold text-yellow-500 hover:underline cursor-pointer">Recently played</h2>
         </div>
 
         <!-- Horizontal Scroll Cards -->
@@ -216,7 +216,7 @@
 <div class="px-4 md:px-6 pb-20 mx-8">
     <div class="max-w-7xl mx-auto">
       <div class="flex items-center justify-between mb-4 md:mb-6">
-        <h2 class="text-xl md:text-2xl font-bold text-teal-400">Made for you</h2>
+        <h2 class="text-xl md:text-2xl font-bold text-yellow-500">Made for you</h2>
         <div class="flex items-center space-x-4">
           <button class="text-gray-600 hover:text-gray-900 text-sm">
             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">

@@ -27,7 +27,7 @@ def download_playlist(url):
     # Setup awal untuk ambil info playlist/album
     ydl_opts_info = {
         'quiet': True,
-        'extract_flat': False, 
+        'extract_flat': False,
         'force_generic_extractor' : True,
     }
 
@@ -52,7 +52,7 @@ def download_playlist(url):
                 # Setup download untuk lagu individual
                 ydl_opts_download = {
                     'format': 'bestaudio/best',
-                    'outtmpl': f'public/media/musics/{safe_filename}.%(ext)s',
+                    'outtmpl': f'storage/app/public/media/musics/{safe_filename}.%(ext)s',  # Ubah direktori unduhan
                     'postprocessors': [{
                         'key': 'FFmpegExtractAudio',
                         'preferredcodec': 'mp3',
@@ -78,7 +78,7 @@ def download_playlist(url):
 
             ydl_opts_download = {
                 'format': 'bestaudio/best',
-                'outtmpl': f'public/media/musics/{safe_filename}.%(ext)s',
+                'outtmpl': f'storage/app/public/media/musics/{safe_filename}.%(ext)s',  # Ubah direktori unduhan
                 'postprocessors': [{
                     'key': 'FFmpegExtractAudio',
                     'preferredcodec': 'mp3',

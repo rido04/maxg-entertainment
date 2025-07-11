@@ -13,10 +13,13 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="{{ asset('js/audio-player-global.js') }}"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 
     @stack('styles')
 </head>
-<body class="font-sans antialiased min-h-screen m-0 p-0" style="background-image: url('{{ asset('images/background/BG1.jpg') }}'); background-size: cover; background-position: center;">
+<body class="font-sans antialiased min-h-screen m-0 p-0" style="background-image: url('{{ asset('images/background/Background_Color.png') }}'); background-size: cover; background-position: center;">
     @include('navbar')
     <!-- Main Content -->
     <main class="relative z-10">
@@ -95,10 +98,10 @@
      class="fixed inset-0 bg-white/80 flex flex-col items-center justify-center z-50 gap-4 transition-opacity duration-300">
 
     <!-- Logo -->
-    <img src="{{ asset('Kepala Garuda Biru.png') }}" alt="Logo" class="w-24 h-24 object-contain animate-bounce-slow">
+    <img src="{{ asset('images/logo/Logo-MaxG-Green.gif') }}" alt="Logo" class="w-24 h-24 object-contain animate-bounce-slow">
 
     <!-- Spinner -->
-    <div class="animate-spin rounded-full h-10 w-10 border-4 border-blue-500 border-t-transparent"></div>
+    <div class="animate-spin rounded-full h-10 w-10 border-4 border-green-500 border-t-transparent"></div>
 
     <!-- Text optional -->
     <p class="text-gray-500 font-medium mt-2 tracking-wide">Loading page...</p>

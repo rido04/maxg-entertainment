@@ -1,4 +1,6 @@
-<div class="w-full bg-[#002859] text-white py-6 sm:py-8 relative overflow-hidden">
+<div class="w-full bg-[#005234] text-white py-6 sm:py-8 relative overflow-hidden">
+    {{-- hijau gelap 005234 --}}
+    {{-- Biru Hijau 005572 --}}
     <!-- Subtle background overlay -->
     <div class="absolute inset-0"></div>
 
@@ -9,20 +11,18 @@
             <!-- Left Logo - Garuda Indonesia -->
             <div class="flex justify-center lg:justify-start items-center">
                 <div class="logo-container flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-2 sm:gap-3 lg:ml-8">
-                    <img src="{{ asset('Logo-Garuda.png') }}" alt="Garuda Indonesia"
-                         class="h-10 sm:h-12 md:h-14 lg:h-16 w-auto object-contain filter brightness-110">
-                    <img src="{{ asset('5 Star Airline White.png') }}" alt="Skytrax 5-Star Award"
-                         class="h-6 sm:h-8 md:h-10 lg:h-12 w-auto object-contain filter brightness-110">
+                    <img src="{{ asset('images/logo/mcm x grab_.png') }}" alt="Grab Indonesia"
+                         class="h-12 w-auto object-contain filter brightness-110">
                 </div>
             </div>
 
             <!-- Right Text - Developer Info -->
             <div class="flex flex-col justify-center items-center lg:items-end text-center lg:text-right order-first lg:order-last lg:mr-8">
-                <p class="text-xs sm:text-sm text-gray-200 font-medium tracking-wider uppercase mb-1 sm:mb-2">
+                <p class="text-xs font-sans sm:text-sm text-gray-200 font-medium tracking-wider uppercase mb-1 sm:mb-2">
                     Developed & Maintained by
                 </p>
-                <h3 class="text-sm sm:text-base font-bold">
-                    Garuda Indonesia | MCMMedia Networks
+                <h3 class="text-sm sm:text-base font-medium">
+                    Grab Indonesia | MCMMedia Networks
                 </h3>
             </div>
         </div>
@@ -33,11 +33,11 @@
                 <div class="flex flex-wrap justify-center items-center gap-x-4 sm:gap-x-6 gap-y-2 text-sm">
                     <a href="{{ route('feedback.create') }}"
                        class="flex items-center text-gray-300 hover:text-white transition-colors duration-300 group">
-                        <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-blue-400 group-hover:text-blue-300 transition-colors duration-300"
+                        <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-blue-600 group-hover:text-blue-300 transition-colors duration-300"
                              fill="currentColor" viewBox="0 0 24 24">
                             <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
                         </svg>
-                        <span class="font-medium text-xs sm:text-sm">Send Feedback</span>
+                        <span class="font-medium text-xs sm:text-sm">Punya Masukkan?, Kirim ke sini aja!</span>
                     </a>
                     <span class="text-gray-500 hidden sm:inline">•</span>
                 </div>

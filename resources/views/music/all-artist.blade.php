@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="min-h-screen text-gray-200" style="background-image: url('{{ asset('images/background/BG1.jpg') }}'); background-size: cover; background-position: center;">
+<div class="min-h-screen text-gray-200" style="background-image: url('{{ asset('images/background/Background_Color.png') }}'); background-size: cover; background-position: center;">
     <div class="flex items-center justify-between p-6 pb-4 inset-0 bg-gradient-to-r from-white/10 via-white/20 to-white/20">
         <a href="{{ route('music.index') }}" class="flex items-center space-x-2 text-gray-200 hover:text-red-500 transition-colors group">
         <svg class="w-6 h-6 transform group-hover:-translate-x-1 transition-transform" fill="currentColor" viewBox="0 0 20 20">
@@ -17,13 +17,13 @@
         <div class="relative px-6 pt-16 pb-12  bg-gradient-to-r from-white/10 via-white/20 to-white/20">
             <div class="max-w-7xl mx-auto">
                 <div class="flex items-center space-x-4 mb-6">
-                    <div class="w-16 h-16 bg-gradient-to-br from-teal-600 to-teal-800 rounded-full flex items-center justify-center shadow-xl">
+                    <div class="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-800 rounded-full flex items-center justify-center shadow-xl">
                         <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.369 4.369 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" clip-rule="evenodd"/>
                         </svg>
                     </div>
                     <div>
-                        <h1 class="text-4xl md:text-6xl lg:text-7xl font-medium mb-2 bg-gradient-to-br from-teal-400 to-teal-600 bg-clip-text text-transparent">
+                        <h1 class="text-4xl md:text-6xl lg:text-7xl font-medium mb-2 bg-gradient-to-br from-blue-600 to-blue-700 bg-clip-text text-transparent">
                             All Artists
                         </h1>
                     </div>
@@ -59,13 +59,13 @@
                             id="artistSearch"
                             value="{{ request('search') }}"
                             placeholder="Search artists..."
-                            class="w-full pl-10 pr-4 py-3 bg-gray-200 border border-gray-700 rounded-full text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300">
+                            class="w-full pl-10 pr-4 py-3 bg-gray-200 border border-gray-700 rounded-full text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300">
                     </form>
                 </div>
                 <div class="flex items-center space-x-4">
                     <div class="flex items-center space-x-2 text-sm text-gray-200">
                         <span>Per page:</span>
-                        <select onchange="changePerPage(this.value)" class="bg-gray-200 border border-gray-700 rounded-lg px-2 py-1 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <select onchange="changePerPage(this.value)" class="bg-gray-200 border border-gray-700 rounded-lg px-2 py-1 text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500">
                             <option value="24" {{ request('per_page', 24) == 24 ? 'selected' : '' }}>24</option>
                             <option value="48" {{ request('per_page') == 48 ? 'selected' : '' }}>48</option>
                             <option value="96" {{ request('per_page') == 96 ? 'selected' : '' }}>96</option>
@@ -94,7 +94,7 @@
                             <div class="p-4 transition-all duration-300 hover:scale-105">
                                 <!-- Artist Image -->
                                 <div class="relative mb-4 group-hover:mb-3 transition-all duration-300">
-                                    <div class="aspect-square rounded-full bg-gradient-to-br from-blue-600 to-blue-800 p-0.5 shadow-lg group-hover:shadow-xl transition-all duration-300">
+                                    <div class="aspect-square rounded-full bg-gradient-to-br from-green-600 to-green-800 p-0.5 shadow-lg group-hover:shadow-xl transition-all duration-300">
                                         <div class="w-full h-full rounded-full bg-gray-900 flex items-center justify-center overflow-hidden">
                                             @php
                                                 $artistSong = \App\Models\Media::where('artist', $artist)->first();
@@ -105,7 +105,7 @@
                                                     class="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-500"
                                                     loading="lazy">
                                             @else
-                                                <div class="w-12 h-12 text-gray-200 group-hover:text-blue-400 transition-colors duration-300">
+                                                <div class="w-12 h-12 text-gray-200 group-hover:text-green-400 transition-colors duration-300">
                                                     <svg fill="currentColor" viewBox="0 0 20 20" class="w-full h-full">
                                                         <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
                                                     </svg>
@@ -115,7 +115,7 @@
                                     </div>
 
                                     <!-- Play Button Overlay -->
-                                    <div class="absolute bottom-2 right-2 w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300 shadow-lg hover:scale-110 hover:bg-blue-500">
+                                    <div class="absolute bottom-2 right-2 w-12 h-12 bg-green-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300 shadow-lg hover:scale-110 hover:bg-green-500">
                                         <svg class="w-5 h-5 text-white ml-0.5" fill="currentColor" viewBox="0 0 20 20">
                                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>
                                         </svg>
@@ -124,7 +124,7 @@
 
                                 <!-- Artist Info -->
                                 <div class="text-center">
-                                    <h4 class="text-gray-200 font-semibold text-sm md:text-base leading-tight mb-1 truncate group-hover:text-blue-400 transition-colors duration-300"
+                                    <h4 class="text-gray-200 font-semibold text-sm md:text-base leading-tight mb-1 truncate group-hover:text-green-400 transition-colors duration-300"
                                         title="{{ $artist }}">
                                         {{ Str::limit($artist, 16) }}
                                     </h4>
@@ -152,7 +152,7 @@
                             @endif
                         </p>
                         @if(request('search'))
-                            <a href="{{ route('music.all-artist') }}" class="inline-flex items-center space-x-2 mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white transition-colors">
+                            <a href="{{ route('music.all-artist') }}" class="inline-flex items-center space-x-2 mt-4 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-white transition-colors">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                 </svg>
@@ -192,16 +192,16 @@
                     {{-- Pagination Elements --}}
                     @foreach ($artists->appends(request()->query())->getUrlRange(1, $artists->lastPage()) as $page => $url)
                         @if ($page == $artists->currentPage())
-                            <span class="px-4 py-2 bg-teal-600 text-white rounded-lg font-medium">{{ $page }}</span>
+                            <span class="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium">{{ $page }}</span>
                         @else
-                            <a href="{{ $url }}" class="px-4 py-2 text-gray-400 bg-white hover:bg-teal-700/80 hover:text-white rounded-lg transition-colors">{{ $page }}</a>
+                            <a href="{{ $url }}" class="px-4 py-2 text-gray-400 bg-white hover:bg-blue-700/80 hover:text-white rounded-lg transition-colors">{{ $page }}</a>
                         @endif
                     @endforeach
 
                     {{-- Next Page Link --}}
                     @if ($artists->hasMorePages())
                         <a href="{{ $artists->appends(request()->query())->nextPageUrl() }}"
-                        class="px-3 py-2 text-gray-400 bg-white hover:bg-teal-700/80 hover:text-white rounded-lg transition-colors">
+                        class="px-3 py-2 text-gray-400 bg-white hover:bg-blue-700/80 hover:text-white rounded-lg transition-colors">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                             </svg>
@@ -234,7 +234,7 @@
 
 
 <!-- Scroll to Top Button -->
-<button id="scrollToTop" class="fixed bottom-6 right-6 w-12 h-12 bg-teal-600 hover:bg-teal-700 rounded-full flex items-center justify-center text-white shadow-lg opacity-0 pointer-events-none transition-all duration-300 z-50">
+<button id="scrollToTop" class="fixed bottom-6 right-6 w-12 h-12 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center text-white shadow-lg opacity-0 pointer-events-none transition-all duration-300 z-50">
     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
     </svg>

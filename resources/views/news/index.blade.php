@@ -9,7 +9,7 @@
             <div class="flex items-center justify-between py-3">
                 <!-- Logo -->
                 <div class="flex items-center">
-                    <img src="{{ asset('Logo-Garuda-Color-Gift.gif') }}" alt="Garuda Airlines" class="h-8 w-auto">
+                    <img src="{{ asset('images/logo/Logo-MaxG-Green.gif') }}" alt="Garuda Airlines" class="h-8 w-auto">
                     <span class="ml-3 text-xl font-bold text-gray-800">.newspaper</span>
                 </div>
             </div>
@@ -44,7 +44,7 @@
 
                                 <!-- Category Badge -->
                                 <div class="absolute top-4 left-4">
-                                    <span class="bg-blue-600 text-white px-3 py-1 rounded text-sm font-medium">
+                                    <span class="bg-green-600 text-white px-3 py-1 rounded text-sm font-medium">
                                         Headline
                                     </span>
                                 </div>
@@ -86,13 +86,13 @@
 
                             <!-- Category Badge -->
                             <div class="absolute top-3 left-3">
-                                <span class="bg-blue-600 text-white px-2 py-1 rounded text-xs font-medium">
+                                <span class="bg-green-600 text-white px-2 py-1 rounded text-xs font-medium">
                                     {{ $article->source ?? 'NEWS' }}
                                 </span>
                             </div>
                         </div>
 
-                        <h3 class="font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                        <h3 class="font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-green-600 transition-colors">
                             {{ $article->title }}
                         </h3>
 
@@ -115,7 +115,7 @@
                                 <div class="flex-1 h-px bg-gray-200"></div>
                             </div>
                             <a href="{{ route('news.sports') }}"
-                            class="text-blue-600 hover:text-blue-800 font-medium text-sm whitespace-nowrap ml-4 transition-colors">
+                            class="text-green-600 hover:text-green-800 font-medium text-sm whitespace-nowrap ml-4 transition-colors">
                                 Read More →
                             </a>
                         </div>
@@ -136,11 +136,11 @@
                                 </div>
 
                                 <div class="flex-1">
-                                    <h3 class="font-semibold text-gray-900 mb-2 line-clamp-3 group-hover:text-blue-600 transition-colors">
+                                    <h3 class="font-semibold text-gray-900 mb-2 line-clamp-3 group-hover:text-green-600 transition-colors">
                                         {{ $article->title }}
                                     </h3>
                                     <div class="text-sm text-gray-500">
-                                        <span class="text-blue-600 font-medium">SPORTS</span>
+                                        <span class="text-green-600 font-medium">SPORTS</span>
                                     </div>
                                 </div>
                             </article>
@@ -157,7 +157,7 @@
                                 <div class="flex-1 h-px bg-gray-200"></div>
                             </div>
                             <a href="{{ route('news.politics') }}"
-                            class="text-blue-600 hover:text-blue-800 font-medium text-sm whitespace-nowrap ml-4 transition-colors">
+                            class="text-green-600 hover:text-green-800 font-medium text-sm whitespace-nowrap ml-4 transition-colors">
                                 Read More →
                             </a>
                         </div>
@@ -179,11 +179,11 @@
                                 </div>
 
                                 <div class="flex-1">
-                                    <h3 class="font-semibold text-gray-900 mb-2 line-clamp-3 group-hover:text-blue-600 transition-colors">
+                                    <h3 class="font-semibold text-gray-900 mb-2 line-clamp-3 group-hover:text-green-600 transition-colors">
                                         {{ $article->title }}
                                     </h3>
                                     <div class="text-sm text-gray-500">
-                                        <span class="text-blue-600 font-medium">POLITICS</span>
+                                        <span class="text-green-600 font-medium">POLITICS</span>
                                     </div>
                                 </div>
                             </article>
@@ -200,7 +200,7 @@
                                 <div class="flex-1 h-px bg-gray-200"></div>
                             </div>
                             <a href="{{ route('news.entertainment') }}"
-                            class="text-blue-600 hover:text-blue-800 font-medium text-sm whitespace-nowrap ml-4 transition-colors">
+                            class="text-green-600 hover:text-green-800 font-medium text-sm whitespace-nowrap ml-4 transition-colors">
                                 Read More →
                             </a>
                         </div>
@@ -222,11 +222,11 @@
                                 </div>
 
                                 <div class="flex-1">
-                                    <h3 class="font-semibold text-gray-900 mb-2 line-clamp-3 group-hover:text-blue-600 transition-colors">
+                                    <h3 class="font-semibold text-gray-900 mb-2 line-clamp-3 group-hover:text-green-600 transition-colors">
                                         {{ $article->title }}
                                     </h3>
                                     <div class="text-sm text-gray-500">
-                                        <span class="text-blue-600 font-medium">ENTERTAINMENT</span>
+                                        <span class="text-green-600 font-medium">ENTERTAINMENT</span>
                                     </div>
                                 </div>
                             </article>
@@ -241,7 +241,7 @@
             <div class="lg:col-span-1">
                 <div class="sticky">
                     <!-- Popular Section -->
-                    <div class="bg-blue-950 border border-gray-200 rounded-lg pb-24 pt-6 px-6">
+                    <div class="bg-green-700 border border-gray-200 rounded-lg pb-24 pt-6 px-6">
                         <h3 class="text-xl font-bold text-gray-200 mb-4 flex items-center">
                             <span class="w-1 h-6 bg-gray-200 rounded mr-3"></span>
                             Popular
@@ -251,7 +251,7 @@
                             @foreach($sports->take(5) as $index => $article)
                             <a href="{{ route('news.show', $article->slug) }}" class="flex group cursor-pointer">
                             <article class="flex group cursor-pointer">
-                                <div class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded flex items-center justify-center text-sm font-bold mr-3 mt-1">
+                                <div class="flex-shrink-0 w-8 h-8 bg-green-600 text-white rounded flex items-center justify-center text-sm font-bold mr-3 mt-1">
                                     {{ $index + 1 }}
                                 </div>
 
@@ -276,7 +276,7 @@
                     <!-- Latest News -->
                     <div class="bg-gray-200 border border-gray-200 rounded-lg p-4">
                         <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                            <span class="w-1 h-6 bg-blue-600 rounded mr-3"></span>
+                            <span class="w-1 h-6 bg-green-600 rounded mr-3"></span>
                             Latest
                         </h3>
 
@@ -284,7 +284,7 @@
                             @foreach($politics->take(5) as $article)
                             <a href="{{ route('news.show', $article->slug) }}" class="flex group cursor-pointer">
                             <article class="group cursor-pointer">
-                                <h4 class="font-semibold text-gray-900 text-sm line-clamp-2 group-hover:text-blue-600 transition-colors mb-2">
+                                <h4 class="font-semibold text-gray-900 text-sm line-clamp-2 group-hover:text-green-600 transition-colors mb-2">
                                     {{ $article->title }}
                                 </h4>
                                 <div class="text-xs text-gray-500">
