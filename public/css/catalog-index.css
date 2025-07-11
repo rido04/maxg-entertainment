@@ -1,0 +1,280 @@
+/* Swiper Custom Styling */
+.hero-swiper .swiper-pagination-bullet {
+    width: 12px;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.5);
+    opacity: 1;
+}
+
+.hero-swiper .swiper-pagination-bullet-active {
+    background: white;
+    transform: scale(1.2);
+}
+
+.hero-swiper .swiper-button-next,
+.hero-swiper .swiper-button-prev {
+    background: rgba(19, 255, 165, 0.753);
+    width: 50px;
+    height: 50px;
+    backdrop-filter: blur(8px);
+}
+
+.hero-swiper .swiper-button-next:hover,
+.hero-swiper .swiper-button-prev:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.hero-swiper .swiper-button-next:after,
+.hero-swiper .swiper-button-prev:after {
+    font-size: 18px;
+    color: white;
+}
+
+.glass-effect {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.aspect-square {
+    aspect-ratio: 1 / 1;
+}
+
+/* Filter buttons */
+.filter-btn {
+    padding: 8px 16px;
+    border: 2px solid rgba(0, 0, 0, 0.3);
+    color: rgb(75, 75, 75);
+    font-size: 14px;
+    font-weight: 500;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.filter-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.filter-btn.active {
+    background: white;
+    color: #071063;
+    border-color: rgb(0, 0, 0);
+}
+
+/* View buttons */
+.view-btn.active {
+    background: #0d9488;
+    color: rgb(75, 75, 75);
+    border-color: #0d9488;
+}
+
+/* List view */
+.list-view {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+.list-view .product-card {
+    display: block;
+}
+
+.list-view .product-card a > div {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.list-view .product-card .aspect-square {
+    aspect-ratio: 1 / 1;
+    width: 150px;
+    flex-shrink: 0;
+}
+
+/* Custom select styling */
+select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+}
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Animation for product cards */
+.product-card {
+    opacity: 1;
+    transform: translateY(0);
+    transition: all 0.3s ease;
+}
+
+.product-card.hidden {
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+}
+
+/* Wishlist button active state */
+.wishlist-btn.active svg {
+    fill: #ef4444;
+    color: #ef4444;
+}
+
+/* Enhanced Filter Buttons */
+/* Enhanced Filter Buttons - Garuda Indonesia Theme */
+.enhanced-filter-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 12px 24px;
+    border: 2px solid #e5e7eb;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    background: #071063;
+    border-radius: 50px;
+    text-decoration: none;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    letter-spacing: 0.5px;
+}
+
+.enhanced-filter-btn::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+    );
+    transition: left 0.6s ease;
+}
+
+.enhanced-filter-btn:hover {
+    transform: translateY(-3px) scale(1.02);
+    border-color: transparent;
+}
+
+.enhanced-filter-btn:hover::before {
+    left: 100%;
+}
+
+/* Active state untuk All Products button */
+.enhanced-filter-btn.active:not([class*="category-btn"]) {
+    background: linear-gradient(135deg, #071063 0%, #071063 100%);
+    color: white;
+    border-color: #0324fc;
+    box-shadow: 0 6px 16px rgba(3, 36, 252, 0.4);
+}
+
+.enhanced-filter-btn.active:not([class*="category-btn"]):hover {
+    background: linear-gradient(135deg, #071063 0%, #071063 100%);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 20px rgba(3, 36, 252, 0.5);
+}
+
+/* Category buttons sudah menggunakan inline styles dari PHP */
+.enhanced-filter-btn svg {
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+.enhanced-filter-btn:hover svg {
+    transform: scale(1.1) rotate(5deg);
+}
+
+.enhanced-filter-btn.active svg {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+/* Filter container dengan Garuda theme */
+#filterTags {
+    animation: fadeInUp 0.8s ease-out;
+    padding: 20px 0;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Enhanced filter section background dengan aksen Garuda */
+.filter-section-bg {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
+    position: relative;
+    border-bottom: 3px solid transparent;
+    border-image: linear-gradient(90deg, #0324fc, #be123c, #0324fc) 1;
+}
+
+.filter-section-bg::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%230324fc' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")
+        repeat;
+    pointer-events: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .enhanced-filter-btn {
+        padding: 10px 18px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .enhanced-filter-btn svg {
+        width: 14px;
+        height: 14px;
+        margin-right: 6px;
+    }
+}
+
+/* Animasi tambahan untuk category buttons */
+.enhanced-filter-btn[class*="category-btn"] {
+    animation: slideInScale 0.6s ease-out forwards;
+    animation-delay: calc(var(--animation-order, 0) * 0.1s);
+}
+
+@keyframes slideInScale {
+    from {
+        opacity: 0;
+        transform: translateX(-20px) scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}

@@ -1,0 +1,315 @@
+/* Background image styling */
+.about-page {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* Optional: Overlay effect */
+.about-page::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+}
+
+.about-page > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* Main Swiper Customization */
+.aboutSwiper {
+    margin-top: 20px;
+    margin-bottom: 0;
+}
+
+.swiper-slide {
+    opacity: 1 !important;
+    transition: none !important;
+    height: auto;
+    min-height: 500px;
+    display: flex;
+    align-items: center;
+}
+
+/* Main Navigation Buttons */
+.main-next,
+.main-prev {
+    color: #000000 !important;
+    width: 50px !important;
+    height: 50px !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(10px) !important;
+    border-radius: 50% !important;
+    border: 1px solid rgba(94, 234, 212, 0.3) !important;
+    transition: all 0.3s ease !important;
+}
+
+.main-next::after,
+.main-prev::after {
+    font-size: 20px !important;
+    font-weight: bold !important;
+}
+
+.main-next:hover,
+.main-prev:hover {
+    background: rgba(94, 234, 212, 0.2) !important;
+    border-color: rgba(94, 234, 212, 0.6) !important;
+    transform: scale(1.1) !important;
+}
+
+/* Main Pagination */
+.main-pagination {
+    bottom: 10px !important;
+}
+
+.main-pagination .swiper-pagination-bullet {
+    background: rgba(94, 234, 212, 0.5) !important;
+    width: 12px !important;
+    height: 12px !important;
+    margin: 0 8px !important;
+    transition: all 0.3s ease !important;
+}
+
+.main-pagination .swiper-pagination-bullet-active {
+    background: #5eead4 !important;
+    transform: scale(1.3) !important;
+}
+
+/* ========== HORIZONTAL SCROLL STYLING ========== */
+/* Horizontal Scroll Container */
+.scroll-container {
+    position: relative;
+    width: 100%;
+}
+
+.horizontal-scroll {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 16px;
+
+    /* Webkit browsers (Chrome, Safari, Edge) */
+    -webkit-overflow-scrolling: touch;
+
+    /* Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: #3b82f6 #e5e7eb;
+
+    /* Force scrollbar to show */
+    scrollbar-width: auto;
+}
+
+/* Custom scrollbar untuk Webkit */
+.horizontal-scroll::-webkit-scrollbar {
+    height: 20px;
+    width: 20px;
+}
+
+.horizontal-scroll::-webkit-scrollbar-track {
+    background: rgba(241, 245, 249, 0.8);
+    border-radius: 6px;
+    margin: 0 10px;
+}
+
+.horizontal-scroll::-webkit-scrollbar-thumb {
+    background: #3b82f6;
+    border-radius: 6px;
+    transition: background 0.3s ease;
+    border: 2px solid rgba(241, 245, 249, 0.8);
+}
+
+.horizontal-scroll::-webkit-scrollbar-thumb:hover {
+    background: #1d4ed8;
+}
+
+/* Force scrollbar to always show on desktop */
+.horizontal-scroll::-webkit-scrollbar-track {
+    display: block !important;
+}
+
+.horizontal-scroll::-webkit-scrollbar-thumb {
+    display: block !important;
+}
+
+/* Container untuk card subsidiaries */
+.horizontal-scroll .flex {
+    display: flex;
+    gap: 24px;
+    min-width: max-content;
+    padding: 0 16px;
+    width: fit-content;
+}
+
+/* Subsidiary Card Styling */
+.subsidiary-card {
+    flex-shrink: 0;
+    width: 320px;
+    min-width: 320px;
+    transition: all 0.3s ease;
+    cursor: grab;
+}
+
+.subsidiary-card:active {
+    cursor: grabbing;
+}
+
+.subsidiary-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Active state untuk drag */
+.horizontal-scroll.active {
+    cursor: grabbing;
+    user-select: none;
+}
+
+.horizontal-scroll.active .subsidiary-card {
+    pointer-events: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .aboutSwiper {
+        padding: 0 20px 50px 20px;
+    }
+
+    .main-next,
+    .main-prev {
+        color: #000000 !important;
+        width: 50px !important;
+        height: 50px !important;
+        background: rgba(255, 255, 255, 0.1) !important;
+        backdrop-filter: blur(10px) !important;
+        border-radius: 50% !important;
+        border: 1px solid rgba(94, 234, 212, 0.3) !important;
+        transition: all 0.3s ease !important;
+    }
+
+    .main-next::after,
+    .main-prev::after {
+        font-size: 20px !important;
+        font-weight: bold !important;
+    }
+
+    .main-next:hover,
+    .main-prev:hover {
+        background: rgba(94, 234, 212, 0.2) !important;
+        border-color: rgba(94, 234, 212, 0.6) !important;
+        transform: scale(1.1) !important;
+    }
+
+    /* Mobile horizontal scroll */
+    .subsidiary-card {
+        width: 280px;
+        min-width: 280px;
+    }
+
+    .horizontal-scroll .flex {
+        gap: 16px;
+        padding: 0 12px;
+    }
+
+    /* Mobile scrollbar - lebih lebar dan berisi */
+    .horizontal-scroll::-webkit-scrollbar {
+        height: 16px !important; /* Lebih tinggi dari 8px */
+        width: 16px !important;
+    }
+
+    .horizontal-scroll::-webkit-scrollbar-track {
+        background: rgba(
+            59,
+            130,
+            246,
+            0.15
+        ) !important; /* Background lebih terlihat */
+        border-radius: 8px !important;
+        margin: 0 8px !important;
+        border: 1px solid rgba(59, 130, 246, 0.1) !important; /* Tambah border */
+    }
+
+    .horizontal-scroll::-webkit-scrollbar-thumb {
+        background: linear-gradient(
+            45deg,
+            #3b82f6,
+            #1d4ed8
+        ) !important; /* Gradient untuk lebih menarik */
+        border-radius: 8px !important;
+        border: 2px solid rgba(255, 255, 255, 0.3) !important;
+        min-width: 30px !important; /* Minimum width untuk thumb */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important; /* Shadow untuk depth */
+    }
+
+    .horizontal-scroll::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(45deg, #1d4ed8, #1e40af) !important;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    /* Tambahan: Corner untuk scrollbar */
+    .horizontal-scroll::-webkit-scrollbar-corner {
+        background: transparent;
+    }
+}
+
+/* ========== OTHER STYLING ========== */
+.image-smooth {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    image-rendering: high-quality;
+    image-rendering: smooth;
+    filter: blur(0.3px);
+    transform: translateZ(0); /* Trigger hardware acceleration */
+}
+
+@keyframes float {
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.animate-float {
+    animation: float 3s ease-in-out infinite;
+}
+
+/* Glass effect */
+.glass-effect {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Custom scrollbar for webkit browsers (Global) */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgb(51 65 85 / 0.3);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgb(100 116 139 / 0.6);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgb(100 116 139 / 0.8);
+}
+
+/* Smooth animations */
+* {
+    scroll-behavior: smooth;
+}
+
+/* Enhanced hover effects */
+.group:hover .group-hover\:scale-110 {
+    transform: scale(1.1);
+}

@@ -1,0 +1,40 @@
+{
+  "hash": "4934c8e7",
+  "configHash": "0e864c6c",
+  "lockfileHash": "cd1a1f43",
+  "browserHash": "0c3afee6",
+  "optimized": {
+    "alpinejs": {
+      "src": "../../node_modules/alpinejs/dist/module.esm.js",
+      "file": "alpinejs.js",
+      "fileHash": "586d8db6",
+      "needsInterop": false
+    },
+    "swiper": {
+      "src": "../../node_modules/swiper/swiper.mjs",
+      "file": "swiper.js",
+      "fileHash": "e0ba7039",
+      "needsInterop": false
+    },
+    "swiper/modules": {
+      "src": "../../node_modules/swiper/modules/index.mjs",
+      "file": "swiper_modules.js",
+      "fileHash": "9ea15cb6",
+      "needsInterop": false
+    },
+    "axios": {
+      "src": "../../node_modules/axios/index.js",
+      "file": "axios.js",
+      "fileHash": "2c43e51d",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "chunk-3BTRO73B": {
+      "file": "chunk-3BTRO73B.js"
+    },
+    "chunk-PZ5AY32C": {
+      "file": "chunk-PZ5AY32C.js"
+    }
+  }
+}

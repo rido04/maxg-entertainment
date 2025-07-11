@@ -1,0 +1,106 @@
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1e293b;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #475569;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #14b8a6;
+}
+
+/* Smooth transitions for all interactive elements */
+.artist-card {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.artist-card:hover {
+    transform: translateY(-4px);
+}
+
+/* Loading animation for images */
+.artist-card img {
+    transition: opacity 0.3s ease-in-out, transform 0.5s ease-in-out;
+}
+
+.artist-card img:not([src]) {
+    opacity: 0;
+}
+
+/* Fade in animation for pagination */
+nav a,
+nav span {
+    transition: all 0.2s ease-in-out;
+}
+
+/* Smooth page transitions */
+body {
+    transition: opacity 0.2s ease-in-out;
+}
+
+/* Enhanced focus states for accessibility */
+input:focus,
+select:focus,
+button:focus,
+a:focus {
+    outline: 2px solid #14b8a6;
+    outline-offset: 2px;
+}
+@keyframes float {
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.animate-float {
+    animation: float 3s ease-in-out infinite;
+}
+
+/* Glass effect */
+.glass-effect {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Custom scrollbar for webkit browsers */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgb(51 65 85 / 0.3);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgb(100 116 139 / 0.6);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgb(100 116 139 / 0.8);
+}
+
+/* Smooth animations */
+* {
+    scroll-behavior: smooth;
+}
+
+/* Enhanced hover effects */
+.group:hover .group-hover\:scale-110 {
+    transform: scale(1.1);
+}
