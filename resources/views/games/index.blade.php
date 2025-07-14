@@ -34,7 +34,6 @@
       <p class="text-gray-200 text-sm sm:text-base max-w-2xl mx-auto px-4">
         Mainkan MIni Games Seru selama perjalalananmu!
       </p>
-      <div class="w-12 sm:w-16 h-0.5 bg-blue-600 mx-auto mt-3 sm:mt-4"></div>
     </div>
   </div>
 
@@ -44,8 +43,7 @@
       <h2 class="text-xl sm:text-2xl font-bold text-gray-200 mb-4 sm:mb-6 flex items-center justify-center sm:justify-start">
         Featured Games
       </h2>
-
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+      <div class="grid grid-cols-2 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
         @foreach($games as $game)
           @if($game['status'] === 'active' && isset($game['featured']) && $game['featured'])
             <!-- Featured Game Card with Background Image -->
@@ -54,16 +52,16 @@
 
               <!-- Background Image with Fade Effect -->
               <div class="absolute inset-0 rounded-xl sm:rounded-2xl overflow-hidden">
-                <!-- Placeholder untuk background image - ganti dengan path gambar yang sesuai -->
-                <div class="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20 group-hover:opacity-30 transition-opacity duration-500"
-                     style="background-image: url('{{ asset('langit.jpg') }}');">
+                <!-- Background Image - hanya di setengah kanan -->
+                <div class="absolute right-0 top-0 w-1/2 h-full bg-cover bg-center bg-no-repeat opacity-80 group-hover:opacity-100 transition-opacity duration-500"
+                     style="background-image: url('{{ asset($game['background_image']) }}'); object-fit: contain;">
                 </div>
 
-                <!-- Overlay gradient untuk efek fade -->
-                <div class="absolute inset-0 bg-gradient-to-r from-white/80 via-white/60 to-white/40 group-hover:from-white/70 group-hover:via-white/50 group-hover:to-white/30 transition-all duration-500"></div>
+                <!-- Gradient overlay dari kiri ke kanan untuk efek fade -->
+                <div class="absolute inset-0 bg-gradient-to-r from-white via-white/70 to-white/30 group-hover:from-white/95 group-hover:via-white/60 group-hover:to-white/20 transition-all duration-500"></div>
 
-                <!-- Additional fade effect from bottom -->
-                <div class="absolute inset-0 bg-gradient-to-t from-white/90 via-transparent to-transparent group-hover:from-white/80 transition-all duration-500"></div>
+                <!-- Additional subtle gradient dari kiri -->
+                <div class="absolute inset-0 bg-gradient-to-r from-white/90 via-transparent to-transparent"></div>
               </div>
 
               <!-- Featured Badge -->

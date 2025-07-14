@@ -46,7 +46,7 @@
                     <input type="text" name="q" placeholder="Search for songs..."
                            class="w-full px-4 py-3 bg-white text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm md:text-base"
                            onfocus="this.setAttribute('readonly', false);">
-                    <button type="submit" class="px-3 md:px-4 py-3 bg-teal-600 hover:bg-blue-500 text-white rounded-r-xl transition-all duration-300">
+                    <button type="submit" class="px-3 md:px-4 py-3 bg-teal-600 hover:bg-amber-500 text-white rounded-r-xl transition-all duration-300">
                         <svg class="w-4 md:w-5 h-4 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                         </svg>

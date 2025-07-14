@@ -6,36 +6,32 @@
 <div class="fixed inset-0 bg-gradient-to-br from-slate-900/25 via-blue-900/15 to-slate-800/25 overflow-hidden">
     <!-- Airplane background -->
     <div class="absolute inset-0">
-        <video autoplay muted playsinline class="w-full h-full object-cover">
-            <source src="{{asset('video/Background_MaxG.mp4')}}" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
+        <img src="{{ asset('images/background/Background_Color.png') }}" alt="bg maxg" class="w-full h-full object-cover">
     </div>
     <!-- Overlay gradient -->
-    <div class="absolute inset-0 bg-gradient-to-r"></div>
 </div>
 
 <!-- Header -->
 <header class="relative z-20 flex flex-col sm:flex-row justify-between items-center px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-    <!-- Logo Garuda -->
-    <div class="flex items-center -ml-14 space-x-3 mb-4 sm:mb-0">
-        <div class="w-72 sm:w-96 lg:w-[500px] h-12 sm:h-16 lg:h-20 flex items-center justify-center sm:px-3 py-1">
+    <!-- Logo MaxG -->
+    <div class="flex items-center space-x-3 mb-4 sm:mb-0">
+        <div class="w-60 sm:w-96 lg:w-60 h-12 sm:h-16 lg:h-20 flex items-center justify-center sm:px-3 py-1">
             <img src="{{ asset('images/logo/Maxg-ent_white.gif') }}" alt="MaxG Entertainment Hub" class="w-full h-full object-contain">
         </div>
     </div>
 
     <!-- Top navigation icons -->
     <div class="flex items-center space-x-4">
-        <div class="w-36 sm:w-48 lg:w-60 h-12 sm:h-16 lg:h-20 text-sm px-2 sm:px-3 py-1">
+        <div class="w-60 sm:w-48 lg:w-60 h-12 sm:h-16 lg:h-20 text-sm px-2 sm:px-3 py-1">
             <img src="{{ asset('images/logo/mcm x grab_.png') }}" alt="grab dan mcm logo" class="w-full h-full object-contain">
         </div>
     </div>
 </header>
 
 <!-- Main Content -->
-<div class="relative z-10 min-h-screen flex flex-col lg:flex-row">
+<div class="relative z-10 min-h-screen flex flex-col lg:flex-row md-flex-row sm:flex-row xl:flex-row">
     <!-- Left Section - Welcome -->
-    <div class="flex-1 flex flex-col justify-center px-4 sm:px-6 lg:px-12 py-8 sm:py-12 lg:py-20 -mt-8 sm:-mt-16 lg:-mt-32">
+    <div class="flex-1 flex flex-col justify-center px-4 sm:px-6 lg:px-12 py-8 sm:py-8 lg:py-20 -mt-8 sm:-mt-16 lg:-mt-32">
         <div class="max-w-xl fade-in text-center lg:text-left">
             <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-medium text-white mb-4 sm:mb-6 leading-tight">
                 Welcome to
@@ -53,13 +49,13 @@
     </div>
 
     <!-- Right Section - Flight Info -->
-    {{-- <div class="w-full lg:w-1/2 flex flex-col justify-center px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-20 -mt-8 sm:-mt-16 lg:-mt-0 mr-48">
-        <div class="flex justify-center lg:justify-start">
-            <img src="{{ asset('images/background/Car.png') }}"
+    <div class="w-full flex flex-col justify-center px-4 lg:px-8 py-8 lg:py-8 -mt-8 lg:-mt-0 mr-44">
+        <div class="flex justify-center">
+            <img src="{{ asset('images/background/Grabcar_MasAdam.gif') }}"
                  alt="Mobil Grab"
-                 class="w-64 sm:w-80 md:w-96 lg:w-full h-auto max-w-md lg:max-w-none lg:-mt-44 lg:-ml-12 animate-fly-in">
+                 class="xl:w-1/2 lg:w-full md:w-full sm:w-full h-auto max-w-none -mt-44 -mr-52 xl:-mr-96 animate-fly-in">
         </div>
-    </div> --}}
+    </div>
 </div>
 
 <!-- Current Time Display -->
@@ -208,8 +204,23 @@
     }
 
     .fade-in {
-        animation: fadeIn 1.2s ease-out;
+    animation: fadeInUpDown 2s ease-out;
     }
+
+    @keyframes fadeInUpDown {
+    0% {
+        opacity: 0;
+        transform: translateY(0px);
+    }
+    50% {
+        opacity: 0.5;
+        transform: translateY(30px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0px);
+    }
+}
 
     .slide-up {
         animation: slideUp 1s ease-out 0.3s both;
@@ -217,25 +228,33 @@
 
     @keyframes fly-in {
         0% {
-            transform: translateX(-100px) translateY(20px) rotate(-5deg);
-            opacity: 0;
-        }
-        100% {
-            transform: translateX(0) translateY(0) rotate(0deg);
-            opacity: 1;
-        }
+        opacity: 0;
+        transform: translateY(0px);
+    }
+    50% {
+        opacity: 0.5;
+        transform: translateY(30px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0px);
+    }
     }
 
     /* Responsive fly-in animation */
     @media (max-width: 768px) {
         @keyframes fly-in {
             0% {
-                transform: translateX(-50px) translateY(20px) rotate(-3deg);
-                opacity: 0;
+        opacity: 0;
+        transform: translateY(0px);
+            }
+            50% {
+                opacity: 0.5;
+                transform: translateY(30px);
             }
             100% {
-                transform: translateX(0) translateY(0) rotate(0deg);
                 opacity: 1;
+                transform: translateY(0px);
             }
         }
     }

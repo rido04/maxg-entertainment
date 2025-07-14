@@ -40,7 +40,7 @@ class VideoController extends Controller
         $category = $request->input('category');
 
         $query = Media::where('type', 'video')
-                     ->where('is_adult_content', false); // Filter adult content
+                    ->where('is_adult_content', false); // Filter adult content
 
         if ($category) {
             $query->where('category', 'LIKE', '%' . $category . '%');
@@ -48,7 +48,21 @@ class VideoController extends Controller
 
         $videos = $query->get();
 
-        return view('videos.index', compact('videos', 'category'));
+        // Ambil semua kategori unik dari database
+        $categories = Media::where('type', 'video')
+                        ->where('is_adult_content', false)
+                        ->whereNotNull('category')
+                        ->where('category', '!=', '')
+                        ->get()
+                        ->pluck('category')
+                        ->flatMap(function ($category) {
+                            return explode(', ', $category);
+                        })
+                        ->unique()
+                        ->sort()
+                        ->values();
+
+        return view('videos.index', compact('videos', 'category', 'categories'));
     }
 
     public function show(Media $video)

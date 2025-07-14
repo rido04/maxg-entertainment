@@ -21,7 +21,7 @@
   </div>
 
   <!-- Main Content - Enhanced responsive layout -->
-  <div class="relative z-10 flex-1 flex flex-col lg:flex-row pt-12 sm:pt-16 md:pt-20 pb-6 sm:pb-8 md:pb-12 lg:pb-20">
+  <div class="relative z-10 flex-1 flex flex-row lg:flex-row pt-12 sm:pt-16 md:pt-20 pb-6 sm:pb-8 md:pb-12 lg:pb-20">
 
     <!-- Poster Section - Improved responsive behavior -->
     <div class="w-full lg:w-2/5 xl:w-1/3 p-3 sm:p-4 md:p-6 lg:p-8 order-2 lg:order-1">
@@ -56,20 +56,35 @@
         </h1>
 
         <!-- Rating and Info Tags - Enhanced responsive layout -->
-        <div class="flex items-center justify-center lg:justify-start gap-1.5 sm:gap-2 md:gap-3 mb-4 sm:mb-5 md:mb-6 flex-wrap">
-          <span class="px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs sm:text-sm font-bold rounded-full shadow-lg hover:shadow-amber-500/25 transition-all duration-300 hover:scale-105">
-            {{ $video->rating ?? 'N/A' }}/10
-          </span>
-          <span class="px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 bg-gray-800/90 backdrop-blur-sm border border-gray-600/50 text-gray-100 text-xs sm:text-sm rounded-full hover:bg-gray-700/90 transition-all duration-300">
-            {{ $video->release_date ? \Carbon\Carbon::parse($video->release_date)->format('Y') : 'N/A' }}
-          </span>
-          <span class="px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 bg-gradient-to-r from-teal-600 to-teal-700 text-white text-xs sm:text-sm rounded-full shadow-lg hover:shadow-teal-500/25 transition-all duration-300 hover:scale-105">
-            {{ $video->duration ?? 'N/A' }} Min
-          </span>
-          <span class="px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs sm:text-sm font-bold rounded-full shadow-lg hover:shadow-blue-500/25 transition-all duration-300 hover:scale-105">
-            {{ ucfirst($video->category ?? 'N/A') }}
-          </span>
-        </div>
+        <div class="flex flex-row justify-center lg:justify-between gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-5 md:mb-6 flex-wrap bg-gradient-to-r from-green-500 to-green-600 rounded-2xl py-4 px-6 shadow-lg">
+            <div class="flex items-center gap-1 px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 md:py-3 bg-white/20 backdrop-blur-sm text-white text-xs sm:text-sm font-bold rounded-xl transition-all duration-300 hover:scale-105 hover:bg-white/30">
+              <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+              </svg>
+              {{ $video->rating ?? 'N/A' }}/10
+            </div>
+            
+            <div class="flex items-center gap-1 px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 md:py-3 bg-white/20 backdrop-blur-sm text-white text-xs sm:text-sm font-bold rounded-xl transition-all duration-300 hover:scale-105 hover:bg-white/30">
+              <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+              </svg>
+              {{ $video->release_date ? \Carbon\Carbon::parse($video->release_date)->format('Y') : 'N/A' }}
+            </div>
+            
+            <div class="flex items-center gap-1 px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 md:py-3 bg-white/20 backdrop-blur-sm text-white text-xs sm:text-sm font-bold rounded-xl transition-all duration-300 hover:scale-105 hover:bg-white/30">
+              <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>
+              </svg>
+              {{ $video->duration ?? 'N/A' }} Min
+            </div>
+            
+            <div class="flex items-center gap-1 px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 md:py-3 bg-white/20 backdrop-blur-sm text-white text-xs sm:text-sm font-bold rounded-xl transition-all duration-300 hover:scale-105 hover:bg-white/30">
+              <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
+              </svg>
+              {{ ucfirst($video->category ?? 'N/A') }}
+            </div>
+          </div>
 
         <!-- Description Box - Enhanced design -->
         <div class="bg-white/95 backdrop-blur-md border border-gray-300/50 rounded-xl md:rounded-2xl p-3 sm:p-4 md:p-5 lg:p-6 mb-4 sm:mb-5 md:mb-6 lg:mb-8 shadow-xl hover:shadow-2xl transition-all duration-300">

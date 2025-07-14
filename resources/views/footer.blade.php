@@ -7,21 +7,21 @@
     <!-- Footer Content -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <!-- Logo Section -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-center mb-6 sm:mb-8">
+        <div class="grid grid-cols-2 lg:grid-cols-2 gap-6 lg:gap-8 items-center mb-6 sm:mb-8">
             <!-- Left Logo - Garuda Indonesia -->
-            <div class="flex justify-center lg:justify-start items-center">
-                <div class="logo-container flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-2 sm:gap-3 lg:ml-8">
+            <div class="flex justify-start lg:justify-start items-start order-first">
+                <div class="logo-container flex flex-col sm:flex-col items-start justify-start lg:justify-start gap-2 sm:gap-2 lg:ml-8">
                     <img src="{{ asset('images/logo/mcm x grab_.png') }}" alt="Grab Indonesia"
                          class="h-12 w-auto object-contain filter brightness-110">
                 </div>
             </div>
 
             <!-- Right Text - Developer Info -->
-            <div class="flex flex-col justify-center items-center lg:items-end text-center lg:text-right order-first lg:order-last lg:mr-8">
-                <p class="text-xs font-sans sm:text-sm text-gray-200 font-medium tracking-wider uppercase mb-1 sm:mb-2">
+            <div class="flex flex-col justify-center items-ends lg:items-end text-right lg:text-right  lg:order-last lg:mr-8">
+                <p class="text-xs font-arial sm:text-sm text-gray-200 font-medium tracking-wider mb-1 sm:mb-2">
                     Developed & Maintained by
                 </p>
-                <h3 class="text-sm sm:text-base font-medium">
+                <h3 class="text-sm sm:text-base font-medium font-arial">
                     Grab Indonesia | MCMMedia Networks
                 </h3>
             </div>

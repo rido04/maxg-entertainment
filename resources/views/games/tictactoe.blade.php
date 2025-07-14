@@ -25,304 +25,352 @@
         src: url("../fonts/Orbitron-Black.woff2") format("woff2"),
             url("../fonts/Orbitron-Black.ttf") format("truetype");
     }
-  .game-container {
-    font-family: 'Orbitron', monospace;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: 100vh;
-    padding: 2rem;
-  }
 
-  .game-card {
-    backdrop-filter: blur(15px);
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-    border-radius: 20px;
-  }
-
-  .cell {
-    background: linear-gradient(145deg, #2a2a40, #1a1a30);
-    border: 2px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border-radius: 12px;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .cell:hover {
-    background: linear-gradient(145deg, #3a3a50, #2a2a40);
-    border-color: rgba(255, 255, 255, 0.3);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-  }
-
-  .cell::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-    transform: translateX(-100%);
-    transition: transform 0.6s;
-  }
-
-  .cell:hover::before {
-    transform: translateX(100%);
-  }
-
-  .cell-content {
-    font-size: 3rem;
-    font-weight: 900;
-    text-shadow: 0 0 20px currentColor;
-    animation: fadeInScale 0.3s ease-out;
-  }
-
-  .cell-x {
-    color: #ff6b6b;
-    text-shadow: 0 0 20px #ff6b6b;
-  }
-
-  .cell-o {
-    color: #4ecdc4;
-    text-shadow: 0 0 20px #4ecdc4;
-  }
-
-  .winning-cell {
-    background: linear-gradient(145deg, #ffd93d, #ff6b6b) !important;
-    animation: winPulse 1s infinite alternate;
-  }
-
-  .winning-cell .cell-content {
-    color: #2a2a40 !important;
-    text-shadow: none !important;
-  }
-
-  .game-button {
-    background: linear-gradient(145deg, #667eea, #764ba2);
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .game-button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  }
-
-  .game-button::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transform: translateX(-100%);
-    transition: transform 0.6s;
-  }
-
-  .game-button:hover::before {
-    transform: translateX(100%);
-  }
-
-  .status-text {
-    background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96c93d);
-    background-size: 300% 300%;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    animation: gradientShift 3s ease infinite;
-  }
-
-  .difficulty-selector {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 12px;
-    padding: 1rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .difficulty-btn {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    transition: all 0.3s ease;
-  }
-
-  .difficulty-btn.active {
-    background: linear-gradient(145deg, #667eea, #764ba2);
-    border-color: rgba(255, 255, 255, 0.4);
-  }
-
-  @keyframes fadeInScale {
-    from {
-      opacity: 0;
-      transform: scale(0.5);
+    .game-container {
+        font-family: 'Orbitron', monospace;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 1rem;
     }
-    to {
-      opacity: 1;
-      transform: scale(1);
+
+    .game-card {
+        backdrop-filter: blur(15px);
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        border-radius: 20px;
     }
-  }
 
-  @keyframes winPulse {
-    from {
-      transform: scale(1);
-      box-shadow: 0 0 20px rgba(255, 215, 61, 0.5);
+    .cell {
+        background: linear-gradient(145deg, #2a2a40, #1a1a30);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 12px;
+        position: relative;
+        overflow: hidden;
     }
-    to {
-      transform: scale(1.05);
-      box-shadow: 0 0 30px rgba(255, 215, 61, 0.8);
+
+    .cell:hover {
+        background: linear-gradient(145deg, #3a3a50, #2a2a40);
+        border-color: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
     }
-  }
 
-  @keyframes gradientShift {
-    0% {
-      background-position: 0% 50%;
+    .cell::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        transform: translateX(-100%);
+        transition: transform 0.6s;
     }
-    50% {
-      background-position: 100% 50%;
+
+    .cell:hover::before {
+        transform: translateX(100%);
     }
-    100% {
-      background-position: 0% 50%;
+
+    .cell-content {
+        font-size: 3rem;
+        font-weight: 900;
+        text-shadow: 0 0 20px currentColor;
+        animation: fadeInScale 0.3s ease-out;
     }
-  }
 
-  .game-grid {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 16px;
-    padding: 1rem;
-    border: 2px solid rgba(255, 255, 255, 0.1);
-  }
+    .cell-x {
+        color: #ff6b6b;
+        text-shadow: 0 0 20px #ff6b6b;
+    }
 
-  .score-board {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 12px;
-    padding: 1rem;
-    margin-bottom: 1.5rem;
-  }
-  @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
-  }
+    .cell-o {
+        color: #4ecdc4;
+        text-shadow: 0 0 20px #4ecdc4;
+    }
 
-  .animate-float {
-    animation: float 3s ease-in-out infinite;
-  }
+    .winning-cell {
+        background: linear-gradient(145deg, #ffd93d, #ff6b6b) !important;
+        animation: winPulse 1s infinite alternate;
+    }
 
-  /* Glass effect */
-  .glass-effect {
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  }
+    .winning-cell .cell-content {
+        color: #2a2a40 !important;
+        text-shadow: none !important;
+    }
 
-  /* Custom scrollbar for webkit browsers */
-  ::-webkit-scrollbar {
-    width: 8px;
-  }
+    .game-button {
+        background: linear-gradient(145deg, #667eea, #764ba2);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
 
-  ::-webkit-scrollbar-track {
-    background: rgb(51 65 85 / 0.3);
-    border-radius: 4px;
-  }
+    .game-button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
 
-  ::-webkit-scrollbar-thumb {
-    background: rgb(100 116 139 / 0.6);
-    border-radius: 4px;
-  }
+    .game-button::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transform: translateX(-100%);
+        transition: transform 0.6s;
+    }
 
-  ::-webkit-scrollbar-thumb:hover {
-    background: rgb(100 116 139 / 0.8);
-  }
+    .game-button:hover::before {
+        transform: translateX(100%);
+    }
 
-  /* Smooth animations */
-  * {
-    scroll-behavior: smooth;
-  }
+    .status-text {
+        background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96c93d);
+        background-size: 300% 300%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: gradientShift 3s ease infinite;
+    }
 
-  /* Enhanced hover effects */
-  .group:hover .group-hover\:scale-110 {
-    transform: scale(1.1);
-  }
+    .difficulty-selector {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .difficulty-btn {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .difficulty-btn.active {
+        background: linear-gradient(145deg, #667eea, #764ba2);
+        border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    @keyframes fadeInScale {
+        from {
+            opacity: 0;
+            transform: scale(0.5);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    @keyframes winPulse {
+        from {
+            transform: scale(1);
+            box-shadow: 0 0 20px rgba(255, 215, 61, 0.5);
+        }
+        to {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(255, 215, 61, 0.8);
+        }
+    }
+
+    @keyframes gradientShift {
+        0% {
+            background-position: 0% 50%;
+        }
+        50% {
+            background-position: 100% 50%;
+        }
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+
+    .game-grid {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 16px;
+        padding: 1rem;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .score-board {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
+
+    .animate-float {
+        animation: float 3s ease-in-out infinite;
+    }
+
+    .glass-effect {
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: rgb(51 65 85 / 0.3);
+        border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: rgb(100 116 139 / 0.6);
+        border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: rgb(100 116 139 / 0.8);
+    }
+
+    * {
+        scroll-behavior: smooth;
+    }
+
+    .group:hover .group-hover\:scale-110 {
+        transform: scale(1.1);
+    }
+
+    /* Landscape optimizations */
+    @media (min-aspect-ratio: 3/2) {
+        .landscape-container {
+            display: flex;
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            align-items: flex-start;
+        }
+
+        .left-panel {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .right-panel {
+            flex: 1;
+            min-width: 400px;
+        }
+
+        .game-grid {
+            max-width: 350px;
+        }
+
+        #game {
+            width: 350px !important;
+            height: 350px !important;
+        }
+    }
+
+    @media (max-aspect-ratio: 3/2) {
+        .landscape-container {
+            display: flex;
+            flex-direction: column;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+    }
 </style>
 
-<div class="game-container flex flex-col items-center">
-    <div class="game-card p-8 max-w-md w-full">
-      <!-- Back Button -->
-      <div class="mb-4">
-        <button onclick="history.back()" class="game-button px-4 py-2 rounded-lg text-white font-bold flex items-center gap-2 text-sm">
-          ⬅️ Back
-        </button>
-      </div>
-
-      <h1 class="text-4xl font-black mb-6 text-center text-white">
-        🎮 <span class="status-text">Tic Tac Toe</span>
-      </h1>
-
-    <!-- Score Board -->
-    <div class="score-board text-center">
-      <h3 class="text-white text-lg font-bold mb-2">Score Board</h3>
-      <div class="flex justify-between text-white">
-        <div>
-          <span class="cell-x">Player X:</span>
-          <span id="scoreX" class="font-bold">0</span>
+<div class="game-container">
+    <div class="game-card p-6">
+        <!-- Back Button -->
+        <div class="mb-4">
+            <button onclick="history.back()" class="game-button px-4 py-2 rounded-lg text-white font-bold flex items-center gap-2 text-sm">
+                Back
+            </button>
         </div>
-        <div>
-          <span class="cell-o">Player O:</span>
-          <span id="scoreO" class="font-bold">0</span>
+
+        <!-- Main Title -->
+        <h1 class="text-4xl font-black mb-6 text-center text-white">
+            <span class="status-text">Tic Tac Toe</span>
+        </h1>
+
+        <!-- Landscape Container -->
+        <div class="landscape-container">
+            <!-- Left Panel: Controls and Info -->
+            <div class="left-panel">
+                <!-- Score Board -->
+                <div class="score-board text-center">
+                    <h3 class="text-white text-lg font-bold mb-2">Score Board</h3>
+                    <div class="flex justify-between text-white">
+                        <div>
+                            <span class="cell-x">Player X:</span>
+                            <span id="scoreX" class="font-bold">0</span>
+                        </div>
+                        <div>
+                            <span class="cell-o">Player O:</span>
+                            <span id="scoreO" class="font-bold">0</span>
+                        </div>
+                        <div>
+                            <span class="text-yellow-400">Draws:</span>
+                            <span id="scoreDraw" class="font-bold">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Difficulty Selector -->
+                <div class="difficulty-selector hidden" id="difficultySelector">
+                    <h3 class="text-white text-lg font-bold mb-3 text-center">Select Difficulty</h3>
+                    <div class="flex gap-2 justify-center">
+                        <button onclick="setDifficulty('easy')" class="difficulty-btn px-3 py-2 rounded text-white text-sm" data-difficulty="easy">Easy</button>
+                        <button onclick="setDifficulty('medium')" class="difficulty-btn active px-3 py-2 rounded text-white text-sm" data-difficulty="medium">Medium</button>
+                        <button onclick="setDifficulty('hard')" class="difficulty-btn px-3 py-2 rounded text-white text-sm" data-difficulty="hard">Hard</button>
+                    </div>
+                </div>
+
+                <!-- Game Mode Buttons -->
+                <div class="mb-6 flex flex-col gap-4">
+                    <button onclick="startGame('human')" class="game-button px-6 py-3 rounded-lg text-white font-bold">
+                        Play with Friend
+                    </button>
+                    <button onclick="startGame('bot')" class="game-button px-6 py-3 rounded-lg text-white font-bold">
+                        Play vs Computer
+                    </button>
+                </div>
+
+                <!-- Control Buttons -->
+                <div class="flex flex-col gap-3">
+                    <button onclick="resetGame()" class="game-button px-6 py-2 rounded-lg text-white font-bold hidden" id="resetBtn">
+                        Play Again
+                    </button>
+                    <button onclick="resetScore()" class="game-button px-6 py-2 rounded-lg text-white font-bold hidden" id="resetScoreBtn">
+                        Reset Score
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Panel: Game Board and Status -->
+            <div class="right-panel">
+                <!-- Status -->
+                <div id="status" class="mb-6 text-white text-xl font-bold text-center">
+                    Choose a game mode to start playing
+                </div>
+
+                <!-- Game Board -->
+                <div class="game-grid hidden flex justify-center" id="gameContainer">
+                    <div id="game" class="grid grid-cols-3 gap-3 w-[300px] h-[300px]">
+                        @for ($i = 0; $i < 9; $i++)
+                            <div class="cell text-white flex items-center justify-center cursor-pointer" data-index="{{ $i }}">
+                                <span class="cell-content"></span>
+                            </div>
+                        @endfor
+                    </div>
+                </div>
+            </div>
         </div>
-        <div>
-          <span class="text-yellow-400">Draws:</span>
-          <span id="scoreDraw" class="font-bold">0</span>
-        </div>
-      </div>
     </div>
-
-    <!-- Difficulty Selector -->
-    <div class="difficulty-selector hidden" id="difficultySelector">
-      <h3 class="text-white text-lg font-bold mb-3 text-center">Select Difficulty</h3>
-      <div class="flex gap-2 justify-center">
-        <button onclick="setDifficulty('easy')" class="difficulty-btn px-3 py-2 rounded text-white text-sm" data-difficulty="easy">Easy</button>
-        <button onclick="setDifficulty('medium')" class="difficulty-btn active px-3 py-2 rounded text-white text-sm" data-difficulty="medium">Medium</button>
-        <button onclick="setDifficulty('hard')" class="difficulty-btn px-3 py-2 rounded text-white text-sm" data-difficulty="hard">Hard</button>
-      </div>
-    </div>
-
-    <!-- Game Mode Buttons -->
-    <div class="mb-6 flex gap-4 justify-center">
-      <button onclick="startGame('human')" class="game-button px-6 py-3 rounded-lg text-white font-bold">
-        👥 Play with Friend
-      </button>
-      <button onclick="startGame('bot')" class="game-button px-6 py-3 rounded-lg text-white font-bold">
-        🤖 Play vs Computer
-      </button>
-    </div>
-
-    <!-- Game Board -->
-    <div class="game-grid hidden" id="gameContainer">
-      <div id="game" class="grid grid-cols-3 gap-3 w-[300px] h-[300px] mx-auto">
-        @for ($i = 0; $i < 9; $i++)
-          <div class="cell text-white flex items-center justify-center cursor-pointer" data-index="{{ $i }}">
-            <span class="cell-content"></span>
-          </div>
-        @endfor
-      </div>
-    </div>
-
-    <!-- Status and Reset -->
-    <div id="status" class="mt-6 text-white text-xl font-bold text-center">
-      Choose a game mode above
-    </div>
-
-    <div class="flex gap-4 justify-center mt-4">
-      <button onclick="resetGame()" class="game-button px-6 py-2 rounded-lg text-white font-bold hidden" id="resetBtn">
-        🔄 Play Again
-      </button>
-      <button onclick="resetScore()" class="game-button px-6 py-2 rounded-lg text-white font-bold hidden" id="resetScoreBtn">
-        📊 Reset Score
-      </button>
-    </div>
-  </div>
 </div>
 
 <script>

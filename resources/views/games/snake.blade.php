@@ -31,7 +31,7 @@
         <!-- Canvas Area -->
         <div class="lg:col-span-3">
             <div class="relative bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-4 shadow-2xl">
-                <canvas id="gameCanvas" class="w-full border-2 border-gray-700 rounded-lg bg-gray-900" width="400" height="400"></canvas>
+                <canvas id="gameCanvas" class="w-full border-2 border-gray-700 rounded-lg bg-gray-900" width="400" height="300"></canvas>
 
                 <!-- Game Status Overlay -->
                 <div id="gameStatus" class="absolute top-4 right-4 bg-black/70 text-white px-3 py-1 rounded-full text-sm font-medium">

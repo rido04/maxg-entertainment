@@ -47,7 +47,7 @@
                     class="w-full px-4 py-2.5 md:py-3 bg-white border border-gray-300 rounded-3xl text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 shadow-sm text-sm md:text-base"
                     value="{{ old('q') }}"
                     onfocus="this.setAttribute('readonly', false);">
-                <button type="submit" class="absolute right-3 top-1/2 transform -translate-y-1/2 p-2 text-blue-500 hover:text-blue-600 transition-colors duration-300">
+                <button type="submit" class="absolute right-3 top-1/2 transform -translate-y-1/2 p-2 text-green-500 hover:text-green-600 transition-colors duration-300">
                     <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                     </svg>
@@ -63,16 +63,11 @@
                     <label class="text-xs font-medium text-gray-200 uppercase tracking-wider">Genre</label>
                     <select name="category" class="px-3 md:px-4 py-2.5 md:py-3 bg-white/50 border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:bg-gray-50 min-w-[120px] md:min-w-[150px] shadow-sm text-sm">
                         <option value="">Semua Genre's</option>
-                        <option value="Action" {{ request('category') == 'Action' ? 'selected' : '' }}>Action</option>
-                        <option value="Drama" {{ request('category') == 'Drama' ? 'selected' : '' }}>Drama</option>
-                        <option value="Adventure" {{ request('category') == 'Adventure' ? 'selected' : '' }}>Adventure</option>
-                        <option value="Comedy" {{ request('category') == 'Comedy' ? 'selected' : '' }}>Comedy</option>
-                        <option value="Horror" {{ request('category') == 'Horror' ? 'selected' : '' }}>Horror</option>
-                        <option value="Romance" {{ request('category') == 'Romance' ? 'selected' : '' }}>Romance</option>
-                        <option value="Thriller" {{ request('category') == 'Thriller' ? 'selected' : '' }}>Thriller</option>
-                        <option value="Sci-Fi" {{ request('category') == 'Sci-Fi' ? 'selected' : '' }}>Sci-Fi</option>
-                        <option value="Fantasy" {{ request('category') == 'Fantasy' ? 'selected' : '' }}>Fantasy</option>
-                        <option value="Documentary" {{ request('category') == 'Documentary' ? 'selected' : '' }}>Documentary</option>
+                        @foreach($categories as $cat)
+                            <option value="{{ $cat }}" {{ request('category') == $cat ? 'selected' : '' }}>
+                                {{ $cat }}
+                            </option>
+                        @endforeach
                     </select>
                 </div>
 
@@ -127,8 +122,8 @@
     @endif
 
     <!-- Browse All Movies Section -->
-    <div class="px-4 md:px-8 py-4 mx-4 md:mx-8 lg:mx-14">
-        <h2 class="text-lg md:text-xl font-bold text-gray-200 mb-4 md:mb-6 flex items-center">
+    <div class="px-4 md:px-8 mx-4 md:mx-8 lg:mx-14">
+        <h2 class="text-lg md:text-xl font-bold text-gray-200 flex items-center">
             <span class="w-1 h-5 md:h-6 bg-gradient-to-b from-blue-500 to-blue-600 rounded-full mr-3"></span>
             List semua film
         </h2>
@@ -193,9 +188,6 @@
                                 <div class="flex items-center gap-2 mb-1">
                                     <span class="text-xs text-gray-600 group-hover:text-gray-200 uppercase font-medium">
                                         {{ ucfirst($video->category ?? 'Entertainment') }}
-                                    </span>
-                                    <span class="px-2 py-0.5 bg-gray-100 group-hover:bg-white/20 text-xs font-medium rounded text-gray-700 group-hover:text-white">
-                                        HD
                                     </span>
                                 </div>
 

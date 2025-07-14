@@ -13,8 +13,9 @@ class GameController extends Controller
             [
                 'name' => 'Tic Tac Toe',
                 'route' => 'games.tictactoe',
+                'background_image' => 'images/background/bg-tixtactoe.png',
                 'icon' => '❌⭕',
-                'description' => 'Classic X and O game that never gets boring',
+                'description' => 'Game klasik X and O',
                 'colors' => [
                     'hover_from' => 'blue-800',
                     'hover_to' => 'blue-900',
@@ -27,10 +28,12 @@ class GameController extends Controller
                     'corner' => 'blue-500'
                 ],
                 'status' => 'active'
+                // featured akan diset random nanti
             ],
             [
                 'name' => 'Snake Game',
                 'route' => 'games.snake',
+                'background_image' => 'images/background/bg-snake-game.png',
                 'icon' => '🐍',
                 'description' => 'Collect food and don\'t hit the walls!',
                 'colors' => [
@@ -44,13 +47,15 @@ class GameController extends Controller
                     'text_hover' => 'green-300',
                     'corner' => 'green-500'
                 ],
-                'status' => 'active',
+                'status' => 'coming_soon'
+                // featured akan diset random nanti
             ],
             [
                 'name' => 'Tetris Game',
                 'route' => 'games.tetris',
+                'background_image' => 'images/background/bg-tetris.png', // Fixed typo
                 'icon' => '📱',
-                'description' => 'Drop blocks evenly and get the highest score!',
+                'description' => 'Jatuhkan balok dengan rapi dan dapatkan skor tertinggi!',
                 'colors' => [
                     'hover_from' => 'purple-800',
                     'hover_to' => 'purple-900',
@@ -63,10 +68,12 @@ class GameController extends Controller
                     'corner' => 'purple-500'
                 ],
                 'status' => 'active'
+                // featured akan diset random nanti
             ],
             [
                 'name' => 'Dino Game',
                 'route' => 'games.dino',
+                'background_image' => 'images/background/bg-dino-game.png', // Fixed field name
                 'icon' => '🦖',
                 'description' => 'Play the world\'s most popular jumping dino game!',
                 'colors' => [
@@ -81,11 +88,12 @@ class GameController extends Controller
                     'corner' => 'orange-500'
                 ],
                 'status' => 'active',
-                'featured' => true
+                // featured akan diset random nanti
             ],
             [
                 'name' => 'Puzzle Game',
                 'route' => null,
+                'background_image' => 'images/background/bg-puzzle-game.png', // Fixed field name
                 'icon' => '🧩',
                 'description' => 'Sharpen your mind with challenging puzzles',
                 'colors' => [
@@ -104,6 +112,7 @@ class GameController extends Controller
             [
                 'name' => 'Memory Game',
                 'route' => null,
+                'background_image' => 'images/background/bg-memory-game.png', // Changed from external URL
                 'icon' => '🧠',
                 'description' => 'Test your memory with card matching games',
                 'colors' => [
@@ -122,6 +131,7 @@ class GameController extends Controller
             [
                 'name' => 'Floppy Bird',
                 'route' =>  'games.floppybird',
+                'background_image' => 'images/background/bg-flappy-bird.png', // Fixed field name
                 'icon' => '🐦',
                 'description' => 'Classic flappy bird game with addictive gameplay',
                 'colors' => [
@@ -135,12 +145,13 @@ class GameController extends Controller
                     'text_hover' => 'sky-300',
                     'corner' => 'sky-500'
                 ],
-                'status' => 'active',
-                'featured' => true
+                'status' => 'active'
+                // featured akan diset random nanti
             ],
             [
                 'name' => 'Candy Crush',
                 'route' =>  'games.candycrush',
+                'background_image' => 'images/background/bg-candy-crush.png',
                 'icon' => '🍬',
                 'description' => 'Hey its a Candy Crush game on your flight',
                 'colors' => [
@@ -154,9 +165,35 @@ class GameController extends Controller
                     'text_hover' => 'sky-300',
                     'corner' => 'sky-500'
                 ],
-                'status' => 'active',
+                'status' => 'active'
+                // featured akan diset random nanti
             ]
         ];
+
+        // Filter hanya game yang aktif untuk dijadikan featured
+        $activeGames = array_filter($games, function($game) {
+            return $game['status'] === 'active';
+        });
+
+        // Reset featured untuk semua game
+        foreach ($games as &$game) {
+            $game['featured'] = false;
+        }
+
+        // Pilih 2 game random untuk dijadikan featured
+        $activeGameKeys = array_keys($activeGames);
+        $randomKeys = array_rand($activeGameKeys, min(2, count($activeGameKeys)));
+
+        // Jika hanya ada 1 game yang bisa dipilih, pastikan $randomKeys adalah array
+        if (!is_array($randomKeys)) {
+            $randomKeys = [$randomKeys];
+        }
+
+        // Set featured untuk game yang terpilih
+        foreach ($randomKeys as $keyIndex) {
+            $actualKey = $activeGameKeys[$keyIndex];
+            $games[$actualKey]['featured'] = true;
+        }
 
         return view('games.index', compact('games'));
     }
@@ -185,6 +222,7 @@ class GameController extends Controller
     {
         return view('games.floppybird');
     }
+
     public function candycrush()
     {
         return view('games.candycrush');

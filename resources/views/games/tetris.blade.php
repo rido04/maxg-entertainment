@@ -59,7 +59,7 @@
 
                 <!-- Game Canvas -->
                 <div class="relative bg-slate-800/50 backdrop-blur rounded-lg p-4 border border-slate-700">
-                    <canvas id="gameCanvas" class="w-full max-w-md mx-auto block" width="300" height="600"></canvas>
+                    <canvas id="gameCanvas" class="w-full max-w-md mx-auto block" width="300" height="300"></canvas>
 
                     <!-- Game Status -->
                     <div id="gameStatus" class="absolute top-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-xs">
@@ -135,10 +135,10 @@
         transition: all 0.2s ease;
         touch-action: manipulation;
         -webkit-tap-highlight-color: transparent;
-        padding: 12px;
+        padding: 8px;
         border-radius: 8px;
-        font-size: 18px;
-        min-height: 48px;
+        font-size: 16px;
+        min-height: 40px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -205,10 +205,10 @@
     .game-over-content {
         background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
         border: 1px solid #475569;
-        padding: 2rem;
+        padding: 1.5rem;
         border-radius: 16px;
         text-align: center;
-        max-width: 400px;
+        max-width: 350px;
         width: 90%;
         margin: 1rem;
         transform: scale(0.8);
@@ -219,21 +219,16 @@
         transform: scale(1);
     }
 
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
+    /* Mobile Portrait */
+    @media (max-width: 768px) and (orientation: portrait) {
         #gameCanvas {
             max-width: 280px;
+            height: auto;
         }
 
         .container {
             padding-left: 8px;
             padding-right: 8px;
-        }
-    }
-
-    @media (max-width: 480px) {
-        #gameCanvas {
-            max-width: 250px;
         }
 
         .text-3xl {
@@ -241,23 +236,233 @@
         }
     }
 
-    /* Landscape mobile optimization */
-    @media (max-height: 600px) and (orientation: landscape) {
+    /* Mobile Landscape - Optimized Layout */
+    @media (max-width: 896px) and (orientation: landscape) {
         .min-h-screen {
-            min-height: auto;
+            min-height: 100vh;
+            padding: 8px 0;
         }
 
-        .py-4 {
-            padding-top: 1rem;
-            padding-bottom: 1rem;
+        /* Header lebih kompak */
+        .header-section {
+            margin-bottom: 8px;
         }
 
-        .mb-6 {
+        .header-section h1 {
+            font-size: 1.5rem;
+            margin-bottom: 4px;
+        }
+
+        .header-section p {
+            font-size: 0.75rem;
+        }
+
+        /* Layout landscape: horizontal arrangement */
+        .landscape-layout {
+            display: grid;
+            grid-template-columns: 1fr 300px 1fr;
+            gap: 12px;
+            height: calc(100vh - 80px);
+            max-height: 500px;
+        }
+
+        /* Left panel - Next dan Hold dalam satu kolom */
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .preview-box {
+            padding: 8px;
+            border-radius: 8px;
+        }
+
+        .preview-box h3 {
+            font-size: 0.75rem;
+            margin-bottom: 6px;
+        }
+
+        .preview-box canvas {
+            width: 50px;
+            height: 50px;
+        }
+
+        /* Score bar lebih kompak */
+        .score-section {
+            margin-bottom: 8px;
+        }
+
+        .score-item {
+            padding: 6px;
+            border-radius: 6px;
+        }
+
+        .score-item .score-value {
+            font-size: 0.875rem;
+            font-weight: bold;
+        }
+
+        .score-item .score-label {
+            font-size: 0.625rem;
+        }
+
+        /* Game canvas area */
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .game-canvas-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        #gameCanvas {
+            max-width: 240px;
+            max-height: 360px;
+            width: auto;
+            height: auto;
+        }
+
+        #gameStatus {
+            top: 4px;
+            right: 4px;
+            font-size: 0.625rem;
+            padding: 2px 6px;
+        }
+
+        /* Right panel - Controls */
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-section {
+            padding: 8px;
+            border-radius: 8px;
+        }
+
+        .control-section h3 {
+            font-size: 0.75rem;
+            margin-bottom: 6px;
+        }
+
+        .control-section button {
+            padding: 6px 8px;
+            font-size: 0.75rem;
+            border-radius: 6px;
+        }
+
+        /* Touch controls untuk landscape */
+        .touch-controls {
+            padding: 8px;
+            border-radius: 8px;
+        }
+
+        .touch-controls h3 {
+            font-size: 0.75rem;
+            margin-bottom: 6px;
+        }
+
+        .touch-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+        }
+
+        .touch-grid .control-btn {
+            padding: 6px;
+            min-height: 36px;
+            font-size: 14px;
+        }
+
+        /* Hide mobile touch hint in landscape */
+        .mobile-hint {
+            display: none;
+        }
+
+        /* Game over modal adjustment */
+        .game-over-content {
+            padding: 1rem;
+            max-width: 300px;
+        }
+
+        .game-over-content h2 {
+            font-size: 1.25rem;
             margin-bottom: 1rem;
+        }
+
+        .game-over-content .text-xl {
+            font-size: 1rem;
+        }
+
+        .game-over-content button {
+            padding: 6px 12px;
+            font-size: 0.875rem;
+        }
+    }
+
+    /* Very small landscape screens */
+    @media (max-width: 667px) and (orientation: landscape) {
+        .landscape-layout {
+            grid-template-columns: 0.8fr 260px 0.8fr;
+            gap: 8px;
+            height: calc(100vh - 60px);
+            max-height: 400px;
         }
 
         #gameCanvas {
             max-width: 200px;
+            max-height: 300px;
+        }
+
+        .preview-box canvas {
+            width: 40px;
+            height: 40px;
+        }
+
+        .touch-grid .control-btn {
+            min-height: 32px;
+            font-size: 12px;
+        }
+    }
+
+    /* iPhone SE landscape and similar */
+    @media (max-width: 568px) and (orientation: landscape) {
+        .landscape-layout {
+            grid-template-columns: 0.7fr 220px 0.7fr;
+            gap: 6px;
+            height: calc(100vh - 50px);
+            max-height: 350px;
+        }
+
+        #gameCanvas {
+            max-width: 180px;
+            max-height: 270px;
+        }
+
+        .header-section h1 {
+            font-size: 1.25rem;
+        }
+
+        .control-section,
+        .touch-controls,
+        .preview-box {
+            padding: 6px;
+        }
+
+        .touch-grid .control-btn {
+            min-height: 28px;
+            font-size: 11px;
+            padding: 4px;
         }
     }
 </style>
