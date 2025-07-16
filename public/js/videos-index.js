@@ -101,8 +101,9 @@ document.addEventListener("DOMContentLoaded", function () {
         // Get updated movie items after cloning
         const updatedMovieItems = section.querySelectorAll(".movie-item");
 
-        // Set up hover events untuk setiap movie item
+        // Set up hover and touch events untuk setiap movie item
         updatedMovieItems.forEach((item) => {
+            // Mouseenter event
             item.addEventListener("mouseenter", function () {
                 userInteracting = true;
                 clearTimeout(currentTimeout);
@@ -136,6 +137,35 @@ document.addEventListener("DOMContentLoaded", function () {
                         }, 150);
                     }
                 }, 100);
+            });
+
+            // Touchstart event (untuk perangkat layar sentuh)
+            item.addEventListener("touchstart", function (e) {
+                userInteracting = true;
+                clearTimeout(currentTimeout);
+                clearTimeout(hoverTimeout);
+                clearTimeout(interactionTimeout);
+
+                console.log("Touch start:", this.dataset.title);
+
+                // Remove active class dari semua items di section ini
+                updatedMovieItems.forEach((movie) => {
+                    movie.classList.remove("active-movie");
+                });
+
+                // Add active class ke current item
+                this.classList.add("active-movie");
+
+                // Update thumbnail content
+                updateThumbnailContent(this, section);
+
+                // Show thumbnail
+                if (defaultThumbnail) {
+                    defaultThumbnail.style.opacity = "0";
+                }
+                if (movieThumbnail) {
+                    movieThumbnail.style.opacity = "1";
+                }
             });
 
             item.addEventListener("mouseleave", function () {
@@ -182,69 +212,69 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
     // Tambahkan fungsi ini setelah setupSectionHoverEvents
-    function setupMobileHoverEvents() {
-        const mobileMovieItems =
-            document.querySelectorAll(".mobile-movie-item");
-        const mobileThumbnail = document.getElementById(
-            "mobile-movie-thumbnail"
-        );
-        const mobileDefaultThumbnail = document.getElementById(
-            "mobile-default-thumbnail"
-        );
+    // function setupMobileHoverEvents() {
+    //     const mobileMovieItems =
+    //         document.querySelectorAll(".mobile-movie-item");
+    //     const mobileThumbnail = document.getElementById(
+    //         "mobile-movie-thumbnail"
+    //     );
+    //     const mobileDefaultThumbnail = document.getElementById(
+    //         "mobile-default-thumbnail"
+    //     );
 
-        let touchTimeout;
+    //     let touchTimeout;
 
-        mobileMovieItems.forEach((item) => {
-            // Touch events untuk mobile
-            item.addEventListener("touchstart", function (e) {
-                clearTimeout(touchTimeout);
-                updateMobileThumbnail(this);
-                showMobileThumbnail();
-            });
+    //     mobileMovieItems.forEach((item) => {
+    //         // Touch events untuk mobile
+    //         item.addEventListener("touchstart", function (e) {
+    //             clearTimeout(touchTimeout);
+    //             updateMobileThumbnail(this);
+    //             showMobileThumbnail();
+    //         });
 
-            // Mouse events untuk tablet/desktop kecil
-            item.addEventListener("mouseenter", function () {
-                clearTimeout(touchTimeout);
-                updateMobileThumbnail(this);
-                showMobileThumbnail();
-            });
+    //         // Mouse events untuk tablet/desktop kecil
+    //         item.addEventListener("mouseenter", function () {
+    //             clearTimeout(touchTimeout);
+    //             updateMobileThumbnail(this);
+    //             showMobileThumbnail();
+    //         });
 
-            item.addEventListener("mouseleave", function () {
-                touchTimeout = setTimeout(() => {
-                    hideMobileThumbnail();
-                }, 1500);
-            });
-        });
+    //         item.addEventListener("mouseleave", function () {
+    //             touchTimeout = setTimeout(() => {
+    //                 hideMobileThumbnail();
+    //             }, 1500);
+    //         });
+    //     });
 
-        function updateMobileThumbnail(item) {
-            const thumbnail = item.dataset.thumbnail;
-            const title = item.dataset.title;
-            const category = item.dataset.category;
-            const duration = item.dataset.duration;
+    //     function updateMobileThumbnail(item) {
+    //         const thumbnail = item.dataset.thumbnail;
+    //         const title = item.dataset.title;
+    //         const category = item.dataset.category;
+    //         const duration = item.dataset.duration;
 
-            document.getElementById(
-                "mobile-thumbnail-bg"
-            ).style.backgroundImage = `url('${thumbnail}')`;
-            document.getElementById("mobile-thumbnail-title").textContent =
-                title;
-            document.getElementById("mobile-thumbnail-category").textContent =
-                category;
-            document.getElementById("mobile-thumbnail-duration").textContent =
-                duration ? duration + " min" : "Live";
-        }
+    //         document.getElementById(
+    //             "mobile-thumbnail-bg"
+    //         ).style.backgroundImage = `url('${thumbnail}')`;
+    //         document.getElementById("mobile-thumbnail-title").textContent =
+    //             title;
+    //         document.getElementById("mobile-thumbnail-category").textContent =
+    //             category;
+    //         document.getElementById("mobile-thumbnail-duration").textContent =
+    //             duration ? duration + " min" : "Live";
+    //     }
 
-        function showMobileThumbnail() {
-            if (mobileDefaultThumbnail)
-                mobileDefaultThumbnail.style.opacity = "0";
-            if (mobileThumbnail) mobileThumbnail.style.opacity = "1";
-        }
+    //     function showMobileThumbnail() {
+    //         if (mobileDefaultThumbnail)
+    //             mobileDefaultThumbnail.style.opacity = "0";
+    //         if (mobileThumbnail) mobileThumbnail.style.opacity = "1";
+    //     }
 
-        function hideMobileThumbnail() {
-            if (mobileDefaultThumbnail)
-                mobileDefaultThumbnail.style.opacity = "1";
-            if (mobileThumbnail) mobileThumbnail.style.opacity = "0";
-        }
-    }
+    //     function hideMobileThumbnail() {
+    //         if (mobileDefaultThumbnail)
+    //             mobileDefaultThumbnail.style.opacity = "1";
+    //         if (mobileThumbnail) mobileThumbnail.style.opacity = "0";
+    //     }
+    // }
     // Initialize scroll container
     const scrollContainer = document.querySelector(".main-content-scroll");
     if (scrollContainer) {
@@ -312,7 +342,7 @@ document.addEventListener("DOMContentLoaded", function () {
             observer.observe(section);
         });
     }
-    setupMobileHoverEvents();
+    // setupMobileHoverEvents();
 
     // Update greeting based on time
     function updateGreeting() {

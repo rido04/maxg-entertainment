@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\AboutController;
 use App\Http\Controllers\MusicController;
+use App\Http\Controllers\RouteController;
 use App\Http\Controllers\VideoController;
 use App\Http\Controllers\NewsRssController;
 use App\Http\Controllers\ProductController;
@@ -92,6 +93,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 });
 //Route route
 Route::get('/route', function () {return view('route');})->name('route');
+Route::get('route-minimal', [RouteController::class, 'minimal'])->name('route-minimal');
 
 //Scheduler Route
 Route::get('/run-scheduler', function () {

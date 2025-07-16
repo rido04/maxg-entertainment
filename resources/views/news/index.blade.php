@@ -69,7 +69,7 @@
                 </div>
 
                 <!-- Secondary News Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="grid grid-cols-3 md:grid-cols-3 gap-6 mb-8">
                     @foreach($sports->skip(1)->take(3) as $article)
                     <a href="{{ route('news.show', $article->slug) }}" class="group cursor-pointer">
                     <article class="group cursor-pointer">

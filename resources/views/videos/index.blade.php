@@ -130,9 +130,9 @@
     </div>
 
     <!-- RESPONSIVE MAIN CONTENT -->
-    <div class="px-4 md:px-8 lg:px-8 mx-4 md:mx-8 lg:mx-14">
+    <div class="px-4 md:px-8 lg:px-8 mx-4 md:mx-8 lg:mx-14 -mb-5">
         <!-- Mobile Layout (sm and below) -->
-        <div class="block lg:hidden">
+        {{-- <div class="block lg:hidden">
             <!-- Featured Movie Display -->
             <div class="mb-6">
                 <div id="mobile-featured-movie" class="relative rounded-2xl overflow-hidden h-48 sm:h-64">
@@ -214,10 +214,10 @@
                 </div>
                 @endforeach
             </div>
-        </div>
+        </div> --}}
 
         <!-- Desktop/Tablet Layout (lg and above) -->
-        <div class="hidden lg:block">
+        <div class="block">
             <div class="main-content-scroll hide-scrollbar mb-5">
                 @php
                     $chunkedVideos = $videos->chunk(4);
@@ -229,7 +229,7 @@
                         <!-- Left Grid - Movie List -->
                         <div class="w-1/2 space-y-4" id="movies-container-section-{{ $loop->index }}">
                             @foreach($videoChunk as $video)
-                            <div class="group relative bg-blue-400 hover:bg-green-700 rounded-xl overflow-hidden transition-all duration-500 hover:scale-[1.02] border border-gray-200 cursor-pointer movie-item mt-5"
+                            <div class="group relative bg-blue-400 hover:bg-green-700 rounded-xl overflow-hidden transition-all duration-500 hover:scale-[1.02] border border-gray-200 cursor-pointer movie-item mobile-movie-item mt-5"
                                 data-thumbnail="{{ $video->thumbnail }}"
                                 data-title="{{ $video->title }}"
                                 data-description="{{ $video->description ?? 'Movie description...' }}"
@@ -263,12 +263,12 @@
                                         </div>
 
                                         <!-- Grab Icons -->
-                                        <div class="opacity-100 group-hover:opacity-0 transition-opacity duration-300 -ml-36 mr-10 mb-5">
-                                            <img src="{{ asset('images/logo/Logo-MaxG-Green.gif') }}" alt="MaxG Logo" class="w-24 h-auto">
+                                        <div class="opacity-100 group-hover:opacity-0 transition-opacity duration-300 -ml-36 mr-10 sm:mr-10 ">
+                                            <img src="{{ asset('images/logo/Logo-MaxG-Green.gif') }}" alt="MaxG Logo" class="w-24 h-auto sm:w-20 sm:h-auto">
                                         </div>
 
-                                        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 -ml-36 mr-10 mb-5">
-                                            <img src="{{ asset('images/logo/Logo-MaxG-White.gif') }}" alt="MaxG Logo" class="w-20 h-auto">
+                                        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 -ml-36 mr-10 sm:mr-1 ">
+                                            <img src="{{ asset('images/logo/Logo-MaxG-White.gif') }}" alt="MaxG Logo" class="w-20 h-auto sm:w-20 sm:h-auto">
                                         </div>
                                     </div>
                                 </a>
@@ -279,30 +279,30 @@
                         <!-- Right Side - Thumbnail Display -->
                         <div class="w-1/2 relative rounded-2xl overflow-hidden mt-5">
                             <!-- Default State -->
-                            <div id="default-thumbnail-{{ $loop->index }}" class="default-thumbnail-section absolute inset-0 flex items-center justify-center">
+                            <div id="mobile-default-thumbnail-{{ $loop->index }}" class="default-thumbnail-section absolute inset-0 flex items-center justify-center">
                                 <div class="text-center text-white/70">
                                     <img src="{{ asset('images/logo/Logo-MaxG-White.gif') }}" alt="Logo Grab" class="w-96 mx-auto">
                                 </div>
                             </div>
 
                             <!-- Dynamic Thumbnail -->
-                            <div id="movie-thumbnail-{{ $loop->index }}" class="movie-thumbnail-section absolute inset-0 opacity-0 transition-all duration-500 ease-in-out">
+                            <div id="mobile-movie-thumbnail-{{ $loop->index }}" class="movie-thumbnail-section absolute inset-0 opacity-0 transition-all duration-500 ease-in-out">
                                 <div id="thumbnail-bg-{{ $loop->index }}" class="thumbnail-bg absolute inset-0 bg-cover bg-center transition-all duration-700"></div>
                                 <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
 
                                 <div class="absolute bottom-0 left-0 right-0 p-8">
                                     <div class="max-w-md">
-                                        <span id="thumbnail-category-{{ $loop->index }}" class="thumbnail-category inline-block px-3 py-1 bg-red-500/90 backdrop-blur-sm text-xs font-medium rounded-full text-white border border-red-400/50 mb-3">
+                                        <span id="mobile-thumbnail-category-{{ $loop->index }}" class="thumbnail-category inline-block px-3 py-1 bg-red-500/90 backdrop-blur-sm text-xs font-medium rounded-full text-white border border-red-400/50 mb-3">
                                             Featured
                                         </span>
 
-                                        <h3 id="thumbnail-title-{{ $loop->index }}" class="text-2xl font-bold text-white mb-2">Judul film</h3>
+                                        <h3 id="mobile-thumbnail-title-{{ $loop->index }}" class="text-2xl font-bold text-white mb-2">Judul film</h3>
 
                                         <div class="flex items-center gap-2 text-gray-200">
                                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.414-1.415L11 9.586V6z" clip-rule="evenodd"/>
                                             </svg>
-                                            <span id="thumbnail-duration-{{ $loop->index }}" class="thumbnail-duration text-sm font-medium">Durasi</span>
+                                            <span id="mobile-thumbnail-duration-{{ $loop->index }}" class="thumbnail-duration text-sm font-medium">Durasi</span>
                                         </div>
                                     </div>
                                 </div>

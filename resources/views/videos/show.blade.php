@@ -48,7 +48,7 @@
     </div>
 
     <!-- Content Section - Enhanced responsive design -->
-    <div class="w-full lg:w-3/5 xl:w-2/3 p-3 sm:p-4 md:p-6 lg:p-8 flex flex-col justify-center slide-up order-1 lg:order-2">
+    <div class="w-full lg:w-3/5 xl:w-2/3 p-3 sm:p-4 md:p-6 lg:p-8 flex flex-col justify-center slide-up order-1 lg:order-2 mt-">
 
         <!-- Title - Improved typography scaling -->
         <h1 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold mb-3 sm:mb-4 md:mb-5 lg:mb-6 bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent leading-tight text-center lg:text-left">
@@ -56,29 +56,29 @@
         </h1>
 
         <!-- Rating and Info Tags - Enhanced responsive layout -->
-        <div class="flex flex-row justify-center lg:justify-between gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-5 md:mb-6 flex-wrap bg-gradient-to-r from-green-500 to-green-600 rounded-2xl py-4 px-6 shadow-lg">
-            <div class="flex items-center gap-1 px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 md:py-3 bg-white/20 backdrop-blur-sm text-white text-xs sm:text-sm font-bold rounded-xl transition-all duration-300 hover:scale-105 hover:bg-white/30">
+        <div class="flex flex-row justify-center lg:justify-between gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-5 md:mb-6 flex-wrap py-4 px-6">
+            <div class="flex items-center gap-1 px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 md:py-3 bg-gradient-to-b from-amber-500/80 to-amber-700/80 backdrop-blur-sm text-white text-xs sm:text-sm font-bold rounded-xl transition-all duration-300 hover:scale-105 hover:bg-white/30">
               <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
               </svg>
               {{ $video->rating ?? 'N/A' }}/10
             </div>
-            
-            <div class="flex items-center gap-1 px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 md:py-3 bg-white/20 backdrop-blur-sm text-white text-xs sm:text-sm font-bold rounded-xl transition-all duration-300 hover:scale-105 hover:bg-white/30">
+
+            <div class="flex items-center gap-1 px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 md:py-3 bg-gradient-to-b from-blue-500/80 to-blue-700/80 backdrop-blur-sm text-white text-xs sm:text-sm font-bold rounded-xl transition-all duration-300 hover:scale-105 hover:bg-white/30">
               <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
               </svg>
               {{ $video->release_date ? \Carbon\Carbon::parse($video->release_date)->format('Y') : 'N/A' }}
             </div>
-            
-            <div class="flex items-center gap-1 px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 md:py-3 bg-white/20 backdrop-blur-sm text-white text-xs sm:text-sm font-bold rounded-xl transition-all duration-300 hover:scale-105 hover:bg-white/30">
+
+            <div class="flex items-center gap-1 px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 md:py-3 bg-gradient-to-b from-green-500/80 to-green-700/80 backdrop-blur-sm text-white text-xs sm:text-sm font-bold rounded-xl transition-all duration-300 hover:scale-105 hover:bg-white/30">
               <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>
               </svg>
               {{ $video->duration ?? 'N/A' }} Min
             </div>
-            
-            <div class="flex items-center gap-1 px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 md:py-3 bg-white/20 backdrop-blur-sm text-white text-xs sm:text-sm font-bold rounded-xl transition-all duration-300 hover:scale-105 hover:bg-white/30">
+
+            <div class="flex items-center gap-1 px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 md:py-3 bg-gradient-to-b from-red-500/80 to-red-700/80 backdrop-blur-sm text-white text-xs sm:text-sm font-bold rounded-xl transition-all duration-300 hover:scale-105 hover:bg-white/30">
               <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
               </svg>

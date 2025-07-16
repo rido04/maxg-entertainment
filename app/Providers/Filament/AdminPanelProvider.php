@@ -7,6 +7,7 @@ use Filament\Panel;
 use Filament\Widgets;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use App\Filament\Resources\MediaResource;
 use Filament\Http\Middleware\Authenticate;
 use App\Filament\Resources\FeedbackResource;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -41,12 +42,13 @@ class AdminPanelProvider extends PanelProvider
                 url('images/logo/Maxg-ent_Green.gif'),
             )
             ->brandName('MaxG Entertainment Hub')
-            ->darkModeBrandLogo(url('images/logo/Maxg-ent_white.gif'))
+            ->darkModeBrandLogo(url('images/logo/Maxg-ent_Green.gif'))
             ->brandLogoHeight('3rem')
             ->defaultThemeMode(\Filament\Enums\ThemeMode::Dark)
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
+            // ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->resources([
                 FeedbackResource::class,
+                MediaResource::class,
             ])
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([

@@ -16,7 +16,6 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-
     @stack('styles')
 </head>
 <body class="font-sans antialiased min-h-screen m-0 p-0" style="background-image: url('{{ asset('images/background/Background_Color.png') }}'); background-size: cover; background-position: center;">
@@ -30,12 +29,12 @@
         @include('footer')
     </footer>
 
-
     @stack('scripts')
 
     <script>
         // Common JavaScript functions can be added here
     </script>
+
     <!-- Mini Player Widget -->
     <div id="miniPlayer" class="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-700 p-4 transform translate-y-full transition-transform duration-300 z-50 hidden">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
@@ -88,22 +87,197 @@
       </div>
     </div>
   </div>
+
   <!-- Hidden Audio Element -->
   <audio id="audioPlayer" preload="metadata">
     <source id="audioSource" src="" type="audio/mpeg">
     Your browser does not support the audio element.
-</audio>
+  </audio>
+
+  <!-- Full Map Modal -->
+  <div id="mapModal" class="fixed inset-0 bg-black/70 z-50 hidden opacity-0 transition-opacity duration-300">
+    <div class="w-full h-full p-4 flex items-center justify-center">
+      <div class="bg-white rounded-lg w-full max-w-6xl h-full max-h-[90vh] overflow-hidden relative transform scale-95 transition-transform duration-300">
+        <!-- Modal Header -->
+        <div class="bg-gray-800 text-white p-4 flex justify-between items-center">
+          <h3 class="text-lg font-medium">Live Navigation</h3>
+          <button id="closeMapModal" class="text-gray-300 hover:text-white transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Map Container -->
+        <div class="h-full">
+          <iframe
+            id="modalMapFrame"
+            src="/route-minimal"
+            class="w-full h-full border-0">
+          </iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Map Trigger Button -->
+  <div id="mapTriggerBtn" class="fixed bottom-0 left-1/2 transform -translate-x-1/2 z-30 cursor-pointer group">
+    <div class="relative shadow-2xl hover:shadow-lg transition-all duration-300">
+        <img src="{{ asset('images/logo/tarikan.png') }}"
+             alt="Tap for map"
+             class="w-52 h-auto object-contain transition-opacity duration-300">
+
+        <div class="absolute inset-0 flex flex-col items-center justify-center space-y-1">
+            <!-- Text -->
+            <div class="text-center inline-flex mt-4 items-center ">
+                <p class="text-gray-800 font-medium text-sm drop-shadow-sm mr-2">Live Navigation</p>
+
+                <div class="relative">
+                    <div class="absolute inset-0 rounded-full bg-green-400 opacity-75 animate-ping"></div>
+                    <div class="absolute inset-0 rounded-full bg-green-400 opacity-50 animate-ping" style="animation-delay: 0.5s;"></div>
+
+                    <div class="relative w-6 h-6 bg-green-500 rounded-full flex items-center justify-center animate-pulse">
+                        <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom CSS for enhanced animations -->
+<style>
+/* Enhanced pulse animation */
+@keyframes enhanced-pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+    }
+}
+
+/* Ring animation */
+@keyframes ring-animation {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(2);
+        opacity: 0;
+    }
+}
+
+/* Custom animation classes */
+.animate-enhanced-pulse {
+    animation: enhanced-pulse 2s ease-in-out infinite;
+}
+
+.animate-ring {
+    animation: ring-animation 1.5s ease-out infinite;
+}
+
+/* Hover effects for trigger button */
+#mapTriggerBtn:hover .animate-ping {
+    animation-duration: 0.8s;
+}
+
+#mapTriggerBtn:hover .animate-pulse {
+    animation-duration: 1.2s;
+}
+
+/* Modal animation enhancement */
+.modal-enter {
+    transform: scale(0.9);
+    opacity: 0;
+}
+
+.modal-enter-active {
+    transform: scale(1);
+    opacity: 1;
+    transition: all 0.3s ease-out;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const mapTriggerBtn = document.getElementById('mapTriggerBtn');
+    const mapModal = document.getElementById('mapModal');
+    const closeMapModal = document.getElementById('closeMapModal');
+    const modalMapFrame = document.getElementById('modalMapFrame');
+
+    // Show modal directly when trigger button is clicked
+    mapTriggerBtn.addEventListener('click', function() {
+        openModal();
+    });
+
+    // Function to open modal with animation
+    function openModal() {
+        mapModal.classList.remove('hidden');
+
+        // Add entrance animation
+        const modalContent = mapModal.querySelector('.bg-white');
+        modalContent.classList.add('scale-95');
+
+        setTimeout(() => {
+            mapModal.classList.remove('opacity-0');
+            modalContent.classList.remove('scale-95');
+            modalContent.classList.add('scale-100');
+        }, 10);
+
+        // Reload iframe to fix any sizing issues
+        modalMapFrame.src = modalMapFrame.src;
+
+        // Add some visual feedback to trigger button
+        mapTriggerBtn.style.transform = 'translateX(-50%) scale(0.95)';
+        setTimeout(() => {
+            mapTriggerBtn.style.transform = 'translateX(-50%) scale(1)';
+        }, 150);
+    }
+
+    // Function to close modal
+    function closeModal() {
+        const modalContent = mapModal.querySelector('.bg-white');
+        modalContent.classList.add('scale-95');
+        mapModal.classList.add('opacity-0');
+
+        setTimeout(() => {
+            mapModal.classList.add('hidden');
+            modalContent.classList.remove('scale-95', 'scale-100');
+        }, 300);
+    }
+
+    // Close modal when close button is clicked
+    closeMapModal.addEventListener('click', closeModal);
+
+    // Close modal when clicking outside
+    mapModal.addEventListener('click', function(e) {
+        if (e.target === mapModal) {
+            closeModal();
+        }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !mapModal.classList.contains('hidden')) {
+            closeModal();
+        }
+    });
+});
+</script>
 
 <div id="loader"
      class="fixed inset-0 bg-white/80 flex flex-col items-center justify-center z-50 gap-4 transition-opacity duration-300">
 
-    <!-- Logo -->
     <img src="{{ asset('images/logo/Logo-MaxG-Green.gif') }}" alt="Logo" class="w-24 h-24 object-contain animate-bounce-slow">
 
-    <!-- Spinner -->
     <div class="animate-spin rounded-full h-10 w-10 border-4 border-green-500 border-t-transparent"></div>
 
-    <!-- Text optional -->
     <p class="text-gray-500 font-medium mt-2 tracking-wide">Loading page...</p>
 </div>
 

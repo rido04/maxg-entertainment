@@ -22,9 +22,9 @@
 
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto px-6 py-8">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-3 gap-8">
             <!-- Main Article Content -->
-            <div class="lg:col-span-2">
+            <div class="lg:col-span-2 sm:col-span-2">
                 <article class="relative">
                     <!-- Article Header -->
                     <header class="mb-8">

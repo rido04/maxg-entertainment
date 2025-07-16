@@ -37,11 +37,11 @@ class TmdbService
 
     // Rating yang dibatasi
     protected $restrictedRatings = [
-        'PG-13',    // Parents Strongly Cautioned
-        'R',        // Restricted
-        'NC-17',    // Adults Only
-        'TV-14',    // Parents Strongly Cautioned
-        'TV-MA',    // Mature Audiences
+        // 'PG-13',    // Parents Strongly Cautioned
+        // 'R',        // Restricted
+        // 'NC-17',    // Adults Only
+        // 'TV-14',    // Parents Strongly Cautioned
+        // 'TV-MA',    // Mature Audiences
         'X',        // Adults Only (old system)
     ];
 
@@ -91,7 +91,7 @@ class TmdbService
 
         return $results;
     }
-    
+
     public function getMovieDetail($id)
     {
         $response = Http::get("https://api.themoviedb.org/3/movie/{$id}", [
@@ -115,11 +115,11 @@ class TmdbService
         $genreIds = $movieData['genre_ids'] ?? [];
         if (!empty($genreIds)) {
             $hasAppropriatGenre = !empty(array_intersect($genreIds, $this->familyFriendlyGenres));
-            
+
             // Genres yang harus dihindari
             $adultGenres = [27, 53, 80]; // Horror, Thriller, Crime
             $hasAdultGenre = !empty(array_intersect($genreIds, $adultGenres));
-            
+
             return $hasAppropriatGenre && !$hasAdultGenre;
         }
 
@@ -215,7 +215,7 @@ class TmdbService
 
         $posterUrl = 'https://image.tmdb.org/t/p/w300' . $tmdbData['poster_path'];
         $posterResponse = Http::get($posterUrl);
-        
+
         if (!$posterResponse->successful()) {
             return 'Failed to download poster.';
         }
@@ -270,7 +270,7 @@ class TmdbService
     public function searchFamilyMovie(string $query, ?int $year = null)
     {
         $results = $this->searchMovieWithFilters($query, $year, false);
-        
+
         if (!$results || !isset($results['results'])) {
             return null;
         }
@@ -285,16 +285,16 @@ class TmdbService
             // Cek genre harus family-friendly
             $genreIds = $movie['genre_ids'] ?? [];
             $hasGoodGenre = !empty(array_intersect($genreIds, $this->familyFriendlyGenres));
-            
+
             // Cek rating minimal
             $rating = $movie['vote_average'] ?? 0;
             $hasGoodRating = $rating >= 6.0;
-            
+
             // Cek tahun rilis (prioritas konten yang lebih baru)
             $releaseDate = $movie['release_date'] ?? '';
             $year = $releaseDate ? (int) substr($releaseDate, 0, 4) : 0;
             $isRecentEnough = $year >= 1990; // Film dari tahun 1990 ke atas
-            
+
             return $hasGoodGenre && $hasGoodRating && $isRecentEnough;
         });
 
@@ -304,11 +304,11 @@ class TmdbService
             $popularityB = $b['popularity'] ?? 0;
             $ratingA = $a['vote_average'] ?? 0;
             $ratingB = $b['vote_average'] ?? 0;
-            
+
             // Kombinasi popularity dan rating
             $scoreA = ($popularityA * 0.3) + ($ratingA * 0.7);
             $scoreB = ($popularityB * 0.3) + ($ratingB * 0.7);
-            
+
             return $scoreB <=> $scoreA; // Descending order
         });
 

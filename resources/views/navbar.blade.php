@@ -92,12 +92,13 @@
 
             <div class="nav-item-wrapper">
                 <a href="{{ route('route') }}" class="nav-link flex items-center justify-center w-12 h-12 sm:w-12 sm:h-12 md:w-12 md:h-12 lg:w-12 lg:h-12 xl:w-12 xl:h-12 text-slate-400 hover:text-green-400 hover:bg-white/10 transition-all duration-300 rounded-lg mx-2 relative group">
-                    <svg class="w-5 h-5 sm:w-5 sm:h-5 md:w-5 md:h-5 lg:w-5 lg:h-5 xl:w-5 xl:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
-                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.866-3.134-7-7-7z" />
+                        <circle cx="12" cy="9" r="2.5" />
+                      </svg>
                     <!-- Tooltip -->
                     <div class="tooltip absolute left-[-95px] top-1/2 transform -translate-y-1/2 bg-slate-800 text-white text-sm px-2 py-1 rounded opacity-0 pointer-events-none transition-all duration-200 whitespace-nowrap group-hover:opacity-100 group-hover:left-[-100px] hidden sm:block">
-                        Route
+                        Navigate
                         <div class="tooltip-arrow absolute right-[-4px] top-1/2 transform -translate-y-1/2 w-0 h-0 border-l-4 border-l-slate-800 border-t-2 border-t-transparent border-b-2 border-b-transparent"></div>
                     </div>
                 </a>

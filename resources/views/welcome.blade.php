@@ -15,14 +15,14 @@
 <header class="relative z-20 flex flex-col sm:flex-row justify-between items-center px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
     <!-- Logo MaxG -->
     <div class="flex items-center space-x-3 mb-4 sm:mb-0">
-        <div class="w-60 sm:w-96 lg:w-60 h-12 sm:h-16 lg:h-20 flex items-center justify-center sm:px-3 py-1">
+        <div class="w-60 sm:w-80 lg:w-60 h-12 sm:h-16 lg:h-20 flex items-center justify-center py-1">
             <img src="{{ asset('images/logo/Maxg-ent_white.gif') }}" alt="MaxG Entertainment Hub" class="w-full h-full object-contain">
         </div>
     </div>
 
     <!-- Top navigation icons -->
     <div class="flex items-center space-x-4">
-        <div class="w-60 sm:w-48 lg:w-60 h-12 sm:h-16 lg:h-20 text-sm px-2 sm:px-3 py-1">
+        <div class="w-60 sm:w-60 lg:w-60 h-12 sm:h-16 lg:h-20 text-sm px-2 sm:px-3 py-1">
             <img src="{{ asset('images/logo/mcm x grab_.png') }}" alt="grab dan mcm logo" class="w-full h-full object-contain">
         </div>
     </div>
@@ -32,7 +32,7 @@
 <div class="relative z-10 min-h-screen flex flex-col lg:flex-row md-flex-row sm:flex-row xl:flex-row">
     <!-- Left Section - Welcome -->
     <div class="flex-1 flex flex-col justify-center px-4 sm:px-6 lg:px-12 py-8 sm:py-8 lg:py-20 -mt-8 sm:-mt-16 lg:-mt-32">
-        <div class="max-w-xl fade-in text-center lg:text-left">
+        <div class="max-w-xl fade-in text-left lg:text-left">
             <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-medium text-white mb-4 sm:mb-6 leading-tight">
                 Welcome to
                 <span class="text-9xl bg-clip-text block font-bold text-transparent bg-gradient-to-r from-green-300 to-green-500">
@@ -182,8 +182,7 @@
     /* Responsive overflow handling */
     @media (max-width: 768px) {
         body {
-            overflow-x: hidden;
-            overflow-y: auto;
+            overflow: hidden;
         }
     }
 
