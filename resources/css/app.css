@@ -3,7 +3,6 @@
 @import "@fontsource/inter/500.css";
 @import "@fontsource/inter/600.css";
 @import "@fontsource/inter/700.css";
-@import "swiper/swiper-bundle.css";
 
 @tailwind base;
 @tailwind components;

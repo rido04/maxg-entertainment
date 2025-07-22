@@ -15,7 +15,7 @@
         "vite": "^5.0"
     },
     "dependencies": {
-        "@fontsource/inter": "^5.2.5",
+        "@fontsource/inter": "^5.2.6",
         "alpinejs": "^3.14.9",
         "phaser": "^3.90.0",
         "swiper": "^11.2.8"

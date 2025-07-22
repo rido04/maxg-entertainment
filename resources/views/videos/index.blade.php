@@ -9,9 +9,7 @@
             <!-- Time-based Greeting -->
             <div class="mb-4 md:mb-8 flex-1">
                 <div class="flex flex-col sm:flex-row sm:items-center gap-3">
-                    <h1 class="text-xl md:text-2xl font-bold text-gray-200" id="greeting">
-                        Good Evening
-                    </h1>
+                    <img src="{{ asset('images/logo/Maxg-ent_white.gif') }}" alt="MaxG Entertainment Hub" class="w-32 sm:w-48 md:w-64 lg:w-80 h-auto object-contain">
                     <!-- Sync Button -->
                     <button type="button"
                     onclick="document.getElementById('syncModal').classList.remove('hidden')"
@@ -25,15 +23,6 @@
                 <p class="text-gray-200 text-sm md:text-md mt-2">
                     Biar ga bosen di jalan, yuk nonton film seru di MaxG Cinema!
                 </p>
-            </div>
-
-            <!-- Grab Logo -->
-            <div class="flex items-center space-x-6 -mt-2 md:-mt-8 -mr-2 md:-mr-7">
-                <div class="flex items-center space-x-3 rounded-xl px-2 md:px-4 py-2 md:py-3 group">
-                    <div class="relative">
-                        <img src="{{ asset('images/logo/Maxg-ent_white.gif') }}" alt="MaxG Entertainment Hub" class="w-32 sm:w-48 md:w-64 lg:w-80 h-auto object-contain">
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -130,205 +119,167 @@
     </div>
 
     <!-- RESPONSIVE MAIN CONTENT -->
-    <div class="px-4 md:px-8 lg:px-8 mx-4 md:mx-8 lg:mx-14 -mb-5">
-        <!-- Mobile Layout (sm and below) -->
-        {{-- <div class="block lg:hidden">
-            <!-- Featured Movie Display -->
-            <div class="mb-6">
-                <div id="mobile-featured-movie" class="relative rounded-2xl overflow-hidden h-48 sm:h-64">
+    <!-- Ganti bagian RESPONSIVE MAIN CONTENT dengan kode ini -->
+<div class="px-4 md:px-8 lg:px-8 mx-4 md:mx-8 lg:mx-14 -mb-5">
+    <!-- Desktop/Tablet Layout (lg and above) -->
+    <div class="block">
+        <div class="main-content mb-5">
+            <div class="flex gap-8 min-h-[600px]">
+                <!-- Left Grid - Movie List -->
+                <div class="w-1/2 space-y-4" id="movies-container">
+                    @foreach($videos as $video)
+                    <div class="group relative bg-blue-400 hover:bg-green-700 rounded-xl overflow-hidden transition-all duration-500 hover:scale-[1.02] border border-gray-200 cursor-pointer movie-item mobile-movie-item mt-5"
+                        data-thumbnail="{{ $video->thumbnail }}"
+                        data-title="{{ $video->title }}"
+                        data-description="{{ $video->description ?? 'Movie description...' }}"
+                        data-category="{{ $video->category }}"
+                        data-duration="{{ $video->duration }}">
+
+                        <a href="{{ route('videos.show', $video) }}" class="block p-6">
+                            <div class="flex items-center gap-4">
+                                <!-- Thumbnail -->
+                                <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex-shrink-0">
+                                    <img src="{{ $video->thumbnail }}" alt="" class="w-full h-full object-cover rounded-lg">
+                                </div>
+
+                                <!-- Content -->
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <span class="category text-xs text-gray-700 group-hover:text-gray-200 uppercase tracking-wider font-medium">
+                                            {{ ucfirst($video->category ?? 'Entertainment') }}
+                                        </span>
+                                    </div>
+
+                                    <h3 class="text-lg font-bold text-gray-800 mb-2 leading-tight group-hover:text-gray-200 transition-colors duration-300 truncate">
+                                        {{ $video->title }}
+                                    </h3>
+
+                                    <div class="duration flex items-center gap-4 text-sm text-gray-600 group-hover:text-gray-200">
+                                        <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                        <span>{{ $video->duration ? $video->duration . ' min' : 'Live' }}</span>
+                                    </div>
+                                </div>
+
+                                <!-- Grab Icons -->
+                                <div class="opacity-100 group-hover:opacity-0 transition-opacity duration-300 -ml-36 mr-10 sm:mr-10">
+                                    <img src="{{ asset('images/logo/Logo-MaxG-Green.gif') }}" alt="MaxG Logo" class="w-24 h-auto sm:w-20 sm:h-auto">
+                                </div>
+
+                                <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 -ml-36 mr-10 sm:mr-1">
+                                    <img src="{{ asset('images/logo/Logo-MaxG-White.gif') }}" alt="MaxG Logo" class="w-20 h-auto sm:w-20 sm:h-auto">
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    @endforeach
+                </div>
+
+                <!-- Right Side - Thumbnail Display -->
+                <div class="w-1/2 relative rounded-2xl overflow-hidden mt-5">
                     <!-- Default State -->
-                    <div id="mobile-default-thumbnail" class="absolute inset-0 flex items-center justify-center">
+                    <div id="default-thumbnail" class="default-thumbnail-section absolute inset-0 flex items-center justify-center">
                         <div class="text-center text-white/70">
-                            <img src="{{ asset('images/logo/Logo-MaxG-White.gif') }}" alt="Logo Grab" class="w-32 sm:w-48 mx-auto">
+                            <img src="{{ asset('images/logo/Logo-MaxG-White.gif') }}" alt="Logo Grab" class="w-96 mx-auto">
                         </div>
                     </div>
 
                     <!-- Dynamic Thumbnail -->
-                    <div id="mobile-movie-thumbnail" class="absolute inset-0 opacity-0 transition-all duration-500">
-                        <div id="mobile-thumbnail-bg" class="absolute inset-0 bg-cover bg-center"></div>
+                    <div id="movie-thumbnail" class="movie-thumbnail-section absolute inset-0 opacity-0 transition-all duration-500 ease-in-out">
+                        <div id="thumbnail-bg" class="thumbnail-bg absolute inset-0 bg-cover bg-center transition-all duration-700"></div>
                         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
 
-                        <div class="absolute bottom-0 left-0 right-0 p-4">
-                            <span id="mobile-thumbnail-category" class="inline-block px-3 py-1 bg-red-500/90 text-xs font-medium rounded-full text-white mb-2">
-                                Featured
-                            </span>
-                            <h3 id="mobile-thumbnail-title" class="text-white font-bold text-lg mb-1">Judul Film</h3>
-                            <div class="flex items-center gap-2 text-gray-200">
-                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.414-1.415L11 9.586V6z" clip-rule="evenodd"/>
+                        <!-- Play Button -->
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full border border-white/30 flex items-center justify-center transform scale-0 group-hover:scale-100 transition-transform duration-500">
+                                <svg class="w-10 h-10 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M8 5v14l11-7z"/>
                                 </svg>
-                                <span id="mobile-thumbnail-duration" class="text-sm">Durasi</span>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Mobile Movies List -->
-            <div class="space-y-3 max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-gray-300">
-
-                @foreach($videos as $video)
-                <div class="mobile-movie-item group relative bg-gradient-to-r from-blue-200 to-blue-400
-                hover:bg-gradient-to-r hover:from-green-950 hover:to-green-950 rounded-e-full hover:shadow-slate-100 hover:shadow-2xl overflow-hidden transition-all duration-300 border border-gray-200 cursor-pointer"
-                     data-thumbnail="{{ $video->thumbnail }}"
-                     data-title="{{ $video->title }}"
-                     data-description="{{ $video->description ?? 'Movie description...' }}"
-                     data-category="{{ $video->category }}"
-                     data-duration="{{ $video->duration }}">
-
-                    <a href="{{ route('videos.show', $video) }}" class="block p-4">
-                        <div class="flex items-center gap-3">
-                            <!-- Thumbnail -->
-                            <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex-shrink-0 overflow-hidden">
-                                <img src="{{ $video->thumbnail }}" alt="" class="w-full h-full object-cover">
-                            </div>
-
-                            <!-- Content -->
-                            <div class="flex-1 min-w-0">
-                                <div class="flex items-center gap-2 mb-1">
-                                    <span class="text-xs text-gray-600 group-hover:text-gray-200 uppercase font-medium">
-                                        {{ ucfirst($video->category ?? 'Entertainment') }}
-                                    </span>
-                                </div>
-
-                                <h3 class="font-bold text-gray-800 group-hover:text-white text-sm leading-tight truncate">
-                                    {{ $video->title }}
-                                </h3>
-
-                                <div class="flex items-center gap-2 text-sm text-gray-600 group-hover:text-gray-200 mt-1">
-                                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                                    <span>{{ $video->duration ? $video->duration . ' min' : 'Live' }}</span>
-                                </div>
-                            </div>
-
-                            <!-- Arrow -->
-                            <div class="opacity-100 group-hover:opacity-0 transition-opacity duration-300 -ml-36 mr-10 mb-5">
-                                <img src="{{ asset('images/logo/Logo-MaxG-Green.gif') }}" alt="MaxG Logo" class="w-24 h-auto">
-                            </div>
-
-                            <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 -ml-36 mr-10 mb-5">
-                                <img src="{{ asset('images/logo/Logo-MaxG-White.gif') }}" alt="MaxG white Logo" class="w-20 h-auto">
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                @endforeach
-            </div>
-        </div> --}}
-
-        <!-- Desktop/Tablet Layout (lg and above) -->
-        <div class="block">
-            <div class="main-content-scroll hide-scrollbar mb-5">
-                @php
-                    $chunkedVideos = $videos->chunk(4);
-                @endphp
-
-                @foreach($chunkedVideos as $videoChunk)
-                <div class="scroll-section" data-section="{{ $loop->index }}">
-                    <div class="flex gap-8 min-h-[600px]">
-                        <!-- Left Grid - Movie List -->
-                        <div class="w-1/2 space-y-4" id="movies-container-section-{{ $loop->index }}">
-                            @foreach($videoChunk as $video)
-                            <div class="group relative bg-blue-400 hover:bg-green-700 rounded-xl overflow-hidden transition-all duration-500 hover:scale-[1.02] border border-gray-200 cursor-pointer movie-item mobile-movie-item mt-5"
-                                data-thumbnail="{{ $video->thumbnail }}"
-                                data-title="{{ $video->title }}"
-                                data-description="{{ $video->description ?? 'Movie description...' }}"
-                                data-category="{{ $video->category }}"
-                                data-duration="{{ $video->duration }}"
-                                data-section="{{ $loop->parent->index }}">
-
-                                <a href="{{ route('videos.show', $video) }}" class="block p-6">
-                                    <div class="flex items-center gap-4">
-                                        <!-- Thumbnail -->
-                                        <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex-shrink-0">
-                                            <img src="{{ $video->thumbnail }}" alt="" class="w-full h-full object-cover rounded-lg">
-                                        </div>
-
-                                        <!-- Content -->
-                                        <div class="flex-1 min-w-0">
-                                            <div class="flex items-center gap-3 mb-2">
-                                                <span class="category text-xs text-gray-700 group-hover:text-gray-200 uppercase tracking-wider font-medium">
-                                                    {{ ucfirst($video->category ?? 'Entertainment') }}
-                                                </span>
-                                            </div>
-
-                                            <h3 class="text-lg font-bold text-gray-800 mb-2 leading-tight group-hover:text-gray-200 transition-colors duration-300 truncate">
-                                                {{ $video->title }}
-                                            </h3>
-
-                                            <div class="duration flex items-center gap-4 text-sm text-gray-600 group-hover:text-gray-200">
-                                                <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                                <span>{{ $video->duration ? $video->duration . ' min' : 'Live' }}</span>
-                                            </div>
-                                        </div>
-
-                                        <!-- Grab Icons -->
-                                        <div class="opacity-100 group-hover:opacity-0 transition-opacity duration-300 -ml-36 mr-10 sm:mr-10 ">
-                                            <img src="{{ asset('images/logo/Logo-MaxG-Green.gif') }}" alt="MaxG Logo" class="w-24 h-auto sm:w-20 sm:h-auto">
-                                        </div>
-
-                                        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 -ml-36 mr-10 sm:mr-1 ">
-                                            <img src="{{ asset('images/logo/Logo-MaxG-White.gif') }}" alt="MaxG Logo" class="w-20 h-auto sm:w-20 sm:h-auto">
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                            @endforeach
-                        </div>
-
-                        <!-- Right Side - Thumbnail Display -->
-                        <div class="w-1/2 relative rounded-2xl overflow-hidden mt-5">
-                            <!-- Default State -->
-                            <div id="mobile-default-thumbnail-{{ $loop->index }}" class="default-thumbnail-section absolute inset-0 flex items-center justify-center">
-                                <div class="text-center text-white/70">
-                                    <img src="{{ asset('images/logo/Logo-MaxG-White.gif') }}" alt="Logo Grab" class="w-96 mx-auto">
-                                </div>
-                            </div>
-
-                            <!-- Dynamic Thumbnail -->
-                            <div id="mobile-movie-thumbnail-{{ $loop->index }}" class="movie-thumbnail-section absolute inset-0 opacity-0 transition-all duration-500 ease-in-out">
-                                <div id="thumbnail-bg-{{ $loop->index }}" class="thumbnail-bg absolute inset-0 bg-cover bg-center transition-all duration-700"></div>
-                                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-
-                                <div class="absolute bottom-0 left-0 right-0 p-8">
-                                    <div class="max-w-md">
-                                        <span id="mobile-thumbnail-category-{{ $loop->index }}" class="thumbnail-category inline-block px-3 py-1 bg-red-500/90 backdrop-blur-sm text-xs font-medium rounded-full text-white border border-red-400/50 mb-3">
-                                            Featured
-                                        </span>
-
-                                        <h3 id="mobile-thumbnail-title-{{ $loop->index }}" class="text-2xl font-bold text-white mb-2">Judul film</h3>
-
-                                        <div class="flex items-center gap-2 text-gray-200">
-                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.414-1.415L11 9.586V6z" clip-rule="evenodd"/>
-                                            </svg>
-                                            <span id="mobile-thumbnail-duration-{{ $loop->index }}" class="thumbnail-duration text-sm font-medium">Durasi</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Play Button -->
-                                <div class="absolute inset-0 flex items-center justify-center">
-                                    <div class="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full border border-white/30 flex items-center justify-center transform scale-0 group-hover:scale-100 transition-transform duration-500">
-                                        <svg class="w-10 h-10 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M8 5v14l11-7z"/>
-                                        </svg>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                @endforeach
             </div>
         </div>
+
+        <!-- Pagination Section -->
+        <div class="flex flex-col sm:flex-row items-center justify-between mt-8 px-4 py-6 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20">
+            <!-- Info -->
+            <div class="text-sm text-gray-200 mb-4 sm:mb-0">
+                Menampilkan {{ $videos->firstItem() ?? 0 }} - {{ $videos->lastItem() ?? 0 }} dari {{ $videos->total() }} film
+            </div>
+
+            <!-- Pagination Links -->
+            <div class="flex items-center space-x-2">
+                {{-- Previous Page Link --}}
+                @if ($videos->onFirstPage())
+                    <span class="px-3 py-2 text-gray-400 bg-gray-600 rounded-lg cursor-not-allowed">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                    </span>
+                @else
+                    <a href="{{ $videos->appends(request()->query())->previousPageUrl() }}"
+                       class="px-3 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors duration-300">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                    </a>
+                @endif
+
+                {{-- Pagination Elements --}}
+                @foreach ($videos->appends(request()->query())->getUrlRange(1, $videos->lastPage()) as $page => $url)
+                    @if ($page == $videos->currentPage())
+                        <span class="px-4 py-2 text-white bg-blue-600 rounded-lg font-semibold">{{ $page }}</span>
+                    @else
+                        <a href="{{ $url }}"
+                           class="px-4 py-2 text-gray-200 bg-white/10 hover:bg-white/20 rounded-lg transition-colors duration-300">
+                            {{ $page }}
+                        </a>
+                    @endif
+                @endforeach
+
+                {{-- Next Page Link --}}
+                @if ($videos->hasMorePages())
+                    <a href="{{ $videos->appends(request()->query())->nextPageUrl() }}"
+                       class="px-3 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors duration-300">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </a>
+                @else
+                    <span class="px-3 py-2 text-gray-400 bg-gray-600 rounded-lg cursor-not-allowed">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </span>
+                @endif
+            </div>
+
+            <!-- Per Page Selector -->
+            <form method="GET" class="mt-4 sm:mt-0">
+                @foreach(request()->query() as $key => $value)
+                    @if($key !== 'per_page' && $key !== 'page')
+                        <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                    @endif
+                @endforeach
+
+                <select name="per_page" onchange="this.form.submit()"
+                        class="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="8" {{ request('per_page', 8) == 8 ? 'selected' : '' }}>8 per halaman</option>
+                    <option value="12" {{ request('per_page') == 12 ? 'selected' : '' }}>12 per halaman</option>
+                    <option value="16" {{ request('per_page') == 16 ? 'selected' : '' }}>16 per halaman</option>
+                    <option value="20" {{ request('per_page') == 20 ? 'selected' : '' }}>20 per halaman</option>
+                </select>
+            </form>
+        </div>
+    </div>
 </div>
 <!-- Current Time Display -->
 <div class="fixed bottom-6 right-6 z-20">
-    <div class="bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 border border-gray-200 shadow-lg">
-        <div class="text-right text-gray-800">
-            <div class="text-xs text-blue-600 font-medium">NOW</div>
-            <div class="text-sm font-bold" id="current-time">10:58 AM</div>
+    <div class="bg-white/60 backdrop-blur-lg border border-white/20 rounded-xl px-4 py-3 shadow-[0_8px_32px_0_rgba(31,38,135,0.37)] hover:bg-white/15 hover:scale-105 transition-all duration-300">
+        <div class="text-right text-gray-700">
+            <div class="text-xs text-blue-500 font-semibold tracking-wider">NOW</div>
+            <div class="text-lg font-bold" id="current-time">10:58 AM</div>
         </div>
     </div>
 </div>

@@ -44,6 +44,7 @@ Route::get('/games/tetris', [GameController::class, 'tetris'])->name('games.tetr
 Route::get('/games/dino', [GameController::class, 'dino'])->name('games.dino');
 Route::get('/games/floppybird', [GameController::class, 'floppybird'])->name('games.floppybird');
 Route::get('/games/candy-crush', [GameController::class, 'candycrush'])->name('games.candycrush');
+Route::get('games/2048', [GameController::class, 'the2048'])->name('games.2048');
 // About Route
 Route::get('/about', [AboutController::class, 'index'])->name('about');
 

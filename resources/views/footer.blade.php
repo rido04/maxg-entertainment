@@ -21,9 +21,9 @@
                 <p class="text-xs font-arial sm:text-sm text-gray-200 font-medium tracking-wider mb-1 sm:mb-2">
                     Developed & Maintained by
                 </p>
-                <h3 class="text-sm sm:text-base font-medium font-arial">
+                <p class="text-xs sm:text-sm font-medium font-arial">
                     Grab Indonesia | MCMMedia Networks
-                </h3>
+                </p>
             </div>
         </div>
 
@@ -45,7 +45,7 @@
         </div>
 
         <!-- API Credits Section -->
-        <div class="border-t border-gray-400/30 pt-4 sm:pt-6 mt-4">
+        <div class="border-t border-gray-400/30 pt-4 sm:pt-6 mt-4 mb-6">
             <div class="text-center">
                 <p class="text-xs sm:text-sm text-gray-300 font-medium tracking-wider uppercase mb-2 sm:mb-3">
                     Data Sources & APIs

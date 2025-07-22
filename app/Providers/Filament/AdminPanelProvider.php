@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Resources\AdvertisementResource;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\Widgets;
@@ -49,6 +50,7 @@ class AdminPanelProvider extends PanelProvider
             ->resources([
                 FeedbackResource::class,
                 MediaResource::class,
+                AdvertisementResource::class,
             ])
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([

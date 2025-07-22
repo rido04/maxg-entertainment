@@ -26,7 +26,7 @@
     <!-- Poster Section - Improved responsive behavior -->
     <div class="w-full lg:w-2/5 xl:w-1/3 p-3 sm:p-4 md:p-6 lg:p-8 order-2 lg:order-1">
         @if($video->thumbnail)
-        <div class="relative group max-w-xs sm:max-w-sm md:max-w-md lg:max-w-none mx-auto">
+        <div class="relative group max-w-xs sm:max-w-sm md:max-w-md lg:max-w-none mx-auto shadow-2xl">
             <img src="{{ $video->thumbnail }}"
                 alt="{{ $video->title }}"
                 class="w-full h-auto rounded-xl sm:rounded-2xl shadow-2xl fade-in border border-gray-700/50 group-hover:shadow-blue-500/20 transition-all duration-500 transform group-hover:scale-[1.02]">
@@ -55,41 +55,41 @@
           {{ $video->title }}
         </h1>
 
-        <!-- Rating and Info Tags - Enhanced responsive layout -->
-        <div class="flex flex-row justify-center lg:justify-between gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-5 md:mb-6 flex-wrap py-4 px-6">
-            <div class="flex items-center gap-1 px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 md:py-3 bg-gradient-to-b from-amber-500/80 to-amber-700/80 backdrop-blur-sm text-white text-xs sm:text-sm font-bold rounded-xl transition-all duration-300 hover:scale-105 hover:bg-white/30">
-              <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-              </svg>
-              {{ $video->rating ?? 'N/A' }}/10
+        <!-- Rating and Info Tags - Always inline layout -->
+        <div class="flex flex-row justify-center lg:justify-between items-center gap-1 sm:gap-2 md:gap-3 lg:gap-4 mb-4 sm:mb-5 md:mb-6 py-4 px-2 sm:px-4 md:px-6 overflow-x-auto">
+
+            <div class="flex items-center gap-0.5 sm:gap-1 px-2 sm:px-3 md:px-4 lg:px-5 py-1.5 sm:py-2 md:py-2.5 lg:py-3 bg-gradient-to-b from-slate-700/80 to-slate-950/80 backdrop-blur-sm text-white text-xs sm:text-sm font-bold rounded-lg sm:rounded-xl transition-all duration-300 hover:scale-105 hover:bg-white/30 whitespace-nowrap min-w-0 flex-shrink-0">
+                <svg class="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
+                </svg>
+                <span class="truncate">{{ ucfirst($video->category ?? 'N/A') }}</span>
             </div>
 
-            <div class="flex items-center gap-1 px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 md:py-3 bg-gradient-to-b from-blue-500/80 to-blue-700/80 backdrop-blur-sm text-white text-xs sm:text-sm font-bold rounded-xl transition-all duration-300 hover:scale-105 hover:bg-white/30">
-              <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
-              </svg>
-              {{ $video->release_date ? \Carbon\Carbon::parse($video->release_date)->format('Y') : 'N/A' }}
+            <div class="flex items-center gap-0.5 sm:gap-1 px-2 sm:px-3 md:px-4 lg:px-5 py-1.5 sm:py-2 md:py-2.5 lg:py-3 bg-gradient-to-b from-amber-500/80 to-amber-700/80 backdrop-blur-sm text-white text-xs sm:text-sm font-bold rounded-lg sm:rounded-xl transition-all duration-300 hover:scale-105 hover:bg-white/30 whitespace-nowrap min-w-0 flex-shrink-0">
+                <svg class="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                </svg>
+                <span class="truncate">{{ $video->rating ?? 'N/A' }}/10</span>
             </div>
 
-            <div class="flex items-center gap-1 px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 md:py-3 bg-gradient-to-b from-green-500/80 to-green-700/80 backdrop-blur-sm text-white text-xs sm:text-sm font-bold rounded-xl transition-all duration-300 hover:scale-105 hover:bg-white/30">
-              <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>
-              </svg>
-              {{ $video->duration ?? 'N/A' }} Min
+            <div class="flex items-center gap-0.5 sm:gap-1 px-2 sm:px-3 md:px-4 lg:px-5 py-1.5 sm:py-2 md:py-2.5 lg:py-3 bg-gradient-to-b from-stone-600/80 to-stone-800/80 backdrop-blur-sm text-white text-xs sm:text-sm font-bold rounded-lg sm:rounded-xl transition-all duration-300 hover:scale-105 hover:bg-white/30 whitespace-nowrap min-w-0 flex-shrink-0">
+                <svg class="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+                </svg>
+                <span class="truncate">{{ $video->release_date ? \Carbon\Carbon::parse($video->release_date)->format('Y') : 'N/A' }}</span>
             </div>
 
-            <div class="flex items-center gap-1 px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 md:py-3 bg-gradient-to-b from-red-500/80 to-red-700/80 backdrop-blur-sm text-white text-xs sm:text-sm font-bold rounded-xl transition-all duration-300 hover:scale-105 hover:bg-white/30">
-              <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
-              </svg>
-              {{ ucfirst($video->category ?? 'N/A') }}
+            <div class="flex items-center gap-0.5 sm:gap-1 px-2 sm:px-3 md:px-4 lg:px-5 py-1.5 sm:py-2 md:py-2.5 lg:py-3 bg-gradient-to-b from-green-500/80 to-green-700/80 backdrop-blur-sm text-white text-xs sm:text-sm font-bold rounded-lg sm:rounded-xl transition-all duration-300 hover:scale-105 hover:bg-white/30 whitespace-nowrap min-w-0 flex-shrink-0">
+                <svg class="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>
+                </svg>
+                <span class="truncate">{{ $video->duration ?? 'N/A' }} Min</span>
             </div>
-          </div>
+        </div>
 
         <!-- Description Box - Enhanced design -->
-        <div class="bg-white/95 backdrop-blur-md border border-gray-300/50 rounded-xl md:rounded-2xl p-3 sm:p-4 md:p-5 lg:p-6 mb-4 sm:mb-5 md:mb-6 lg:mb-8 shadow-xl hover:shadow-2xl transition-all duration-300">
+        <div class="bg-white/50 backdrop-blur-md border border-gray-300/50 rounded-xl md:rounded-2xl p-3 sm:p-4 md:p-5 lg:p-6 mb-4 sm:mb-5 md:mb-6 lg:mb-8 shadow-xl hover:shadow-2xl transition-all duration-300">
           <div class="flex items-start gap-3 mb-2">
-            <div class="w-1 h-6 bg-gradient-to-b from-blue-500 to-blue-700 rounded-full flex-shrink-0 mt-1"></div>
             <h3 class="text-sm sm:text-base font-semibold text-gray-800">Sinopsis</h3>
           </div>
           <p class="text-gray-700 text-sm sm:text-base lg:text-lg leading-relaxed text-justify pl-4">
@@ -101,8 +101,8 @@
         <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-2 sm:gap-3 md:gap-4">
             @if($video->file_path)
             <button onclick="playFullscreen('{{ asset($video->file_path) }}')"
-               class="w-full sm:w-auto flex items-center justify-center gap-2 sm:gap-2.5 md:gap-3 bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 md:py-4 rounded-xl md:rounded-2xl hover:from-blue-700 hover:via-blue-800 hover:to-blue-900 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-blue-500/30 border border-blue-500/30 group">
-              <svg class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white transition-transform group-hover:scale-110" fill="currentColor" viewBox="0 0 24 24">
+               class="w-full sm:w-auto flex items-center justify-center gap-2 sm:gap-2.5 md:gap-3 bg-gradient-to-r from-green-600 via-green-700 to-green-800 px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 md:py-4 rounded-xl md:rounded-2xl hover:from-green-700 hover:via-green-800 hover:to-green-900 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-green-500/30 border border-green-500/30 group">
+              <svg class="w-10 h-auto sm:w-10 sm:h-auto md:w-6 md:h-6 text-white transition-transform group-hover:scale-110" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M8 5v14l11-7z"/>
               </svg>
               <span class="font-semibold text-sm sm:text-base md:text-lg text-white">Mainkan</span>
@@ -118,7 +118,7 @@
 
             <button onclick="history.back()"
                     class="w-full sm:w-auto flex items-center justify-center gap-2 sm:gap-2.5 md:gap-3 px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 md:py-4 bg-gradient-to-r from-red-600 to-red-700 backdrop-blur-sm border border-red-500/30 rounded-xl md:rounded-2xl hover:from-red-700 hover:to-red-800 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-red-500/20 group">
-                <svg class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-10 h-auto sm:w-10 sm:h-auto md:w-6 md:h-6 text-white transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                 </svg>
                 <span class="font-semibold text-sm sm:text-base md:text-lg text-white">Kembali</span>

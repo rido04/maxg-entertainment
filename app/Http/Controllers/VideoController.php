@@ -35,34 +35,39 @@ class VideoController extends Controller
         ]);
     }
 
+    // Di Controller Anda, ubah method index seperti ini:
+
     public function index(Request $request)
     {
-        $category = $request->input('category');
+        $query = Media::query();
 
-        $query = Media::where('type', 'video')
-                    ->where('is_adult_content', false); // Filter adult content
-
-        if ($category) {
-            $query->where('category', 'LIKE', '%' . $category . '%');
+        // Filter berdasarkan kategori jika ada
+        if ($request->has('category') && $request->category != '') {
+            $query->where('category', $request->category);
         }
 
-        $videos = $query->get();
+        // Tentukan jumlah item per halaman (default 8)
+        $perPage = $request->get('per_page', 4);
 
-        // Ambil semua kategori unik dari database
-        $categories = Media::where('type', 'video')
-                        ->where('is_adult_content', false)
-                        ->whereNotNull('category')
-                        ->where('category', '!=', '')
-                        ->get()
-                        ->pluck('category')
-                        ->flatMap(function ($category) {
-                            return explode(', ', $category);
-                        })
-                        ->unique()
-                        ->sort()
-                        ->values();
+        // Validasi per_page value
+        if (!in_array($perPage, [4, 8, 12, 16, 20])) {
+            $perPage = 4;
+        }
 
-        return view('videos.index', compact('videos', 'category', 'categories'));
+        // Ambil data dengan pagination
+        $videos = $query->latest()->paginate($perPage);
+
+        // Append query parameters ke pagination links
+        $videos->appends($request->query());
+
+        // Ambil semua kategori untuk filter dropdown
+        $categories = Media::distinct()->pluck('category')->filter()->sort();
+
+        return view('videos.index', [
+            'videos' => $videos,
+            'categories' => $categories,
+            'category' => $request->category ?? null,
+        ]);
     }
 
     public function show(Media $video)

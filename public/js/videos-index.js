@@ -15,20 +15,77 @@ function togglePasswordVisibility() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-    function resetAllThumbnails() {
-        document
-            .querySelectorAll(".default-thumbnail-section")
-            .forEach((element) => {
-                if (element) element.style.opacity = "1";
+    // Setup untuk layout desktop biasa (bukan scroll container)
+    const mainContent = document.querySelector(".main-content");
+    if (mainContent) {
+        const movieItems = document.querySelectorAll(".movie-item");
+        const movieThumbnail = document.getElementById("movie-thumbnail");
+        const defaultThumbnail = document.getElementById("default-thumbnail");
+
+        let currentTimeout;
+        let hoverTimeout;
+
+        movieItems.forEach((item) => {
+            item.addEventListener("mouseenter", function () {
+                clearTimeout(currentTimeout);
+                clearTimeout(hoverTimeout);
+
+                // Remove active class dari semua items
+                movieItems.forEach((movie) => {
+                    movie.classList.remove("active-movie");
+                });
+
+                // Add active class ke current item
+                this.classList.add("active-movie");
+
+                // Update thumbnail content
+                const thumbnail = this.dataset.thumbnail;
+                const thumbnailBg = document.getElementById("thumbnail-bg");
+
+                if (thumbnailBg && thumbnail) {
+                    thumbnailBg.style.backgroundImage = `url('${thumbnail}')`;
+                }
+
+                // Show thumbnail dengan fade effect
+                hoverTimeout = setTimeout(() => {
+                    if (defaultThumbnail) {
+                        defaultThumbnail.style.opacity = "0";
+                    }
+                    if (movieThumbnail) {
+                        movieThumbnail.style.opacity = "1";
+                    }
+                }, 100);
             });
-        document
-            .querySelectorAll(".movie-thumbnail-section")
-            .forEach((element) => {
-                if (element) element.style.opacity = "0";
+
+            item.addEventListener("mouseleave", function () {
+                clearTimeout(hoverTimeout);
+
+                currentTimeout = setTimeout(() => {
+                    movieItems.forEach((movie) => {
+                        movie.classList.remove("active-movie");
+                    });
+                    if (defaultThumbnail) defaultThumbnail.style.opacity = "1";
+                    if (movieThumbnail) movieThumbnail.style.opacity = "0";
+                }, 1500);
             });
-        document.querySelectorAll(".movie-item").forEach((element) => {
-            element.classList.remove("active-movie");
         });
+
+        // Keep thumbnail visible when hovering over thumbnail area
+        if (movieThumbnail) {
+            movieThumbnail.addEventListener("mouseenter", function () {
+                clearTimeout(currentTimeout);
+            });
+
+            movieThumbnail.addEventListener("mouseleave", function () {
+                currentTimeout = setTimeout(() => {
+                    movieItems.forEach((movie) => {
+                        movie.classList.remove("active-movie");
+                    });
+                    if (defaultThumbnail) defaultThumbnail.style.opacity = "1";
+                    if (movieThumbnail) movieThumbnail.style.opacity = "0";
+                }, 1500);
+            });
+        }
     }
 
     // Fungsi untuk update thumbnail content
@@ -39,27 +96,8 @@ document.addEventListener("DOMContentLoaded", function () {
         const category = item.dataset.category;
         const duration = item.dataset.duration;
 
-        // Cari elemen dalam section yang spesifik
-        const thumbnailTitle = section.querySelector(
-            "#thumbnail-title-" + item.dataset.section
-        );
-        const thumbnailCategory = section.querySelector(
-            "#thumbnail-category-" + item.dataset.section
-        );
-        const thumbnailDuration = section.querySelector(
-            "#thumbnail-duration-" + item.dataset.section
-        );
-        const thumbnailBg = section.querySelector(
-            "#thumbnail-bg-" + item.dataset.section
-        );
-
-        if (thumbnailTitle) thumbnailTitle.textContent = title || "Movie Title";
-        if (thumbnailCategory)
-            thumbnailCategory.textContent = category || "Entertainment";
-        if (thumbnailDuration)
-            thumbnailDuration.textContent = duration
-                ? duration + " min"
-                : "Unknown duration";
+        // Gunakan selector yang benar tanpa dataset.section
+        const thumbnailBg = section.querySelector("#thumbnail-bg");
 
         if (thumbnailBg && thumbnail) {
             thumbnailBg.style.backgroundImage = `url('${thumbnail}')`;

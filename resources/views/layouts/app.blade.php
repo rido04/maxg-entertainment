@@ -12,9 +12,6 @@
     <script src="{{ asset('build/assets/app-C0y3UHmG.js', true) }}"></script> --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="{{ asset('js/audio-player-global.js') }}"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     @stack('styles')
 </head>
@@ -99,7 +96,7 @@
     <div class="w-full h-full p-4 flex items-center justify-center">
       <div class="bg-white rounded-lg w-full max-w-6xl h-full max-h-[90vh] overflow-hidden relative transform scale-95 transition-transform duration-300">
         <!-- Modal Header -->
-        <div class="bg-gray-800 text-white p-4 flex justify-between items-center">
+        <div class="bg-green-700 text-white p-4 flex justify-between items-center">
           <h3 class="text-lg font-medium">Live Navigation</h3>
           <button id="closeMapModal" class="text-gray-300 hover:text-white transition-colors">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -121,27 +118,28 @@
   </div>
 
   <!-- Floating Map Trigger Button -->
-  <div id="mapTriggerBtn" class="fixed bottom-0 left-1/2 transform -translate-x-1/2 z-30 cursor-pointer group">
-    <div class="relative shadow-2xl hover:shadow-lg transition-all duration-300">
+  <div id="mapTriggerBtn" class="fixed bottom-0 left-1/2 transform -translate-x-1/2 z-30 cursor-pointer group sm:-mb-2">
+    <div class="relative transition-all duration-300">
         <img src="{{ asset('images/logo/tarikan.png') }}"
              alt="Tap for map"
-             class="w-52 h-auto object-contain transition-opacity duration-300">
+             class="w-52 h-auto object-contain transition-opacity duration-300 opacity-70 filter blur-3xl"  style="filter: drop-shadow(0 -4px 8px rgba(0,0,0,0.3)) drop-shadow(-4px 0 8px rgba(0,0,0,0.2)) drop-shadow(4px 0 8px rgba(0,0,0,0.2));">
 
         <div class="absolute inset-0 flex flex-col items-center justify-center space-y-1">
             <!-- Text -->
-            <div class="text-center inline-flex mt-4 items-center ">
-                <p class="text-gray-800 font-medium text-sm drop-shadow-sm mr-2">Live Navigation</p>
+            <div class="text-center inline-flex mt-4 items-center mb-2">
+                <p class="text-gray-700 font-medium text-xs drop-shadow-sm mr-2 mb-2">Live </p>
 
                 <div class="relative">
                     <div class="absolute inset-0 rounded-full bg-green-400 opacity-75 animate-ping"></div>
                     <div class="absolute inset-0 rounded-full bg-green-400 opacity-50 animate-ping" style="animation-delay: 0.5s;"></div>
-
-                    <div class="relative w-6 h-6 bg-green-500 rounded-full flex items-center justify-center animate-pulse">
+                    <div class="relative w-5 h-5 sm:mb-2 bg-green-500 rounded-full flex items-center justify-center animate-pulse">
                         <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
                         </svg>
                     </div>
                 </div>
+                <p class="text-gray-700 font-medium text-xs drop-shadow-sm ml-2 mb-2">Navigation</p>
+
             </div>
         </div>
     </div>
@@ -281,6 +279,23 @@ document.addEventListener('DOMContentLoaded', function() {
     <p class="text-gray-500 font-medium mt-2 tracking-wide">Loading page...</p>
 </div>
 
+<div id="screensaver" class="fixed inset-0 bg-black z-[9999] hidden flex items-center justify-center ">
+    <!-- Video -->
+    <video id="screensaverVideo" class="w-full h-full object-cover absolute inset-0" style="bottom: -50px;" autoplay></video>
+    <!-- Reminder Text -->
+    <div class="absolute bottom-5 flex w-full justify-between px-4">
+        <p class="text-white text-sm sm:text-base font-medium opacity-70">
+            Tap di mana saja untuk keluar dari screensaver
+        </p>
+        <p class="text-white text-sm sm:text-base font-medium opacity-70 text-right">
+            For placement advertising contact us: 082121212
+        </p>
+    </div>
+</div>
+
+
+
+
 <script>
 window.addEventListener("load", function () {
     const loader = document.getElementById("loader");
@@ -347,5 +362,59 @@ if (navigator.userAgent.includes('GarudaApp') || navigator.userAgent.includes('C
     document.body.classList.add('webview-desktop-mode');
 }
 </script>
+
+<script>
+    const screensaver = document.getElementById("screensaver");
+    const video = document.getElementById("screensaverVideo");
+
+    const videoSources = [
+        "{{ asset('video/Bebas Seenaknya Pasti Diskon Grabfood.mp4') }}",
+        "{{ asset('video/GrabMart Beauty Ready.mp4') }}",
+        // "{{ asset('video/jurassic-world.mp4') }}"
+    ];
+
+    let currentIndex = 0;
+
+    function playNextVideo() {
+        video.src = videoSources[currentIndex];
+        video.play();
+        currentIndex = (currentIndex + 1) % videoSources.length;
+    }
+
+    // Putar video pertama saat screensaver aktif
+    function showScreensaver() {
+        screensaver.classList.remove("hidden");
+        currentIndex = 0;
+        playNextVideo();
+    }
+
+    function hideScreensaver() {
+        screensaver.classList.add("hidden");
+        video.pause();
+    }
+
+    // Ganti video saat yang sekarang selesai
+    video.addEventListener('ended', () => {
+        playNextVideo();
+    });
+
+    // Inactivity detection (60 detik)
+    let inactivityTimeout;
+    function resetInactivityTimer() {
+        clearTimeout(inactivityTimeout);
+        inactivityTimeout = setTimeout(showScreensaver, 30000); // 1 menit
+    }
+
+    ['mousemove', 'keydown', 'touchstart'].forEach(evt => {
+        window.addEventListener(evt, () => {
+            hideScreensaver();
+            resetInactivityTimer();
+        });
+    });
+
+    resetInactivityTimer();
+</script>
+
+
 </body>
 </html>

@@ -35,7 +35,7 @@ class GameController extends Controller
                 'route' => 'games.snake',
                 'background_image' => 'images/background/bg-snake-game.png',
                 'icon' => '🐍',
-                'description' => 'Collect food and don\'t hit the walls!',
+                'description' => 'Makan terus dan jangan tabrak tembok!',
                 'colors' => [
                     'hover_from' => 'green-800',
                     'hover_to' => 'green-900',
@@ -75,7 +75,7 @@ class GameController extends Controller
                 'route' => 'games.dino',
                 'background_image' => 'images/background/bg-dino-game.png', // Fixed field name
                 'icon' => '🦖',
-                'description' => 'Play the world\'s most popular jumping dino game!',
+                'description' => 'Mainkan game dino lompat yang paling populer di dunia!',
                 'colors' => [
                     'hover_from' => 'orange-800',
                     'hover_to' => 'orange-900',
@@ -133,7 +133,7 @@ class GameController extends Controller
                 'route' =>  'games.floppybird',
                 'background_image' => 'images/background/bg-flappy-bird.png', // Fixed field name
                 'icon' => '🐦',
-                'description' => 'Classic flappy bird game with addictive gameplay',
+                'description' => 'Ini dia game flappy bird yang populer dan adiktif!',
                 'colors' => [
                     'hover_from' => 'sky-800',
                     'hover_to' => 'sky-900',
@@ -153,7 +153,27 @@ class GameController extends Controller
                 'route' =>  'games.candycrush',
                 'background_image' => 'images/background/bg-candy-crush.png',
                 'icon' => '🍬',
-                'description' => 'Hey its a Candy Crush game on your flight',
+                'description' => 'Cocokan permen warna warni yang lezat!',
+                'colors' => [
+                    'hover_from' => 'sky-800',
+                    'hover_to' => 'sky-900',
+                    'border' => 'sky-500',
+                    'glow_from' => 'sky-600',
+                    'glow_to' => 'cyan-600',
+                    'button' => 'sky-600',
+                    'button_hover' => 'sky-500',
+                    'text_hover' => 'sky-300',
+                    'corner' => 'sky-500'
+                ],
+                'status' => 'active'
+                // featured akan diset random nanti
+            ],
+            [
+                'name' => '2048',
+                'route' =>  'games.2048',
+                'background_image' => 'images/background/bg-2048.png',
+                'icon' => '🔢',
+                'description' => 'Bisakah kamu mencapai 2048?',
                 'colors' => [
                     'hover_from' => 'sky-800',
                     'hover_to' => 'sky-900',
@@ -227,4 +247,10 @@ class GameController extends Controller
     {
         return view('games.candycrush');
     }
+
+    public function the2048()
+    {
+        return view('games.2048');
+    }
+
 }

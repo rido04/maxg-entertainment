@@ -90,7 +90,7 @@
                 </a>
             </div> --}}
 
-            <div class="nav-item-wrapper">
+            {{-- <div class="nav-item-wrapper">
                 <a href="{{ route('route') }}" class="nav-link flex items-center justify-center w-12 h-12 sm:w-12 sm:h-12 md:w-12 md:h-12 lg:w-12 lg:h-12 xl:w-12 xl:h-12 text-slate-400 hover:text-green-400 hover:bg-white/10 transition-all duration-300 rounded-lg mx-2 relative group">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.866-3.134-7-7-7z" />
@@ -102,7 +102,7 @@
                         <div class="tooltip-arrow absolute right-[-4px] top-1/2 transform -translate-y-1/2 w-0 h-0 border-l-4 border-l-slate-800 border-t-2 border-t-transparent border-b-2 border-b-transparent"></div>
                     </div>
                 </a>
-            </div>
+            </div> --}}
 
             <div class="nav-item-wrapper">
                 <a href="{{ route('about') }}" class="nav-link flex items-center justify-center w-12 h-12 sm:w-12 sm:h-12 md:w-12 md:h-12 lg:w-12 lg:h-12 xl:w-12 xl:h-12 text-slate-400 hover:text-green-400 hover:bg-white/10 transition-all duration-300 rounded-lg mx-2 relative group">

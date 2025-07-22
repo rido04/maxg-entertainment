@@ -2,7 +2,7 @@
 
 @section('content')
 <!-- Background with enhanced gradient matching app theme -->
-<div class="min-h-screen relative overflow-hidden" style="background-image: url('{{ asset('images/background/BG1.jpg') }}'); background-size: cover; background-position: center;">
+<div class="min-h-screen relative overflow-hidden" style="background-image: url('{{ asset('images/background/Background_Color.png') }}'); background-size: cover; background-position: center;">
   <!-- Animated background particles with softer colors -->
   <div class="absolute inset-0 overflow-hidden">
     <div class="absolute -top-40 -left-40 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
@@ -19,20 +19,20 @@
   <!-- Main Content -->
   <div class="relative z-10 p-6">
     <!-- Enhanced Back Button -->
-    <div class="mb-8">
-      <button onclick="history.back()" class="group flex items-center gap-3 px-6 py-3 bg-red-800/60 backdrop-blur-sm rounded-xl border border-gray-700/50 hover:bg-red-700/70 hover:border-gray-600/50 transition-all duration-300 transform hover:scale-105 hover:shadow-lg">
-        <div class="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center group-hover:bg-blue-500/30 transition-colors">
-          <svg class="w-4 h-4 text-blue-400 group-hover:text-blue-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-          </svg>
-        </div>
-        <span class="font-medium text-gray-200 group-hover:text-white transition-colors">Kembali</span>
-      </button>
+    <div class="fixed top-4 left-4 z-50 mb-8">
+  <button onclick="history.back()" class="group flex items-center gap-3 px-6 py-3 bg-red-800/60 backdrop-blur-sm rounded-xl border border-gray-700/50 hover:bg-red-700/70 hover:border-gray-600/50 transition-all duration-300 transform hover:scale-105 hover:shadow-lg">
+    <div class="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center group-hover:bg-blue-500/30 transition-colors">
+      <svg class="w-4 h-4 text-blue-400 group-hover:text-blue-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
     </div>
+    <span class="font-medium text-gray-200 group-hover:text-white transition-colors">Kembali</span>
+  </button>
+</div>
 
     <!-- Enhanced Title with animated underline -->
     <div class="mb-12 text-center">
-      <h2 class="text-4xl md:text-5xl font-bold mb-4 bg-gray-200 bg-clip-text text-transparent">
+      <h2 class="text-4xl md:text-5xl font-bold mb-4 bg-gray-200 bg-clip-text text-transparent font-arial">
         Hasil Pencarian
       </h2>
       <div class="w-24 h-1 bg-gradient-to-r from-blue-500 to-blue-500 mx-auto rounded-full"></div>
@@ -43,7 +43,7 @@
       <div class="mb-8 text-center">
         <div class="inline-flex items-center gap-2 px-4 py-2 bg-gray-200 backdrop-blur-sm rounded-full border border-gray-700/30">
           <div class="w-2 h-2 bg-blue-700 rounded-full animate-pulse"></div>
-          <span class="text-gray-900 text-sm font-medium">{{ $videos->count() }} Hasil Ditemukan</span>
+          <span class="text-gray-900 text-sm font-medium font-arial">{{ $videos->count() }} Hasil Ditemukan</span>
         </div>
       </div>
 
@@ -133,16 +133,15 @@
   </div>
 
   <!-- Enhanced Time Display with live update -->
-  <div class="fixed bottom-6 right-6 z-auto">
-    <div class="bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 border border-gray-200 shadow-lg">
-      <div class="text-right text-gray-800">
-        <div class="text-xs text-blue-600 font-medium">Now</div>
-        <div class="text-sm font-bold" id="current-time">
-          11:32 AM
+ <!-- Current Time Display -->
+<div class="fixed bottom-6 right-6 z-20">
+    <div class="bg-white/60 backdrop-blur-lg border border-white/20 rounded-xl px-4 py-3 shadow-[0_8px_32px_0_rgba(31,38,135,0.37)] hover:bg-white/15 hover:scale-105 transition-all duration-300 opacity-60">
+        <div class="text-right flex-col text-gray-700">
+            <div class="text-xs inline-flex text-blue-500 font-semibold tracking-wider">NOW</div>
+            <div class="text-lg inline-flex font-bold" id="current-time">10:58 AM</div>
         </div>
-      </div>
     </div>
-  </div>
+</div>
 </div>
 
 @push('styles')

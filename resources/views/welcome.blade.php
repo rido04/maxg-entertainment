@@ -31,7 +31,7 @@
 <!-- Main Content -->
 <div class="relative z-10 min-h-screen flex flex-col lg:flex-row md-flex-row sm:flex-row xl:flex-row">
     <!-- Left Section - Welcome -->
-    <div class="flex-1 flex flex-col justify-center px-4 sm:px-6 lg:px-12 py-8 sm:py-8 lg:py-20 -mt-8 sm:-mt-16 lg:-mt-32">
+    <div class="flex-1 flex flex-col justify-center px-4 sm:px-6 lg:px-12 py-8 sm:py-8 lg:py-20 -mt-8 sm:mt-16 lg:-mt-32">
         <div class="max-w-xl fade-in text-left lg:text-left">
             <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-medium text-white mb-4 sm:mb-6 leading-tight">
                 Welcome to
@@ -49,24 +49,24 @@
     </div>
 
     <!-- Right Section - Flight Info -->
-    <div class="w-full flex flex-col justify-center px-4 lg:px-8 py-8 lg:py-8 -mt-8 lg:-mt-0 mr-44">
+    <div class="w-full flex flex-col justify-center px-4 lg:px-8 py-8 lg:py-8 -mt-8 lg:-mt-0 mr-44 sm:mt-24">
         <div class="flex justify-center">
             <img src="{{ asset('images/background/Grabcar_MasAdam.gif') }}"
                  alt="Mobil Grab"
-                 class="xl:w-1/2 lg:w-full md:w-full sm:w-full h-auto max-w-none -mt-44 -mr-52 xl:-mr-96 animate-fly-in">
+                 class="xl:w-1/2 lg:w-full md:w-full sm:w-full h-auto max-w-none -mt-44 -mr-52 xl:-mr-96 animate-fly-in" style="filter: drop-shadow(0 -4px 8px rgba(0,0,0,0.3)) drop-shadow(-4px 0 8px rgba(0,0,0,0.2)) drop-shadow(4px 0 8px rgba(0,0,0,0.2));">
         </div>
     </div>
 </div>
 
 <!-- Current Time Display -->
-<div class="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 z-20">
-    <div class="bg-white/90 backdrop-blur-sm rounded-lg px-2 sm:px-3 py-1 sm:py-2 border border-gray-200 shadow-lg">
-      <div class="text-right text-gray-800">
-        <div class="text-xs text-blue-600 font-medium">NOW</div>
-        <div class="text-xs sm:text-sm font-bold" id="current-time">10:58 AM</div>
-      </div>
+<div class="fixed bottom-6 right-6 z-20">
+    <div class="bg-white/60 backdrop-blur-lg border border-white/20 rounded-xl px-4 py-3 shadow-[0_8px_32px_0_rgba(31,38,135,0.37)] hover:bg-white/15 hover:scale-105 transition-all duration-300 opacity-60">
+        <div class="text-right flex-col text-gray-700">
+            <div class="text-xs text-blue-500 inline-flex font-semibold tracking-wider">NOW</div>
+            <div class="text-lg inline-flex font-bold" id="current-time">10:58 AM</div>
+        </div>
     </div>
-  </div>
+</div>
 </div>
 @endsection
 

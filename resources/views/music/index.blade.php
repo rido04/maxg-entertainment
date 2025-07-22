@@ -4,15 +4,13 @@
 <div class="min-h-screen text-gray-800" style="background-image: url('{{ asset('images/background/Background_Color.png') }}'); background-size: cover; background-position: center;">
 
   <!-- Header Section -->
-    <div class="relative pt-4 md:pt-8 pb-4 md:pb-6 md:mx-14">
+    <div class="relative pt-4 md:pt-8 pb-4 md:pb-6 md:mx-14 sm:mx-8">
     <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
 
         <!-- Time-based Greeting -->
         <div class="w-full mb-4 md:mb-8">
         <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
-            <h1 class="text-xl sm:text-2xl font-bold text-gray-200" id="greeting">
-                Good Evening
-            </h1>
+            <img src="{{ asset('images/logo/Maxg-ent_white.gif') }}" alt="Grab Logo" class="w-40 sm:w-60 md:w-80 h-8 sm:h-10 md:h-14 object-contain">
             <!-- Sync Button -->
             <button type="button"
                 onclick="document.getElementById('syncModal').classList.remove('hidden')"
@@ -23,16 +21,7 @@
                 Sync Music
             </button>
         </div>
-        <p class="text-gray-200 text-sm sm:text-lg mt-2">Lagi Bosen dan pengen ngelamun?, dengerin koleksi musik kami aja!</p>
-        </div>
-
-        <!-- Garuda Logo & Text -->
-        <div class="flex items-center justify-between md:justify-end w-full md:w-auto -mt-4 md:-mt-8 -mr-0 md:-mr-7">
-            <div class="flex items-center space-x-3 rounded-xl px-2 md:px-4 py-3 group">
-                <div class="relative">
-                    <img src="{{ asset('images/logo/Maxg-ent_white.gif') }}" alt="Grab Logo" class="w-40 sm:w-60 md:w-80 h-8 sm:h-10 md:h-14 object-contain">
-                </div>
-            </div>
+        <p class="text-gray-200 text-sm sm:text-lg mt-2 sm:ml-3">Lagi Bosen dan pengen ngelamun?, dengerin koleksi musik kami aja!</p>
         </div>
     </div>
     </div>
@@ -430,13 +419,13 @@
 
   <!-- Current Time Display -->
   <div class="fixed bottom-6 right-6 z-20">
-    <div class="bg-white/80 backdrop-blur-sm rounded-lg px-3 py-2 border border-gray-300/50 shadow-lg">
-      <div class="text-right text-gray-800">
-        <div class="text-xs text-blue-600 font-medium">NOW</div>
-        <div class="text-sm font-bold" id="current-time">10:58 AM</div>
-      </div>
+    <div class="bg-white/60 backdrop-blur-lg border border-white/20 rounded-xl px-4 py-3 shadow-[0_8px_32px_0_rgba(31,38,135,0.37)] hover:bg-white/15 hover:scale-105 transition-all duration-300 opacity-60">
+        <div class="text-right flex-col text-gray-700">
+            <div class="text-xs inline-flex text-blue-500 font-semibold tracking-wider">NOW</div>
+            <div class="text-lg inline-flex font-bold" id="current-time">10:58 AM</div>
+        </div>
     </div>
-  </div>
+</div>
 
   <!-- Mini Player Widget -->
     <div id="miniPlayer" class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 p-4 transform translate-y-full transition-transform duration-300 z-50 hidden">
