@@ -1,5 +1,5 @@
-name: frontend
-description: "A new Flutter project."
+name: maxg_entertainment_hub
+description: MaxG Entertainment Hub Flutter App
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
@@ -31,8 +31,14 @@ dependencies:
   flutter:
     sdk: flutter
   http: ^0.13.6
-  path_provider: ^2.1.2
+  path_provider: ^2.1.1
   dio: ^5.4.3
+  # Untuk animasi dan efek visual
+  animate_do: ^3.1.2
+  # Untuk loading gambar dan caching
+  cached_network_image: ^3.3.0
+  just_audio: ^0.9.36
+  video_player: ^2.7.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -58,6 +64,14 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  assets:
+    - assets/images/background/
+    - assets/images/logo/
+    - assets/images/background/Background_Color.png
+    - assets/images/logo/Maxg-ent_white.gif
+    - assets/images/logo/mcm x grab_.png
+    - assets/images/background/Grabcar_MasAdam.gif
 
   # To add assets to your application, add an assets section, like this:
   # assets:
