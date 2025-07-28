@@ -29,6 +29,8 @@ Route::get('/plane-track', function () {
 
     return response()->json($point);
 });
+Route::get('/games', [GameController::class, 'api']);
+Route::get('/games/list', [GameController::class, 'list']);
 
 Route::get('/media', [MediaController::class, 'index']);
 Route::get('/download/{filename}', function ($filename) {

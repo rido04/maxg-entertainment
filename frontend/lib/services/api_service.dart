@@ -3,7 +3,7 @@ import 'dart:convert';
 import '../models/media_item.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://192.168.1.9:8000/api';
+  static const String baseUrl = 'http://192.168.1.5:8000/api';
 
   /// Fetch media list
   static Future<List<MediaItem>> fetchMediaList() async {

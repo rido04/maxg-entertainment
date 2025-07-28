@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class GameController extends Controller
 {
-    public function index()
+    private function indexData()
     {
         // Array for game lists (add if there is new game)
         $games = [
@@ -189,34 +191,90 @@ class GameController extends Controller
                 // featured akan diset random nanti
             ]
         ];
-
-        // Filter hanya game yang aktif untuk dijadikan featured
-        $activeGames = array_filter($games, function($game) {
-            return $game['status'] === 'active';
-        });
-
-        // Reset featured untuk semua game
-        foreach ($games as &$game) {
-            $game['featured'] = false;
-        }
-
-        // Pilih 2 game random untuk dijadikan featured
-        $activeGameKeys = array_keys($activeGames);
-        $randomKeys = array_rand($activeGameKeys, min(2, count($activeGameKeys)));
-
-        // Jika hanya ada 1 game yang bisa dipilih, pastikan $randomKeys adalah array
-        if (!is_array($randomKeys)) {
-            $randomKeys = [$randomKeys];
-        }
-
-        // Set featured untuk game yang terpilih
-        foreach ($randomKeys as $keyIndex) {
-            $actualKey = $activeGameKeys[$keyIndex];
-            $games[$actualKey]['featured'] = true;
-        }
-
-        return view('games.index', compact('games'));
+        return $games;
     }
+
+
+        public function index()
+        {
+            $games = $this->indexData();
+
+            // Sama seperti sebelumnya: random featured
+            $activeGames = array_filter($games, fn($g) => $g['status'] === 'active');
+
+            foreach ($games as &$game) {
+                $game['featured'] = false;
+            }
+
+            $activeGameKeys = array_keys($activeGames);
+            $randomKeys = array_rand($activeGameKeys, min(2, count($activeGameKeys)));
+
+            if (!is_array($randomKeys)) {
+                $randomKeys = [$randomKeys];
+            }
+
+            foreach ($randomKeys as $keyIndex) {
+                $actualKey = $activeGameKeys[$keyIndex];
+                $games[$actualKey]['featured'] = true;
+            }
+
+            return view('games.index', compact('games'));
+        }
+
+
+
+        public function api()
+        {
+            $games = $this->indexData(); // ambil data game yang sama dari method index
+
+            // Random featured logic (sama seperti di method index)
+            $activeGames = array_filter($games, fn($g) => $g['status'] === 'active');
+
+            foreach ($games as &$game) {
+                $game['featured'] = false;
+            }
+
+            $activeGameKeys = array_keys($activeGames);
+            if (count($activeGameKeys) > 0) {
+                $randomKeys = array_rand($activeGameKeys, min(2, count($activeGameKeys)));
+
+                if (!is_array($randomKeys)) {
+                    $randomKeys = [$randomKeys];
+                }
+
+                foreach ($randomKeys as $keyIndex) {
+                    $actualKey = $activeGameKeys[$keyIndex];
+                    $games[$actualKey]['featured'] = true;
+                }
+            }
+
+            // Tambahkan URL untuk akses dari Flutter
+            foreach ($games as &$game) {
+                if ($game['route']) {
+                    $slug = explode('.', $game['route'])[1]; // ambil 'tictactoe' dari 'games.tictactoe'
+                    $game['url'] = url("game/$slug/index.html");
+                } else {
+                    $game['url'] = null;
+                }
+            }
+
+            return response()->json($games);
+        }
+        public function list()
+        {
+            $files = Storage::disk('public')->files('games');
+
+            $games = collect($files)->filter(fn ($file) => Str::endsWith($file, '.html'))
+                ->map(fn ($file) => [
+                    'title' => Str::headline(basename($file, '.html')),
+                    'slug' => basename($file, '.html'),
+                    'url' => asset("storage/games/" . basename($file))
+                ])
+                ->values();
+
+            return response()->json($games);
+        }
+
 
     public function tictactoe()
     {
