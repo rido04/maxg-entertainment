@@ -17,11 +17,13 @@ class _HomeScreenState extends State<VideosScreen>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   bool _isRefreshing = false;
+  bool _isAutoDownloading = false; // Tambahkan ini
 
   @override
   void initState() {
     super.initState();
     mediaList = ApiService.fetchMediaList();
+    _startAutoDownload(); // Tambahkan ini
 
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 800),
@@ -41,6 +43,46 @@ class _HomeScreenState extends State<VideosScreen>
     super.dispose();
   }
 
+  Future<void> _startAutoDownload() async {
+    setState(() {
+      _isAutoDownloading = true;
+    });
+
+    try {
+      print('Starting auto download...');
+      final allMedia = await ApiService.fetchMediaList();
+
+      // Filter hanya video files
+      final videoItems = allMedia.where((media) {
+        final extension = media.fileUrl.split('.').last.toLowerCase();
+        return [
+          'mp4',
+          'avi',
+          'mov',
+          'mkv',
+          'wmv',
+          'flv',
+          'webm',
+        ].contains(extension);
+      }).toList();
+
+      print('Found ${videoItems.length} video files to download');
+
+      // Download semua video
+      await downloadAllMedia(videoItems);
+
+      print('Auto download completed!');
+      _showSuccessMessage('All videos downloaded successfully');
+    } catch (e) {
+      print('Auto download failed: $e');
+      _showErrorMessage('Auto download failed: $e');
+    } finally {
+      setState(() {
+        _isAutoDownloading = false;
+      });
+    }
+  }
+
   Future<void> _refreshMediaList() async {
     setState(() {
       _isRefreshing = true;
@@ -52,6 +94,9 @@ class _HomeScreenState extends State<VideosScreen>
       mediaList = ApiService.fetchMediaList();
       _isRefreshing = false;
     });
+
+    // Trigger auto download setelah refresh
+    _startAutoDownload();
   }
 
   @override
@@ -78,6 +123,29 @@ class _HomeScreenState extends State<VideosScreen>
           ],
         ),
         actions: [
+          // Show download indicator
+          if (_isAutoDownloading)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Row(
+                children: [
+                  const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  const Text(
+                    'Downloading...',
+                    style: TextStyle(fontSize: 12, color: Colors.white),
+                  ),
+                ],
+              ),
+            ),
+
           IconButton(
             icon: _isRefreshing
                 ? const SizedBox(
@@ -89,7 +157,9 @@ class _HomeScreenState extends State<VideosScreen>
                     ),
                   )
                 : const Icon(Icons.refresh),
-            onPressed: _isRefreshing ? null : _refreshMediaList,
+            onPressed: _isRefreshing || _isAutoDownloading
+                ? null
+                : _refreshMediaList,
           ),
           const SizedBox(width: 8),
         ],

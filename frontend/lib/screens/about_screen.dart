@@ -32,7 +32,7 @@ class AboutScreen extends StatelessWidget {
                               // MaxG Logo - menggunakan Image.asset
                               Image.asset(
                                 'assets/images/logo/Maxg-ent_green.gif',
-                                height: 100, // Diperbesar dari 80 ke 100
+                                height: 120, // Diperbesar dari 80 ke 100
                                 width: 150, // Diperbesar dari 120 ke 150
                                 fit: BoxFit.contain,
                                 // Fallback jika gambar tidak ditemukan
@@ -60,12 +60,12 @@ class AboutScreen extends StatelessWidget {
                                   );
                                 },
                               ),
-                              const SizedBox(width: 20),
+                              const SizedBox(width: 10),
                               // "By:" text and MCM logo
                               Column(
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
-                                  const SizedBox(height: 24),
+                                  const SizedBox(height: 14),
                                   Row(
                                     children: [
                                       Text(
@@ -73,7 +73,7 @@ class AboutScreen extends StatelessWidget {
                                         style: TextStyle(
                                           color: Colors.grey[600],
                                           fontWeight: FontWeight.w500,
-                                          fontSize: 16,
+                                          fontSize: 12,
                                         ),
                                       ),
                                       const SizedBox(width: 8),

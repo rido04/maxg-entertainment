@@ -163,19 +163,18 @@ class _GamesScreenState extends State<GamesScreen> {
           ),
 
           // Logo Section (placeholder)
+          // Logo Section
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            width: 100, // Sesuaikan ukuran
+            height: 150, // Sesuaikan ukuran
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
               color: Colors.white.withOpacity(0.1),
             ),
-            child: Text(
-              'MaxG',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+            padding: EdgeInsets.all(8),
+            child: Image.asset(
+              'assets/images/logo/Maxg-ent_white.gif', // Ganti dengan nama file logo kamu
+              fit: BoxFit.contain,
             ),
           ),
         ],

@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/media_item.dart';
 
-class MusicService {
+class VideoService {
   static const String _baseUrl =
       'http://192.168.1.9:8000'; // ganti dengan IP real device jika butuh
 
