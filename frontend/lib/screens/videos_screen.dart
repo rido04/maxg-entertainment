@@ -3,30 +3,51 @@ import '../services/api_service.dart';
 import '../models/media_item.dart';
 import '../services/storage_service.dart';
 import 'videos_player_screen.dart';
+import 'video_search_screen.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class VideosScreen extends StatefulWidget {
   const VideosScreen({super.key});
 
   @override
-  State<VideosScreen> createState() => _HomeScreenState();
+  State<VideosScreen> createState() => _VideosScreenState();
 }
 
-class _HomeScreenState extends State<VideosScreen>
+class _VideosScreenState extends State<VideosScreen>
     with TickerProviderStateMixin {
   late Future<List<MediaItem>> mediaList;
   late AnimationController _animationController;
+  late AnimationController _thumbnailAnimationController;
+  late AnimationController _hoverAnimationController;
   late Animation<double> _fadeAnimation;
+  late Animation<double> _thumbnailFadeAnimation;
+  late Animation<double> _thumbnailScaleAnimation;
+  late Animation<Offset> _slideAnimation;
+
   bool _isRefreshing = false;
-  bool _isAutoDownloading = false; // Tambahkan ini
+  bool _isAutoDownloading = false;
+  MediaItem? _hoveredMedia;
+  String? _currentTime;
 
   @override
   void initState() {
     super.initState();
     mediaList = ApiService.fetchMediaList();
-    _startAutoDownload(); // Tambahkan ini
+    _startAutoDownload();
+    _updateTime();
 
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+
+    _thumbnailAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 400),
+      vsync: this,
+    );
+
+    _hoverAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 250),
       vsync: this,
     );
 
@@ -34,13 +55,67 @@ class _HomeScreenState extends State<VideosScreen>
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
 
+    _thumbnailFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _thumbnailAnimationController,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    _thumbnailScaleAnimation = Tween<double>(begin: 0.98, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _thumbnailAnimationController,
+        curve: Curves.easeOutCubic,
+      ),
+    );
+
+    _slideAnimation =
+        Tween<Offset>(begin: Offset.zero, end: const Offset(-0.02, 0)).animate(
+          CurvedAnimation(
+            parent: _hoverAnimationController,
+            curve: Curves.easeOutCubic,
+          ),
+        );
+
     _animationController.forward();
+
+    // Update time every second
+    Stream.periodic(const Duration(seconds: 1)).listen((_) => _updateTime());
+  }
+
+  void _updateTime() {
+    final now = DateTime.now();
+    final timeString =
+        "${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}";
+    if (mounted) {
+      setState(() {
+        _currentTime = timeString;
+      });
+    }
   }
 
   @override
   void dispose() {
     _animationController.dispose();
+    _thumbnailAnimationController.dispose();
+    _hoverAnimationController.dispose();
     super.dispose();
+  }
+
+  void _onMovieHover(MediaItem? media, bool isEntering) {
+    if (_hoveredMedia != media) {
+      setState(() {
+        _hoveredMedia = media;
+      });
+
+      if (media != null && isEntering) {
+        _thumbnailAnimationController.forward();
+        _hoverAnimationController.forward();
+      } else {
+        _thumbnailAnimationController.reverse();
+        _hoverAnimationController.reverse();
+      }
+    }
   }
 
   Future<void> _startAutoDownload() async {
@@ -52,7 +127,6 @@ class _HomeScreenState extends State<VideosScreen>
       print('Starting auto download...');
       final allMedia = await ApiService.fetchMediaList();
 
-      // Filter hanya video files
       final videoItems = allMedia.where((media) {
         final extension = media.fileUrl.split('.').last.toLowerCase();
         return [
@@ -67,8 +141,6 @@ class _HomeScreenState extends State<VideosScreen>
       }).toList();
 
       print('Found ${videoItems.length} video files to download');
-
-      // Download semua video
       await downloadAllMedia(videoItems);
 
       print('Auto download completed!');
@@ -95,131 +167,924 @@ class _HomeScreenState extends State<VideosScreen>
       _isRefreshing = false;
     });
 
-    // Trigger auto download setelah refresh
     _startAutoDownload();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
-      appBar: AppBar(
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(
-                Icons.play_circle_filled,
-                color: Colors.white,
-                size: 24,
+      backgroundColor: const Color(0xFF1A1A2E),
+      body: CustomScrollView(
+        slivers: [
+          _buildAppBar(),
+          SliverFillRemaining(
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: RefreshIndicator(
+                onRefresh: _refreshMediaList,
+                color: const Color(0xFF00B14F),
+                child: FutureBuilder<List<MediaItem>>(
+                  future: mediaList,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return _buildLoadingState();
+                    }
+
+                    if (snapshot.hasError) {
+                      return _buildErrorState(snapshot.error.toString());
+                    }
+
+                    if (snapshot.hasData) {
+                      final items = snapshot.data!;
+                      final videoItems = items.where((media) {
+                        final extension = media.fileUrl
+                            .split('.')
+                            .last
+                            .toLowerCase();
+                        return [
+                          'mp4',
+                          'avi',
+                          'mov',
+                          'mkv',
+                          'wmv',
+                          'flv',
+                          'webm',
+                        ].contains(extension);
+                      }).toList();
+
+                      if (videoItems.isEmpty) {
+                        return _buildEmptyState();
+                      }
+
+                      return _buildMainContent(videoItems);
+                    }
+
+                    return _buildLoadingState();
+                  },
+                ),
               ),
             ),
-            const SizedBox(width: 12),
-            const Text('MaxG Entertainment'),
+          ),
+        ],
+      ),
+      floatingActionButton: _buildTimeDisplay(),
+    );
+  }
+
+  Widget _buildAppBar() {
+    return SliverAppBar(
+      expandedHeight: 120,
+      floating: false,
+      pinned: true,
+      backgroundColor: const Color(0xFF00B14F),
+      flexibleSpace: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF00B14F), Color(0xFF009940)],
+          ),
+        ),
+        child: FlexibleSpaceBar(
+          title: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Ganti icon play dengan logo kamu
+              Container(
+                padding: const EdgeInsets.all(6),
+                child: Image.asset(
+                  'assets/images/logo/Maxg-ent_white.gif', // Ganti dengan path logo kamu
+                  width: 60,
+                  height: 60,
+                  color: Colors
+                      .white, // Opsional: untuk memberikan warna putih pada logo
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Ganti text dengan nama aplikasi kamu
+            ],
+          ),
+          centerTitle: false,
+        ),
+      ),
+      actions: [
+        // Search button
+        IconButton(
+          icon: const Icon(Icons.search),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const VideoSearchScreen(),
+              ),
+            );
+          },
+        ),
+        if (_isAutoDownloading)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Row(
+              children: [
+                const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                const Text(
+                  'Downloading...',
+                  style: TextStyle(fontSize: 12, color: Colors.white),
+                ),
+              ],
+            ),
+          ),
+        IconButton(
+          icon: _isRefreshing
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              : const Icon(Icons.refresh),
+          onPressed: _isRefreshing || _isAutoDownloading
+              ? null
+              : _refreshMediaList,
+        ),
+        const SizedBox(width: 8),
+      ],
+    );
+  }
+
+  Widget _buildMainContent(List<MediaItem> videoItems) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            const Color(0xFF1A1A2E),
+            const Color(0xFF16213E).withOpacity(0.8),
           ],
         ),
-        actions: [
-          // Show download indicator
-          if (_isAutoDownloading)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
+      ),
+      child: Column(
+        children: [
+          _buildHeader(),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  const Text(
-                    'Downloading...',
-                    style: TextStyle(fontSize: 12, color: Colors.white),
-                  ),
+                  // Left side - Movie list
+                  Expanded(flex: 1, child: _buildMovieList(videoItems)),
+                  const SizedBox(width: 16),
+                  // Right side - Dynamic thumbnail
+                  Expanded(flex: 1, child: _buildDynamicThumbnail()),
                 ],
               ),
             ),
-
-          IconButton(
-            icon: _isRefreshing
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                : const Icon(Icons.refresh),
-            onPressed: _isRefreshing || _isAutoDownloading
-                ? null
-                : _refreshMediaList,
           ),
-          const SizedBox(width: 8),
         ],
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF00B14F), Color(0xFF009940)],
-            ),
-          ),
-        ),
       ),
-      body: FadeTransition(
-        opacity: _fadeAnimation,
-        child: RefreshIndicator(
-          onRefresh: _refreshMediaList,
-          color: Theme.of(context).colorScheme.primary,
-          child: FutureBuilder<List<MediaItem>>(
-            future: mediaList,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return _buildLoadingState();
-              }
+    );
+  }
 
-              if (snapshot.hasError) {
-                return _buildErrorState(snapshot.error.toString());
-              }
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 4,
+                height: 24,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF00B14F), Color(0xFF009940)],
+                  ),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'Biar ga bosen di jalan, yuk nonton film seru!',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Container(
+                width: 4,
+                height: 20,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF00B14F),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'List semua film',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 
-              if (snapshot.hasData) {
-                final items = snapshot.data!;
+  Widget _buildMovieList(List<MediaItem> videoItems) {
+    return Container(
+      height: 400, // Batasi tinggi list agar tidak melewati thumbnail
+      child: ListView.builder(
+        itemCount: videoItems.length,
+        itemBuilder: (context, index) {
+          final media = videoItems[index];
+          final isHovered = _hoveredMedia == media;
 
-                if (items.isEmpty) {
-                  return _buildEmptyState();
-                }
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            margin: const EdgeInsets.only(bottom: 16),
+            child: MouseRegion(
+              onEnter: (_) => _onMovieHover(media, true),
+              onExit: (_) => _onMovieHover(null, false),
+              child: AnimatedBuilder(
+                animation: _hoverAnimationController,
+                builder: (context, child) {
+                  return Transform.translate(
+                    offset: isHovered
+                        ? _slideAnimation.value *
+                              MediaQuery.of(context).size.width
+                        : Offset.zero,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 350),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: isHovered
+                              ? [
+                                  const Color(0xFF00E863), // Hijau terang
+                                  const Color(0xFF00B14F), // Hijau utama
+                                  const Color(0xFF007A37), // Hijau gelap
+                                ]
+                              : [
+                                  const Color(0xFF1E3A5F), // Biru gelap
+                                  const Color(0xFF2D5A87), // Biru sedang
+                                  const Color(0xFF3B6FA5), // Biru terang
+                                ],
+                          stops: const [0.0, 0.5, 1.0],
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: isHovered
+                            ? [
+                                BoxShadow(
+                                  color: const Color(
+                                    0xFF00B14F,
+                                  ).withOpacity(0.6),
+                                  blurRadius: 30,
+                                  spreadRadius: 4,
+                                  offset: const Offset(-3, 6),
+                                ),
+                                BoxShadow(
+                                  color: const Color(
+                                    0xFF00E863,
+                                  ).withOpacity(0.3),
+                                  blurRadius: 15,
+                                  spreadRadius: 1,
+                                  offset: const Offset(2, -2),
+                                ),
+                              ]
+                            : [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.15),
+                                  blurRadius: 12,
+                                  spreadRadius: 2,
+                                  offset: const Offset(0, 4),
+                                ),
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.08),
+                                  blurRadius: 6,
+                                  spreadRadius: 0,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                      ),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: isHovered
+                                ? Colors.white.withOpacity(0.3)
+                                : Colors.white.withOpacity(0.1),
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(20),
+                            onTap: () => _handleMediaTap(media),
+                            child: Padding(
+                              padding: const EdgeInsets.all(20),
+                              child: Row(
+                                children: [
+                                  // Movie icon dengan design yang lebih menarik
+                                  AnimatedContainer(
+                                    duration: const Duration(milliseconds: 300),
+                                    width: 58,
+                                    height: 58,
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                        colors: isHovered
+                                            ? [
+                                                Colors.white.withOpacity(0.4),
+                                                Colors.white.withOpacity(0.2),
+                                                Colors.white.withOpacity(0.1),
+                                              ]
+                                            : [
+                                                Colors.white.withOpacity(0.3),
+                                                Colors.white.withOpacity(0.15),
+                                                Colors.white.withOpacity(0.08),
+                                              ],
+                                      ),
+                                      borderRadius: BorderRadius.circular(18),
+                                      border: Border.all(
+                                        color: Colors.white.withOpacity(0.25),
+                                        width: 1.5,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.1),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Icon(
+                                      Icons.movie_filter_outlined,
+                                      color: Colors.white,
+                                      size: isHovered ? 30 : 28,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 18),
+                                  // Movie info dengan styling yang diperbaiki
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          media.title,
+                                          style: TextStyle(
+                                            fontSize: isHovered ? 17 : 16,
+                                            fontWeight: FontWeight.w700,
+                                            color: Colors.white,
+                                            letterSpacing: 0.3,
+                                            shadows: [
+                                              Shadow(
+                                                color: Colors.black.withOpacity(
+                                                  0.3,
+                                                ),
+                                                offset: const Offset(1, 1),
+                                                blurRadius: 2,
+                                              ),
+                                            ],
+                                          ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Row(
+                                          children: [
+                                            AnimatedContainer(
+                                              duration: const Duration(
+                                                milliseconds: 300,
+                                              ),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 10,
+                                                    vertical: 4,
+                                                  ),
+                                              decoration: BoxDecoration(
+                                                gradient: LinearGradient(
+                                                  colors: isHovered
+                                                      ? [
+                                                          const Color(
+                                                            0xFF00B14F,
+                                                          ).withOpacity(0.8),
+                                                          const Color(
+                                                            0xFF007A37,
+                                                          ).withOpacity(0.8),
+                                                        ]
+                                                      : [
+                                                          Colors.white
+                                                              .withOpacity(0.2),
+                                                          Colors.white
+                                                              .withOpacity(0.1),
+                                                        ],
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                                border: Border.all(
+                                                  color: Colors.white
+                                                      .withOpacity(0.2),
+                                                  width: 1,
+                                                ),
+                                              ),
+                                              child: Text(
+                                                _getFileTypeFromUrl(
+                                                  media.fileUrl,
+                                                ),
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.white
+                                                      .withOpacity(0.95),
+                                                  fontWeight: FontWeight.w700,
+                                                  letterSpacing: 0.5,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  // Enhanced play button dengan gradient
+                                  AnimatedContainer(
+                                    duration: const Duration(milliseconds: 300),
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                        colors: isHovered
+                                            ? [
+                                                const Color(0xFF00E863),
+                                                const Color(0xFF00B14F),
+                                                const Color(0xFF007A37),
+                                              ]
+                                            : [
+                                                Colors.white.withOpacity(0.25),
+                                                Colors.white.withOpacity(0.15),
+                                                Colors.white.withOpacity(0.08),
+                                              ],
+                                      ),
+                                      borderRadius: BorderRadius.circular(28),
+                                      border: Border.all(
+                                        color: Colors.white.withOpacity(0.3),
+                                        width: 1.5,
+                                      ),
+                                      boxShadow: isHovered
+                                          ? [
+                                              BoxShadow(
+                                                color: const Color(
+                                                  0xFF00B14F,
+                                                ).withOpacity(0.4),
+                                                blurRadius: 12,
+                                                spreadRadius: 2,
+                                                offset: const Offset(0, 3),
+                                              ),
+                                            ]
+                                          : [
+                                              BoxShadow(
+                                                color: Colors.black.withOpacity(
+                                                  0.1,
+                                                ),
+                                                blurRadius: 6,
+                                                offset: const Offset(0, 2),
+                                              ),
+                                            ],
+                                    ),
+                                    child: IconButton(
+                                      icon: Icon(
+                                        Icons.play_circle_filled,
+                                        color: isHovered
+                                            ? Colors.white
+                                            : Colors.white.withOpacity(0.9),
+                                        size: isHovered ? 32 : 30,
+                                      ),
+                                      onPressed: () => _handlePlayButton(media),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
 
-                return _buildMediaList(items);
-              }
-
-              return _buildLoadingState();
-            },
+  Widget _buildDynamicThumbnail() {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.4),
+            blurRadius: 25,
+            spreadRadius: 5,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: AspectRatio(
+          aspectRatio: 16 / 9,
+          child: Stack(
+            children: [
+              // Default background with enhanced design
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      const Color(0xFF1A1A2E).withOpacity(0.95),
+                      const Color(0xFF16213E).withOpacity(0.95),
+                      const Color(0xFF0F3460).withOpacity(0.9),
+                    ],
+                  ),
+                ),
+                child: Stack(
+                  children: [
+                    // Animated background pattern
+                    Positioned.fill(
+                      child: CustomPaint(painter: BackgroundPatternPainter()),
+                    ),
+                    Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                colors: [
+                                  const Color(0xFF00B14F).withOpacity(0.2),
+                                  const Color(0xFF009940).withOpacity(0.1),
+                                ],
+                              ),
+                              border: Border.all(
+                                color: const Color(0xFF00B14F).withOpacity(0.3),
+                                width: 2,
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.movie_creation_outlined,
+                              size: 48,
+                              color: Colors.white30,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          const Text(
+                            'MaxG Cinema',
+                            style: TextStyle(
+                              color: Colors.white30,
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Hover over a movie to preview',
+                            style: TextStyle(
+                              color: Colors.white24,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Enhanced dynamic thumbnail
+              if (_hoveredMedia != null)
+                AnimatedBuilder(
+                  animation: _thumbnailAnimationController,
+                  builder: (context, child) {
+                    return Transform.scale(
+                      scale: _thumbnailScaleAnimation.value,
+                      child: Opacity(
+                        opacity: _thumbnailFadeAnimation.value,
+                        child: _buildThumbnailContent(_hoveredMedia!),
+                      ),
+                    );
+                  },
+                ),
+            ],
           ),
         ),
       ),
     );
   }
 
+  Widget _buildThumbnailContent(MediaItem media) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Colors.transparent, Colors.black87, Colors.black],
+          stops: [0.4, 0.8, 1.0],
+        ),
+      ),
+      child: Stack(
+        children: [
+          // Enhanced background image handling
+          Positioned.fill(
+            child: CachedNetworkImage(
+              imageUrl: media.thumbnail ?? '',
+              fit: BoxFit.cover,
+              placeholder: (context, url) => Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      const Color(0xFF1A1A2E),
+                      const Color(0xFF16213E),
+                      const Color(0xFF0F3460),
+                    ],
+                  ),
+                ),
+                child: const Center(
+                  child: CircularProgressIndicator(
+                    color: Color(0xFF00B14F),
+                    strokeWidth: 2,
+                  ),
+                ),
+              ),
+              errorWidget: (context, url, error) => Container(
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    center: Alignment.center,
+                    colors: [
+                      const Color(0xFF00B14F).withOpacity(0.1),
+                      const Color(0xFF1A1A2E),
+                      const Color(0xFF16213E),
+                    ],
+                  ),
+                ),
+                child: const Center(
+                  child: Icon(
+                    Icons.movie_outlined,
+                    size: 64,
+                    color: Colors.white24,
+                  ),
+                ),
+              ),
+              imageBuilder: (context, imageProvider) => Container(
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: imageProvider,
+                    fit: BoxFit.cover,
+                    colorFilter: ColorFilter.mode(
+                      Colors.black.withOpacity(0.3),
+                      BlendMode.overlay,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          // Enhanced content overlay
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    Colors.black.withOpacity(0.7),
+                    Colors.black.withOpacity(0.9),
+                  ],
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    media.title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      height: 1.2,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF00B14F), Color(0xFF009940)],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      _getFileTypeFromUrl(media.fileUrl),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed: () => _handlePlayButton(media),
+                        icon: const Icon(
+                          Icons.play_arrow,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                        label: const Text(
+                          'Play Now',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF00B14F),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 12,
+                          ),
+                          elevation: 8,
+                          shadowColor: const Color(0xFF00B14F).withOpacity(0.4),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      OutlinedButton.icon(
+                        onPressed: () => _handleMediaTap(media),
+                        icon: const Icon(
+                          Icons.info_outline,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                        label: const Text(
+                          'Details',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          side: BorderSide(
+                            color: Colors.white.withOpacity(0.8),
+                            width: 1.5,
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // Enhanced play button overlay
+          Center(
+            child: Container(
+              width: 90,
+              height: 90,
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  colors: [
+                    Colors.white.withOpacity(0.2),
+                    Colors.white.withOpacity(0.1),
+                    Colors.transparent,
+                  ],
+                ),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.4),
+                  width: 2,
+                ),
+              ),
+              child: const Icon(
+                Icons.play_arrow,
+                color: Colors.white,
+                size: 42,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimeDisplay() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.white.withOpacity(0.15),
+            Colors.white.withOpacity(0.1),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withOpacity(0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 15,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text(
+            'NOW',
+            style: TextStyle(
+              color: Color(0xFF00B14F),
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.2,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            _currentTime ?? '00:00',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildLoadingState() {
-    return Center(
+    return const Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(
-            strokeWidth: 3,
-            color: Theme.of(context).colorScheme.primary,
-          ),
-          const SizedBox(height: 16),
+          CircularProgressIndicator(strokeWidth: 3, color: Color(0xFF00B14F)),
+          SizedBox(height: 16),
           Text(
             'Loading media content...',
-            style: TextStyle(color: Colors.grey[400], fontSize: 16),
+            style: TextStyle(color: Colors.white70, fontSize: 16),
           ),
         ],
       ),
@@ -258,7 +1123,7 @@ class _HomeScreenState extends State<VideosScreen>
             Text(
               error,
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey[400], fontSize: 14),
+              style: const TextStyle(color: Colors.white70, fontSize: 14),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
@@ -266,7 +1131,7 @@ class _HomeScreenState extends State<VideosScreen>
               icon: const Icon(Icons.refresh),
               label: const Text('Try Again'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primary,
+                backgroundColor: const Color(0xFF00B14F),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
@@ -284,26 +1149,19 @@ class _HomeScreenState extends State<VideosScreen>
   }
 
   Widget _buildEmptyState() {
-    return Center(
+    return const Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(50),
-              ),
-              child: Icon(
-                Icons.library_music_outlined,
-                color: Theme.of(context).colorScheme.primary,
-                size: 48,
-              ),
+            Icon(
+              Icons.library_music_outlined,
+              color: Color(0xFF00B14F),
+              size: 48,
             ),
-            const SizedBox(height: 16),
-            const Text(
+            SizedBox(height: 16),
+            Text(
               'No Media Found',
               style: TextStyle(
                 fontSize: 20,
@@ -311,144 +1169,15 @@ class _HomeScreenState extends State<VideosScreen>
                 color: Colors.white,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Text(
               'Pull down to refresh and check for new content',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey[400], fontSize: 14),
+              style: TextStyle(color: Colors.white70, fontSize: 14),
             ),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildMediaList(List<MediaItem> items) {
-    // Filter hanya file video
-    final videoItems = items.where((media) {
-      final extension = media.fileUrl.split('.').last.toLowerCase();
-      return [
-        'mp4',
-        'avi',
-        'mov',
-        'mkv',
-        'wmv',
-        'flv',
-        'webm',
-      ].contains(extension);
-    }).toList();
-
-    if (videoItems.isEmpty) {
-      return _buildEmptyState();
-    }
-
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: videoItems.length,
-      itemBuilder: (context, index) {
-        final media = videoItems[index];
-        return AnimatedContainer(
-          duration: Duration(milliseconds: 200 + (index * 50)),
-          curve: Curves.easeOutBack,
-          margin: const EdgeInsets.only(bottom: 12),
-          child: Card(
-            child: InkWell(
-              borderRadius: BorderRadius.circular(16),
-              onTap: () => _handleMediaTap(media),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    // Media Icon/Thumbnail
-                    Container(
-                      width: 56,
-                      height: 56,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Theme.of(context).colorScheme.primary,
-                            Theme.of(
-                              context,
-                            ).colorScheme.primary.withOpacity(0.7),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.play_circle_filled,
-                        color: Colors.white,
-                        size: 28,
-                      ),
-                    ),
-
-                    const SizedBox(width: 16),
-
-                    // Media Info
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            media.title,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            _getFileTypeFromUrl(media.fileUrl),
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Theme.of(context).colorScheme.primary,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            media.fileUrl,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[400],
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(width: 12),
-
-                    // Play Button
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(25),
-                      ),
-                      child: IconButton(
-                        icon: Icon(
-                          Icons.play_arrow,
-                          color: Theme.of(context).colorScheme.primary,
-                          size: 28,
-                        ),
-                        onPressed: () => _handlePlayButton(media),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
     );
   }
 
@@ -461,13 +1190,20 @@ class _HomeScreenState extends State<VideosScreen>
         return 'VIDEO • AVI';
       case 'MOV':
         return 'VIDEO • MOV';
+      case 'MKV':
+        return 'VIDEO • MKV';
+      case 'WMV':
+        return 'VIDEO • WMV';
+      case 'FLV':
+        return 'VIDEO • FLV';
+      case 'WEBM':
+        return 'VIDEO • WEBM';
       default:
-        return 'MP4';
+        return 'VIDEO • MP4';
     }
   }
 
   Future<void> _handleMediaTap(MediaItem media) async {
-    // Navigate to video player on tap as well
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -478,7 +1214,6 @@ class _HomeScreenState extends State<VideosScreen>
 
   Future<void> _handlePlayButton(MediaItem media) async {
     try {
-      // Show loading indicator
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
@@ -495,7 +1230,7 @@ class _HomeScreenState extends State<VideosScreen>
               Text('Preparing ${media.title}...'),
             ],
           ),
-          backgroundColor: Theme.of(context).colorScheme.primary,
+          backgroundColor: const Color(0xFF00B14F),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
@@ -516,6 +1251,13 @@ class _HomeScreenState extends State<VideosScreen>
         print('Downloaded and playing: $filename');
         _showSuccessMessage('Media downloaded and ready to play');
       }
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => VideoPlayerScreen(mediaItem: media),
+        ),
+      );
     } catch (e) {
       _showErrorMessage('Failed to play media: $e');
     }
@@ -526,7 +1268,7 @@ class _HomeScreenState extends State<VideosScreen>
       SnackBar(
         content: Row(
           children: [
-            Icon(Icons.check_circle, color: Colors.white, size: 16),
+            const Icon(Icons.check_circle, color: Colors.white, size: 16),
             const SizedBox(width: 12),
             Text(message),
           ],
@@ -554,4 +1296,26 @@ class _HomeScreenState extends State<VideosScreen>
       ),
     );
   }
+}
+
+// Custom painter for background pattern
+class BackgroundPatternPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white.withOpacity(0.02)
+      ..strokeWidth = 1;
+
+    // Draw subtle grid pattern
+    final spacing = 30.0;
+    for (double x = 0; x < size.width; x += spacing) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+    }
+    for (double y = 0; y < size.height; y += spacing) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

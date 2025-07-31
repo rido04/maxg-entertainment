@@ -32,14 +32,21 @@ dependencies:
     sdk: flutter
   http: ^0.13.6
   path_provider: ^2.1.1
+  provider: ^6.1.1
+  flutter_background_service: ^5.0.5
+  flutter_background_service_android: ^6.2.2
   dio: ^5.4.3
   # Untuk animasi dan efek visual
   animate_do: ^3.1.2
   # Untuk loading gambar dan caching
   cached_network_image: ^3.3.0
   just_audio: ^0.9.36
+  just_audio_background: ^0.0.1-beta.11 # Untuk background playback
+  audio_session: ^0.1.16
   video_player: ^2.7.0
   webview_flutter: ^4.2.2
+  connectivity_plus: ^5.0.1 # For checking internet connection
+  shared_preferences: ^2.2.2
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

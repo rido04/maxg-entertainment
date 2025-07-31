@@ -39,5 +39,5 @@ class MediaItem {
     return '$id.$ext';
   }
 
-  String get downloadUrl => 'http://192.168.1.9:8000/$fileUrl';
+  String get downloadUrl => 'http://192.168.1.18:8000/$fileUrl';
 }

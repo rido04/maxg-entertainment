@@ -31,7 +31,11 @@ class MediaController extends Controller
                 'type' => $item->type,
                 'category' => $item->category,
                 'file_path' => $item->file_path,
-                'download_url' => url(ltrim($item->file_path, '/')), // ini dia!
+                'download_url' => url(ltrim($item->file_path, '/')),
+                'thumbnail' => $item->thumbnail ? url(ltrim($item->thumbnail, '/')) : null, // ✅ Tambah ini
+                'duration' => $item->duration,  // ✅ Tambah ini juga
+                'artist' => $item->artist,      // ✅ Dan ini
+                'album' => $item->album,        // ✅ Dan ini
             ];
         });
 

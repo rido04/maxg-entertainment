@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import '../models/game_item.dart';
 
 class GameService {
-  static const String baseUrl = 'http://192.168.1.5:8000';
+  static const String baseUrl = 'http://192.168.1.18:8000';
 
   Future<List<GameItem>> fetchGames() async {
     try {
@@ -54,7 +54,7 @@ class MockGameService {
           'corner': 'blue-500',
         },
         'status': 'active',
-        'url': 'http://192.168.1.5:8000/game/tictactoe/index.html',
+        'url': 'http://192.168.1.18:8000/game/tictactoe/index.html',
       },
       {
         'name': 'Snake Game',
@@ -74,7 +74,7 @@ class MockGameService {
           'corner': 'green-500',
         },
         'status': 'coming_soon',
-        'url': 'http://192.168.1.5:8000/game/snake/index.html',
+        'url': 'http://192.168.1.18:8000/game/snake/index.html',
       },
       {
         'name': 'Tetris Game',
@@ -95,7 +95,7 @@ class MockGameService {
           'corner': 'purple-500',
         },
         'status': 'active',
-        'url': 'http://192.168.1.5:8000/game/tetris/index.html',
+        'url': 'http://192.168.1.18:8000/game/tetris/index.html',
       },
       {
         'name': 'Dino Game',
@@ -115,7 +115,7 @@ class MockGameService {
           'corner': 'orange-500',
         },
         'status': 'active',
-        'url': 'http://192.168.1.5:8000/game/dino/index.html',
+        'url': 'http://192.168.1.18:8000/game/dino/index.html',
       },
       {
         'name': 'Puzzle Game',
@@ -175,7 +175,7 @@ class MockGameService {
           'corner': 'sky-500',
         },
         'status': 'active',
-        'url': 'http://192.168.1.5:8000/game/floppybird/index.html',
+        'url': 'http://192.168.1.18:8000/game/floppybird/index.html',
       },
       {
         'name': 'Candy Crush',
@@ -195,7 +195,7 @@ class MockGameService {
           'corner': 'sky-500',
         },
         'status': 'active',
-        'url': 'http://192.168.1.5:8000/game/candycrush/index.html',
+        'url': 'http://192.168.1.18:8000/game/candycrush/index.html',
       },
       {
         'name': '2048',
@@ -215,7 +215,7 @@ class MockGameService {
           'corner': 'sky-500',
         },
         'status': 'active',
-        'url': 'http://192.168.1.5:8000/game/2048/index.html',
+        'url': 'http://192.168.1.18:8000/game/2048/index.html',
       },
     ];
 

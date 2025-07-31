@@ -167,10 +167,6 @@ class _GamesScreenState extends State<GamesScreen> {
           Container(
             width: 100, // Sesuaikan ukuran
             height: 150, // Sesuaikan ukuran
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              color: Colors.white.withOpacity(0.1),
-            ),
             padding: EdgeInsets.all(8),
             child: Image.asset(
               'assets/images/logo/Maxg-ent_white.gif', // Ganti dengan nama file logo kamu

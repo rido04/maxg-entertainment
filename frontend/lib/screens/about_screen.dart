@@ -34,7 +34,6 @@ class AboutScreen extends StatelessWidget {
                                 'assets/images/logo/Maxg-ent_green.gif',
                                 height: 120, // Diperbesar dari 80 ke 100
                                 width: 150, // Diperbesar dari 120 ke 150
-                                fit: BoxFit.contain,
                                 // Fallback jika gambar tidak ditemukan
                                 errorBuilder: (context, error, stackTrace) {
                                   return Container(
