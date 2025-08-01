@@ -47,6 +47,11 @@ dependencies:
   webview_flutter: ^4.2.2
   connectivity_plus: ^5.0.1 # For checking internet connection
   shared_preferences: ^2.2.2
+  flutter_map: ^4.0.0
+  latlong2: ^0.8.2
+  geolocator: ^10.1.0
+  permission_handler: ^11.2.0
+  flame: ^1.16.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -77,6 +82,7 @@ flutter:
     - assets/images/
     - assets/images/background/
     - assets/images/logo/
+    - assets/images/logo/tarikan.png
     - assets/images/background/Background_Color.png
     - assets/images/logo/Maxg-ent_white.gif
     - assets/images/logo/mcm x grab_.png
@@ -88,7 +94,7 @@ flutter:
     - assets/games/tetris/
     - assets/games/ts-floppybird/
     - assets/games/candy-crush-master/
-    - assets/games/2048/    
+    - assets/games/2048/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

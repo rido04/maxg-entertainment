@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->text('description')->nullable();
-            $table->string('category')->nullable(); 
-            $table->string('image_path')->nullable(); // disimpan di storage
-            $table->string('file_path')->nullable();  // PDF atau HTML
+            $table->string('category')->nullable();
+            $table->string('image_path')->nullable();
+            $table->string('file_path')->nullable();
             $table->timestamp('published_at')->nullable();
             $table->timestamps();
         });

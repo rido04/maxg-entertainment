@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'screens/welcome_screen.dart';
-import 'widgets/welcome/welcome_content_widget.dart';
+import 'dart:async';
+import 'screens/screen_saver_screen.dart'; // Ganti dari welcome_screen.dart
 import 'routes/app_routes.dart';
 import 'layouts/main_layouts.dart';
 import 'services/storage_service.dart';
 import 'services/api_service.dart';
 import 'services/global_audio_service.dart';
 import 'widgets/mini_player.dart';
+import 'widgets/map_trigger_button.dart';
+import 'widgets/map_modal_widget.dart';
 
 void main() {
   runApp(const MaxgApp());
@@ -24,7 +26,8 @@ class MaxgApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      initialRoute: AppRoutes.welcome,
+      // Ubah initial route ke home/main layout
+      initialRoute: '/main',
       routes: {
         '/main': (context) => const MainLayoutWrapper(),
         '/videos': (context) =>
@@ -33,6 +36,8 @@ class MaxgApp extends StatelessWidget {
         '/games': (context) => MainLayoutWrapper(initialRoute: AppRoutes.games),
         '/news': (context) => MainLayoutWrapper(initialRoute: AppRoutes.news),
         '/about': (context) => MainLayoutWrapper(initialRoute: AppRoutes.about),
+        '/screensaver': (context) =>
+            ScreensaverScreen(), // Route untuk screensaver
       },
       title: 'MaxG Entertainment',
       theme: ThemeData(
@@ -101,7 +106,7 @@ class MaxgApp extends StatelessWidget {
           color: Color(0xFF00B14F),
         ),
       ),
-      home: WelcomeScreen(),
+      home: const MainLayoutWrapper(),
       debugShowCheckedModeBanner: false,
       // Untuk memastikan audio tetap berjalan saat app di background
       builder: (context, child) {
@@ -117,7 +122,7 @@ class MaxgApp extends StatelessWidget {
   }
 }
 
-// Wrapper untuk MainLayout dengan Mini Player
+// Wrapper untuk MainLayout dengan Mini Player dan Screensaver Detection
 class MainLayoutWrapper extends StatefulWidget {
   final String? initialRoute;
 
@@ -128,92 +133,82 @@ class MainLayoutWrapper extends StatefulWidget {
 }
 
 class _MainLayoutWrapperState extends State<MainLayoutWrapper> {
+  Timer? _inactivityTimer;
+  bool _isMapModalVisible = false; // Tambahkan state untuk map modal
+  static const Duration _inactivityDuration = Duration(
+    minutes: 3,
+  ); // 3 menit idle
+
   @override
   void initState() {
     super.initState();
     // Initialize global audio service when entering main layout
     GlobalAudioService().initialize();
+    _startInactivityTimer();
+  }
+
+  @override
+  void dispose() {
+    _inactivityTimer?.cancel();
+    super.dispose();
+  }
+
+  void _startInactivityTimer() {
+    _inactivityTimer?.cancel();
+    _inactivityTimer = Timer(_inactivityDuration, () {
+      // Navigasi ke screensaver setelah idle
+      Navigator.of(context).pushReplacementNamed('/screensaver');
+    });
+  }
+
+  void _resetInactivityTimer() {
+    _startInactivityTimer();
+  }
+
+  // Method untuk show/hide map modal
+  void _showMapModal() {
+    setState(() {
+      _isMapModalVisible = true;
+    });
+  }
+
+  void _hideMapModal() {
+    setState(() {
+      _isMapModalVisible = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(
-        children: [
-          // Main Layout Content
-          Expanded(
-            child: widget.initialRoute != null
-                ? MainLayout(initialRoute: widget.initialRoute!)
-                : MainLayout(),
-          ),
-          // Mini Player - akan muncul ketika ada musik yang diputar
-          const MiniPlayer(),
-        ],
+    return GestureDetector(
+      // Detect any touch to reset inactivity timer
+      onTap: _resetInactivityTimer,
+      onPanDown: (_) => _resetInactivityTimer(),
+      child: Scaffold(
+        body: Stack(
+          children: [
+            // Main content
+            Column(
+              children: [
+                // Main Layout Content
+                Expanded(
+                  child: widget.initialRoute != null
+                      ? MainLayout(initialRoute: widget.initialRoute!)
+                      : MainLayout(),
+                ),
+                // Mini Player - akan muncul ketika ada musik yang diputar
+                const MiniPlayer(),
+              ],
+            ),
+
+            // Map trigger button (positioned at bottom center)
+            MapTriggerButton(onTap: _showMapModal),
+
+            // Map modal overlay
+            if (_isMapModalVisible) MapModal(onClose: _hideMapModal),
+          ],
+        ),
       ),
     );
   }
 }
-
-// Alternative: Jika Anda ingin mini player muncul di semua halaman termasuk welcome
-class GlobalAppWrapper extends StatefulWidget {
-  final Widget child;
-
-  const GlobalAppWrapper({super.key, required this.child});
-
-  @override
-  State<GlobalAppWrapper> createState() => _GlobalAppWrapperState();
-}
-
-class _GlobalAppWrapperState extends State<GlobalAppWrapper> {
-  @override
-  void initState() {
-    super.initState();
-    // Initialize global audio service
-    GlobalAudioService().initialize();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // Hanya tampilkan mini player jika bukan di welcome screen
-    final isWelcomeScreen =
-        ModalRoute.of(context)?.settings.name == AppRoutes.welcome ||
-        widget.child is WelcomeScreen;
-
-    return Scaffold(
-      body: Column(
-        children: [
-          Expanded(child: widget.child),
-          // Mini player hanya muncul di halaman main, bukan di welcome
-          if (!isWelcomeScreen) const MiniPlayer(),
-        ],
-      ),
-    );
-  }
-}
-
-// Jika ingin menggunakan GlobalAppWrapper untuk semua halaman:
-// Ganti MaterialApp builder dengan:
-/*
-class MaxgApp extends StatelessWidget {
-  const MaxgApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      // ... semua konfigurasi theme sama ...
-      
-      builder: (context, child) {
-        return AnnotatedRegion<SystemUiOverlayStyle>(
-          value: const SystemUiOverlayStyle(
-            statusBarColor: Colors.transparent,
-            statusBarIconBrightness: Brightness.light,
-          ),
-          child: GlobalAppWrapper(child: child!),
-        );
-      },
-      
-      // ... sisa konfigurasi sama ...
-    );
-  }
-}
-*/

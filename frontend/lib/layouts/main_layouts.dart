@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/navigation/slide_navigation.dart';
 import '../routes/app_routes.dart';
-import '../screens/welcome_screen.dart';
 import '../screens/home_screen.dart' as home;
 import '../screens/videos_screen.dart' as videos;
 import '../screens/music_screen.dart' as music;

@@ -70,36 +70,6 @@ class WelcomeContentWidget extends StatelessWidget {
                 ),
 
                 SizedBox(height: 48),
-
-                // Enter App Button
-                FadeInUp(
-                  duration: Duration(milliseconds: 2000),
-                  delay: Duration(milliseconds: 500),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/main');
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF22c55e), // green-500
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 32,
-                        vertical: 16,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 8,
-                    ),
-                    child: Text(
-                      'Enter App',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
               ],
             ),
           ),

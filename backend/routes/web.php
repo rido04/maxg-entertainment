@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Media;
+use Spatie\PdfToImage\Pdf;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\GameController;
@@ -111,3 +112,17 @@ Route::get('/map', function () {
 // Feedback Routes
 Route::get('/feedback', [FeedbackController::class, 'create'])->name('feedback.create');
 Route::post('/feedback', [FeedbackController::class, 'store'])->name('feedback.store');
+
+
+// testing route
+Route::get('/test-thumbnail', function () {
+    $sourcePdf = storage_path('app/public/news_files/sample.pdf');
+    $outputImage = storage_path('app/public/news_images/sample.jpg');
+
+    $pdf = new Pdf($sourcePdf);
+    $pdf->setOutputFormat('jpg');
+    $pdf->saveImage($outputImage);
+
+    return 'Thumbnail created: ' . asset('storage/news_images/sample.jpg');
+});
+

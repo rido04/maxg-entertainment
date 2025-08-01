@@ -1,9 +1,9 @@
 // lib/screens/games_screen.dart
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'game_player_screen.dart';
+import 'universal_game_screen.dart';
 import '../models/game_item.dart';
-import '../services/game_service.dart'; // Updated import
+import '../services/game_service.dart';
 
 class GamesScreen extends StatefulWidget {
   @override
@@ -35,18 +35,16 @@ class _GamesScreenState extends State<GamesScreen> {
     });
   }
 
-  // PERBAIKAN: Method untuk dispose timer
   @override
   void dispose() {
     _timer.cancel();
     super.dispose();
   }
 
-  // PERBAIKAN: Method untuk cek status online yang lebih reliable
   void _checkOnlineStatus() async {
     try {
       final isOnline = await _gameService.isOnline();
-      print('🌐 Online status check: $isOnline'); // Debug log
+      print('🌐 Online status check: $isOnline');
       if (mounted && isOnline != _isOnline) {
         setState(() {
           _isOnline = isOnline;
@@ -55,7 +53,6 @@ class _GamesScreenState extends State<GamesScreen> {
       }
     } catch (e) {
       print('❌ Error checking online status: $e');
-      // Assume offline jika error
       if (mounted && _isOnline) {
         setState(() {
           _isOnline = false;
@@ -64,14 +61,11 @@ class _GamesScreenState extends State<GamesScreen> {
     }
   }
 
-  // PERBAIKAN: Method untuk cek apakah game bisa dimainkan
   bool _canPlayGame(GameItem game) {
-    // Jika online, semua game active bisa dimainkan
     if (_isOnline && game.isActive) {
       return true;
     }
 
-    // Jika offline, cek apakah game support offline
     if (!_isOnline) {
       final canPlayOffline =
           game.offline &&
@@ -147,14 +141,43 @@ class _GamesScreenState extends State<GamesScreen> {
     }
   }
 
-  // PERBAIKAN: Method untuk navigate ke game
+  // FIXED: Navigate to UniversalGamePlayerScreen with GameItem
   void _navigateToGame(GameItem game) async {
     print('🚀 Attempting to navigate to game: ${game.name}');
     print('🌐 Online status: $_isOnline');
     print('📱 Game offline: ${game.offline}');
     print('🔗 Game URL: ${game.url}');
+    print('🎮 Game Type: ${game.gameType}');
+    print('🏷️ Game Class: ${game.gameClass}');
 
-    if (game.url == null) {
+    // Check basic conditions
+    if (!_canPlayGame(game)) {
+      String message = 'Game is not available';
+      if (!_isOnline && !game.offline) {
+        message = 'This game requires internet connection';
+      } else if (!game.isActive) {
+        message = 'Game is coming soon';
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message), backgroundColor: Colors.orange),
+      );
+      return;
+    }
+
+    // For Flame games, check if gameClass is defined
+    if (game.gameType == GameType.flame && game.gameClass == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Flame game class not defined'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // For WebView games, check URL
+    if (game.gameType == GameType.webview && game.url == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Game URL not available'),
@@ -164,19 +187,8 @@ class _GamesScreenState extends State<GamesScreen> {
       return;
     }
 
-    // PERBAIKAN: Cek kondisi offline dengan lebih baik
-    if (!_isOnline && !game.offline) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('This game requires internet connection'),
-          backgroundColor: Colors.orange,
-        ),
-      );
-      return;
-    }
-
     // For offline games, check if assets exist
-    if (game.offline && game.url!.startsWith('assets/')) {
+    if (game.offline && game.url != null && game.url!.startsWith('assets/')) {
       final assetsExist = await _gameService.gameAssetsExist(game.url!);
       print('📁 Assets exist for ${game.name}: $assetsExist');
       if (!assetsExist) {
@@ -191,13 +203,12 @@ class _GamesScreenState extends State<GamesScreen> {
     }
 
     try {
-      print('✅ Navigating to game player...');
-      // Navigate to game player screen with game name
+      print('✅ Navigating to UniversalGamePlayerScreen...');
+      // Navigate to UniversalGamePlayerScreen with GameItem
       await Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) =>
-              GamePlayerScreen(gameUrl: game.url!, gameName: game.name),
+          builder: (context) => UniversalGamePlayerScreen(gameItem: game),
         ),
       );
     } catch (e) {
@@ -211,7 +222,6 @@ class _GamesScreenState extends State<GamesScreen> {
     }
   }
 
-  // Debug method - opsional untuk testing
   void _showDebugInfo() async {
     final cacheInfo = await _gameService.getCacheInfo();
     final isOnline = await _gameService.forceCheckOnline();
@@ -372,7 +382,7 @@ class _GamesScreenState extends State<GamesScreen> {
             // Current Time Display
             _buildTimeDisplay(),
 
-            // Debug button - bisa dihapus di production
+            // Debug button
             Positioned(
               bottom: 20,
               right: 20,
@@ -528,7 +538,6 @@ class _GamesScreenState extends State<GamesScreen> {
     );
   }
 
-  // PERBAIKAN: Method _buildFeaturedGameCard sekarang dalam class
   Widget _buildFeaturedGameCard(GameItem game) {
     final canPlay = _canPlayGame(game);
 
@@ -588,10 +597,31 @@ class _GamesScreenState extends State<GamesScreen> {
                   ),
                 ),
 
+                // Game Type Badge
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: _getGameTypeBadgeColor(game.gameType),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      _getGameTypeLabel(game.gameType),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 8,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+
                 // Status indicator
                 if (!canPlay)
                   Positioned(
-                    top: 0,
+                    top: 30,
                     left: 0,
                     child: Container(
                       padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -770,6 +800,27 @@ class _GamesScreenState extends State<GamesScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        // Game Type Badge
+                        Container(
+                          margin: EdgeInsets.only(bottom: 4),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _getGameTypeBadgeColor(game.gameType),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            _getGameTypeLabel(game.gameType),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 8,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+
                         // Status indicator
                         if (!canPlay)
                           Container(
@@ -881,5 +932,32 @@ class _GamesScreenState extends State<GamesScreen> {
         ),
       ),
     );
+  }
+
+  // Helper methods for game type badges
+  Color _getGameTypeBadgeColor(GameType gameType) {
+    switch (gameType) {
+      case GameType.flame:
+        return Colors.green.withOpacity(0.8);
+      case GameType.webview:
+        return Colors.blue.withOpacity(0.8);
+      case GameType.widget:
+        return Colors.purple.withOpacity(0.8);
+      default:
+        return Colors.grey.withOpacity(0.8);
+    }
+  }
+
+  String _getGameTypeLabel(GameType gameType) {
+    switch (gameType) {
+      case GameType.flame:
+        return 'NATIVE';
+      case GameType.webview:
+        return 'HTML5';
+      case GameType.widget:
+        return 'WIDGET';
+      default:
+        return 'UNKNOWN';
+    }
   }
 }

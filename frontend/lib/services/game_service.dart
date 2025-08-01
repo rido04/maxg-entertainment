@@ -1,5 +1,4 @@
-// Perbaikan untuk OfflineGameService - method isOnline yang lebih reliable
-
+// lib/services/game_service.dart
 import 'dart:convert';
 import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,36 +12,15 @@ class OfflineGameService {
   static const String _lastUpdateKey = 'last_update';
   static const Duration _cacheExpiry = Duration(hours: 24);
 
-  // Static local data dengan path assets yang benar
+  // Static local data dengan Flame games
   static final List<Map<String, dynamic>> _localGamesData = [
-    {
-      "name": "Tic Tac Toe",
-      "route": "games.tictactoe",
-      "background_image": "assets/images/background/bg-tixtactoe.png",
-      "icon": "❌⭕",
-      "description": "Game klasik X and O",
-      "colors": {
-        "hover_from": "blue-800",
-        "hover_to": "blue-900",
-        "border": "blue-500",
-        "glow_from": "blue-600",
-        "glow_to": "blue-600",
-        "button": "blue-600",
-        "button_hover": "blue-500",
-        "text_hover": "blue-300",
-        "corner": "blue-500",
-      },
-      "status": "active",
-      "featured": false,
-      "url": "assets/games/tictactoe/index.html",
-      "offline": true,
-    },
+    // Flame-based games (Native Flutter games)
     {
       "name": "Snake Game",
       "route": "games.snake",
       "background_image": "assets/images/background/bg-snake-game.png",
       "icon": "🐍",
-      "description": "Makan terus dan jangan tabrak tembok!",
+      "description": "Makan terus dan jangan tabrak tembok! (Native Flame)",
       "colors": {
         "hover_from": "green-800",
         "hover_to": "green-900",
@@ -55,16 +33,41 @@ class OfflineGameService {
         "corner": "green-500",
       },
       "status": "active",
-      "featured": false,
-      "url": "assets/games/snake/index.html",
+      "featured": true,
       "offline": true,
+      "game_type": "flame",
+      "game_class": "SnakeGame",
+    },
+    {
+      "name": "Tic Tac Toe",
+      "route": "games.tictactoe",
+      "background_image": "assets/images/background/bg-tixtactoe.png",
+      "icon": "❌⭕",
+      "description": "Game klasik X and O (Native Flame)",
+      "colors": {
+        "hover_from": "blue-800",
+        "hover_to": "blue-900",
+        "border": "blue-500",
+        "glow_from": "blue-600",
+        "glow_to": "blue-600",
+        "button": "blue-600",
+        "button_hover": "blue-500",
+        "text_hover": "blue-300",
+        "corner": "blue-500",
+      },
+      "status": "active",
+      "featured": true,
+      "offline": true,
+      "game_type": "flame",
+      "game_class": "TicTacToeGame",
     },
     {
       "name": "Tetris Game",
       "route": "games.tetris",
       "background_image": "assets/images/background/bg-tetris.png",
       "icon": "📱",
-      "description": "Jatuhkan balok dengan rapi dan dapatkan skor tertinggi!",
+      "description":
+          "Jatuhkan balok dengan rapi dan dapatkan skor tertinggi! (Coming Soon - Flame)",
       "colors": {
         "hover_from": "purple-800",
         "hover_to": "purple-900",
@@ -76,17 +79,20 @@ class OfflineGameService {
         "text_hover": "purple-300",
         "corner": "purple-500",
       },
-      "status": "active",
+      "status": "coming_soon",
       "featured": false,
-      "url": "assets/games/tetris/index.html",
       "offline": true,
+      "game_type": "flame",
+      "game_class": "TetrisGame",
     },
+
+    // HTML-based games (Legacy WebView games)
     {
       "name": "Dino Game",
       "route": "games.dino",
       "background_image": "assets/images/background/bg-dino-game.png",
       "icon": "🦖",
-      "description": "Mainkan game dino lompat yang paling populer di dunia!",
+      "description": "Game dino lompat klasik! (HTML Version)",
       "colors": {
         "hover_from": "orange-800",
         "hover_to": "orange-900",
@@ -102,13 +108,14 @@ class OfflineGameService {
       "featured": false,
       "url": "assets/games/dino/index.html",
       "offline": true,
+      "game_type": "webview",
     },
     {
       "name": "Floppy Bird",
       "route": "games.floppybird",
       "background_image": "assets/images/background/bg-flappy-bird.png",
       "icon": "🐦",
-      "description": "Ini dia game flappy bird yang populer dan adiktif!",
+      "description": "Game flappy bird yang populer! (HTML Version)",
       "colors": {
         "hover_from": "sky-800",
         "hover_to": "sky-900",
@@ -124,13 +131,14 @@ class OfflineGameService {
       "featured": false,
       "url": "assets/games/floppybird/index.html",
       "offline": true,
+      "game_type": "webview",
     },
     {
       "name": "Candy Crush",
       "route": "games.candycrush",
       "background_image": "assets/images/background/bg-candy-crush.png",
       "icon": "🍬",
-      "description": "Cocokan permen warna warni yang lezat!",
+      "description": "Cocokan permen warna warni! (HTML Version)",
       "colors": {
         "hover_from": "sky-800",
         "hover_to": "sky-900",
@@ -143,16 +151,17 @@ class OfflineGameService {
         "corner": "sky-500",
       },
       "status": "active",
-      "featured": true,
+      "featured": false,
       "url": "assets/games/candycrush/index.html",
       "offline": true,
+      "game_type": "webview",
     },
     {
       "name": "2048",
       "route": "games.2048",
       "background_image": "assets/images/background/bg-2048.png",
       "icon": "🔢",
-      "description": "Bisakah kamu mencapai 2048?",
+      "description": "Bisakah kamu mencapai 2048? (HTML Version)",
       "colors": {
         "hover_from": "sky-800",
         "hover_to": "sky-900",
@@ -165,9 +174,10 @@ class OfflineGameService {
         "corner": "sky-500",
       },
       "status": "active",
-      "featured": true,
+      "featured": false,
       "url": "assets/games/2048/index.html",
       "offline": true,
+      "game_type": "webview",
     },
   ];
 
@@ -285,7 +295,7 @@ class OfflineGameService {
     }
   }
 
-  /// Check if game assets exist locally
+  /// Check if game assets exist locally (for WebView games)
   Future<bool> gameAssetsExist(String assetPath) async {
     try {
       await rootBundle.loadString(assetPath);
@@ -296,6 +306,20 @@ class OfflineGameService {
     }
   }
 
+  /// Check if Flame game is available
+  bool isFlameGameAvailable(String? gameClass) {
+    if (gameClass == null) return false;
+
+    // List of available Flame games
+    const availableFlameGames = [
+      'SnakeGame',
+      'TicTacToeGame',
+      // Add more as you implement them
+    ];
+
+    return availableFlameGames.contains(gameClass);
+  }
+
   /// Clear cache
   Future<void> clearCache() async {
     final prefs = await SharedPreferences.getInstance();
@@ -303,7 +327,7 @@ class OfflineGameService {
     await prefs.remove(_lastUpdateKey);
   }
 
-  /// PERBAIKAN: Check if device is online dengan multiple methods
+  /// Check if device is online
   Future<bool> isOnline() async {
     print('🔍 Checking online status...');
 
@@ -380,9 +404,18 @@ class OfflineGameService {
     final games = _getLocalGames();
 
     for (final game in games) {
-      if (game.offline && game.url != null) {
-        final exists = await gameAssetsExist(game.url!);
-        print('🎮 ${game.name}: ${exists ? '✅' : '❌'} (${game.url})');
+      if (game.offline) {
+        if (game.isFlameGame) {
+          final available = isFlameGameAvailable(game.gameClass);
+          print(
+            '🎮 ${game.name} (Flame): ${available ? '✅' : '❌'} (${game.gameClass})',
+          );
+        } else if (game.url != null) {
+          final exists = await gameAssetsExist(game.url!);
+          print(
+            '🎮 ${game.name} (WebView): ${exists ? '✅' : '❌'} (${game.url})',
+          );
+        }
       }
     }
   }
