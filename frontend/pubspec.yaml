@@ -74,12 +74,21 @@ flutter:
   uses-material-design: true
 
   assets:
+    - assets/images/
     - assets/images/background/
     - assets/images/logo/
     - assets/images/background/Background_Color.png
     - assets/images/logo/Maxg-ent_white.gif
     - assets/images/logo/mcm x grab_.png
     - assets/images/background/Grabcar_MasAdam.gif
+    - assets/games/
+    # - assets/games/tictactoe/
+    # - assets/games/snake/
+    # - assets/games/dino/
+    - assets/games/tetris/
+    - assets/games/ts-floppybird/
+    - assets/games/candy-crush-master/
+    - assets/games/2048/    
 
   # To add assets to your application, add an assets section, like this:
   # assets:

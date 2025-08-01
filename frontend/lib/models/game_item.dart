@@ -5,9 +5,11 @@ class GameItem {
   final String backgroundImage;
   final String icon;
   final String description;
-  final Map<String, dynamic> colors;
+  final Map<String, String> colors;
   final String status;
+  final bool featured;
   final String? url;
+  final bool offline; // New field to indicate if game works offline
 
   GameItem({
     required this.name,
@@ -17,7 +19,9 @@ class GameItem {
     required this.description,
     required this.colors,
     required this.status,
+    this.featured = false,
     this.url,
+    this.offline = false,
   });
 
   factory GameItem.fromJson(Map<String, dynamic> json) {
@@ -27,25 +31,12 @@ class GameItem {
       backgroundImage: json['background_image'] ?? '',
       icon: json['icon'] ?? '',
       description: json['description'] ?? '',
-      colors: json['colors'] ?? {},
-      status: json['status'] ?? '',
+      colors: Map<String, String>.from(json['colors'] ?? {}),
+      status: json['status'] ?? 'coming_soon',
+      featured: json['featured'] ?? false,
       url: json['url'],
+      offline: json['offline'] ?? false,
     );
-  }
-
-  // Helper methods untuk logika bisnis
-  bool get isActive => status == 'active';
-  bool get isComingSoon => status == 'coming_soon';
-  bool get hasUrl => url != null && url!.isNotEmpty;
-  bool get hasRoute => route != null && route!.isNotEmpty;
-
-  // Jika Anda butuh logika featured berdasarkan kriteria tertentu
-  bool get isFeatured {
-    // Contoh: game aktif dengan URL bisa dianggap featured
-    return isActive && hasUrl;
-
-    // Atau berdasarkan nama game tertentu
-    // return ['Tic Tac Toe', 'Tetris Game'].contains(name);
   }
 
   Map<String, dynamic> toJson() {
@@ -57,7 +48,17 @@ class GameItem {
       'description': description,
       'colors': colors,
       'status': status,
+      'featured': featured,
       'url': url,
+      'offline': offline,
     };
   }
+
+  // Helper methods
+  bool get isActive => status == 'active';
+  bool get isComingSoon => status == 'coming_soon';
+  bool get canPlayOffline =>
+      offline && url != null && url!.startsWith('assets/');
+  bool get requiresInternet =>
+      !offline || (url != null && url!.startsWith('http'));
 }

@@ -17,7 +17,7 @@ class VideoService {
           .toList();
       return musicItems;
     } else {
-      throw Exception('Failed to load music');
+      throw Exception('Failed to load Movie');
     }
   }
 }

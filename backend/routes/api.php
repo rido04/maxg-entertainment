@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Media;
+use App\Models\NewsArticle;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GameController;
@@ -38,5 +39,20 @@ Route::get('/download/{filename}', function ($filename) {
 });
 Route::get('/download/{filename}', function ($filename) {
     return response()->download(storage_path('app/public/media/musics/' . $filename));
+});
+Route::get('/news', function () {
+    return NewsArticle::latest('published_at')
+        ->get()
+        ->map(function ($article) {
+            return [
+                'id' => $article->id,
+                'title' => $article->title,
+                'description' => $article->description,
+                'category' => $article->category,
+                'image_url' => $article->image_url,
+                'file_url' => $article->file_url,
+                'published_at' => $article->published_at->toIso8601String(),
+            ];
+        });
 });
 

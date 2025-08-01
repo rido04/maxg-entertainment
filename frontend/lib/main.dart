@@ -15,7 +15,7 @@ void main() {
 
 void syncAllMedia() async {
   final mediaItems = await ApiService.fetchMediaList();
-  await downloadAllMedia(mediaItems); // Panggil fungsi langsung
+  await StorageService.downloadAllMedia(mediaItems); // Panggil fungsi langsung
 }
 
 class MaxgApp extends StatelessWidget {

@@ -2,18 +2,20 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Resources\AdvertisementResource;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\Widgets;
+use App\Models\NewsArticle;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use App\Filament\Resources\MediaResource;
 use Filament\Http\Middleware\Authenticate;
 use App\Filament\Resources\FeedbackResource;
 use Illuminate\Contracts\Auth\Authenticatable;
+use App\Filament\Resources\NewsArticleResource;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Cookie\Middleware\EncryptCookies;
+use App\Filament\Resources\AdvertisementResource;
 use Filament\Http\Middleware\AuthenticateSession;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
@@ -51,6 +53,7 @@ class AdminPanelProvider extends PanelProvider
                 FeedbackResource::class,
                 MediaResource::class,
                 AdvertisementResource::class,
+                NewsArticleResource::class,
             ])
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([

@@ -66,10 +66,10 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       final filename = widget.mediaItem.downloadUrl.split('/').last;
 
       // Check if video is downloaded locally
-      final isDownloaded = await isMediaDownloaded(filename);
+      final isDownloaded = await StorageService.isMediaDownloaded(filename);
 
       if (isDownloaded) {
-        videoPath = await getLocalFilePath(filename);
+        videoPath = await StorageService.getLocalFilePath(filename);
         _controller = VideoPlayerController.file(File(videoPath));
       } else {
         // Stream from network

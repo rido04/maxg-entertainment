@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'game_player_screen.dart';
 import '../models/game_item.dart';
-import '../services/game_service.dart';
+import '../services/game_service.dart'; // Updated import
 
 class GamesScreen extends StatefulWidget {
   @override
@@ -15,21 +15,76 @@ class _GamesScreenState extends State<GamesScreen> {
   late Timer _timer;
   String _currentTime = '';
   String _greeting = '';
+  bool _isOnline = true;
+  bool _isRefreshing = false;
+  final OfflineGameService _gameService = OfflineGameService();
 
   @override
   void initState() {
     super.initState();
-    _gamesFuture = GameService().fetchGames();
+    _gamesFuture = _gameService.fetchGames();
     _updateTimeAndGreeting();
+    _checkOnlineStatus();
     _timer = Timer.periodic(Duration(seconds: 1), (timer) {
       _updateTimeAndGreeting();
     });
+
+    // Check online status periodically
+    Timer.periodic(Duration(minutes: 1), (timer) {
+      _checkOnlineStatus();
+    });
   }
 
+  // PERBAIKAN: Method untuk dispose timer
   @override
   void dispose() {
     _timer.cancel();
     super.dispose();
+  }
+
+  // PERBAIKAN: Method untuk cek status online yang lebih reliable
+  void _checkOnlineStatus() async {
+    try {
+      final isOnline = await _gameService.isOnline();
+      print('🌐 Online status check: $isOnline'); // Debug log
+      if (mounted && isOnline != _isOnline) {
+        setState(() {
+          _isOnline = isOnline;
+        });
+        print('📡 Status changed to: ${_isOnline ? 'Online' : 'Offline'}');
+      }
+    } catch (e) {
+      print('❌ Error checking online status: $e');
+      // Assume offline jika error
+      if (mounted && _isOnline) {
+        setState(() {
+          _isOnline = false;
+        });
+      }
+    }
+  }
+
+  // PERBAIKAN: Method untuk cek apakah game bisa dimainkan
+  bool _canPlayGame(GameItem game) {
+    // Jika online, semua game active bisa dimainkan
+    if (_isOnline && game.isActive) {
+      return true;
+    }
+
+    // Jika offline, cek apakah game support offline
+    if (!_isOnline) {
+      final canPlayOffline =
+          game.offline &&
+          game.url != null &&
+          game.url!.startsWith('assets/') &&
+          game.isActive;
+      print(
+        '🎮 Game ${game.name}: offline=${game.offline}, url=${game.url}, canPlay=$canPlayOffline',
+      );
+      return canPlayOffline;
+    }
+
+    return false;
   }
 
   void _updateTimeAndGreeting() {
@@ -57,6 +112,154 @@ class _GamesScreenState extends State<GamesScreen> {
     return '${displayHour.toString()}:${minute.toString().padLeft(2, '0')} $period';
   }
 
+  Future<void> _refreshGames() async {
+    if (_isRefreshing) return;
+
+    setState(() {
+      _isRefreshing = true;
+    });
+
+    try {
+      final refreshedGames = await _gameService.fetchGames(forceRefresh: true);
+      setState(() {
+        _gamesFuture = Future.value(refreshedGames);
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Games updated successfully!'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to refresh: Using cached data'),
+          backgroundColor: Colors.orange,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } finally {
+      setState(() {
+        _isRefreshing = false;
+      });
+    }
+  }
+
+  // PERBAIKAN: Method untuk navigate ke game
+  void _navigateToGame(GameItem game) async {
+    print('🚀 Attempting to navigate to game: ${game.name}');
+    print('🌐 Online status: $_isOnline');
+    print('📱 Game offline: ${game.offline}');
+    print('🔗 Game URL: ${game.url}');
+
+    if (game.url == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Game URL not available'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // PERBAIKAN: Cek kondisi offline dengan lebih baik
+    if (!_isOnline && !game.offline) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('This game requires internet connection'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    // For offline games, check if assets exist
+    if (game.offline && game.url!.startsWith('assets/')) {
+      final assetsExist = await _gameService.gameAssetsExist(game.url!);
+      print('📁 Assets exist for ${game.name}: $assetsExist');
+      if (!assetsExist) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Game files not found. Please update the app.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+    }
+
+    try {
+      print('✅ Navigating to game player...');
+      // Navigate to game player screen with game name
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              GamePlayerScreen(gameUrl: game.url!, gameName: game.name),
+        ),
+      );
+    } catch (e) {
+      print('❌ Navigation error: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to load game: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  // Debug method - opsional untuk testing
+  void _showDebugInfo() async {
+    final cacheInfo = await _gameService.getCacheInfo();
+    final isOnline = await _gameService.forceCheckOnline();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Debug Info'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Online Status: ${isOnline ? "🟢 Online" : "🔴 Offline"}'),
+            Text('App Status: ${_isOnline ? "🟢 Online" : "🔴 Offline"}'),
+            SizedBox(height: 8),
+            Text('Cache Info:'),
+            Text('- Has Cache: ${cacheInfo['hasCache']}'),
+            Text('- Last Update: ${cacheInfo['lastUpdate']}'),
+            Text('- Is Expired: ${cacheInfo['isExpired']}'),
+            SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: () async {
+                await _gameService.testOfflineGames();
+                Navigator.pop(context);
+              },
+              child: Text('Test Offline Games'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                setState(() {
+                  _isOnline = !_isOnline;
+                });
+                Navigator.pop(context);
+              },
+              child: Text('Toggle Online Status'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -75,59 +278,111 @@ class _GamesScreenState extends State<GamesScreen> {
         child: Stack(
           children: [
             // Main Content
-            CustomScrollView(
-              slivers: [
-                // Header Section
-                SliverToBoxAdapter(child: _buildHeader()),
+            RefreshIndicator(
+              onRefresh: _refreshGames,
+              child: CustomScrollView(
+                slivers: [
+                  // Header Section
+                  SliverToBoxAdapter(child: _buildHeader()),
 
-                // Main Title Section
-                SliverToBoxAdapter(child: _buildMainTitle()),
+                  // Main Title Section
+                  SliverToBoxAdapter(child: _buildMainTitle()),
 
-                // Content
-                SliverToBoxAdapter(
-                  child: FutureBuilder<List<GameItem>>(
-                    future: _gamesFuture,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(50),
-                            child: CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white,
+                  // Content
+                  SliverToBoxAdapter(
+                    child: FutureBuilder<List<GameItem>>(
+                      future: _gamesFuture,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(50),
+                              child: Column(
+                                children: [
+                                  CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
+                                  ),
+                                  SizedBox(height: 16),
+                                  Text(
+                                    'Loading games...',
+                                    style: TextStyle(color: Colors.white70),
+                                  ),
+                                ],
                               ),
                             ),
-                          ),
-                        );
-                      }
+                          );
+                        }
 
-                      if (snapshot.hasError) {
-                        return Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(20),
-                            child: Text(
-                              'Error: ${snapshot.error}',
-                              style: TextStyle(color: Colors.white),
+                        if (snapshot.hasError) {
+                          return Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(20),
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    Icons.error_outline,
+                                    color: Colors.red,
+                                    size: 48,
+                                  ),
+                                  SizedBox(height: 16),
+                                  Text(
+                                    'Error loading games',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    'Using offline data',
+                                    style: TextStyle(color: Colors.white70),
+                                  ),
+                                  SizedBox(height: 16),
+                                  ElevatedButton(
+                                    onPressed: _refreshGames,
+                                    child: Text('Retry'),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        );
-                      }
+                          );
+                        }
 
-                      final games = snapshot.data!;
-                      return Column(
-                        children: [
-                          _buildFeaturedGames(games),
-                          _buildAllGames(games),
-                        ],
-                      );
-                    },
+                        final games = snapshot.data!;
+                        return Column(
+                          children: [
+                            _buildFeaturedGames(games),
+                            _buildAllGames(games),
+                          ],
+                        );
+                      },
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
+
+            // Connection Status
+            _buildConnectionStatus(),
 
             // Current Time Display
             _buildTimeDisplay(),
+
+            // Debug button - bisa dihapus di production
+            Positioned(
+              bottom: 20,
+              right: 20,
+              child: FloatingActionButton(
+                mini: true,
+                backgroundColor: Colors.grey.withOpacity(0.7),
+                onPressed: _showDebugInfo,
+                child: Icon(Icons.bug_report, color: Colors.white),
+              ),
+            ),
           ],
         ),
       ),
@@ -145,13 +400,29 @@ class _GamesScreenState extends State<GamesScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  _greeting,
-                  style: TextStyle(
-                    fontSize: 24,
-                    color: Colors.grey[200],
-                    fontWeight: FontWeight.w600,
-                  ),
+                Row(
+                  children: [
+                    Text(
+                      _greeting,
+                      style: TextStyle(
+                        fontSize: 24,
+                        color: Colors.grey[200],
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    if (_isRefreshing)
+                      SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white70,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
                 SizedBox(height: 4),
                 Text(
@@ -162,18 +433,52 @@ class _GamesScreenState extends State<GamesScreen> {
             ),
           ),
 
-          // Logo Section (placeholder)
           // Logo Section
           Container(
-            width: 100, // Sesuaikan ukuran
-            height: 150, // Sesuaikan ukuran
+            width: 100,
+            height: 150,
             padding: EdgeInsets.all(8),
             child: Image.asset(
-              'assets/images/logo/Maxg-ent_white.gif', // Ganti dengan nama file logo kamu
+              'assets/images/logo/Maxg-ent_white.gif',
               fit: BoxFit.contain,
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildConnectionStatus() {
+    return Positioned(
+      top: 45,
+      left: 16,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: _isOnline
+              ? Colors.green.withOpacity(0.8)
+              : Colors.red.withOpacity(0.8),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              _isOnline ? Icons.wifi : Icons.wifi_off,
+              color: Colors.white,
+              size: 12,
+            ),
+            SizedBox(width: 4),
+            Text(
+              _isOnline ? 'Online' : 'Offline',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -194,8 +499,13 @@ class _GamesScreenState extends State<GamesScreen> {
           ),
           SizedBox(height: 8),
           Text(
-            'Mainkan Mini Games Seru selama perjalananmu!',
-            style: TextStyle(color: Colors.grey[300], fontSize: 14),
+            _isOnline
+                ? 'Mainkan Mini Games Seru selama perjalananmu!'
+                : 'Playing offline - Some games may not be available',
+            style: TextStyle(
+              color: _isOnline ? Colors.grey[300] : Colors.orange[300],
+              fontSize: 14,
+            ),
             textAlign: TextAlign.center,
           ),
         ],
@@ -204,85 +514,30 @@ class _GamesScreenState extends State<GamesScreen> {
   }
 
   Widget _buildFeaturedGames(List<GameItem> games) {
-    final featuredGameNames = ['Tic Tac Toe', 'Tetris Game'];
     final featuredGames = games
-        .where(
-          (game) =>
-              game.status == 'active' && featuredGameNames.contains(game.name),
-        )
+        .where((game) => game.featured && game.status == 'active')
         .take(2)
         .toList();
 
+    if (featuredGames.isEmpty) return SizedBox.shrink();
+
     return Column(
       children: featuredGames
-          .map(
-            (game) => Container(
-              height: 120,
-              margin: EdgeInsets.only(bottom: 16),
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage(
-                    game.backgroundImage,
-                  ), // Pakai background image
-                  fit: BoxFit.cover,
-                ),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.black.withOpacity(0.3), Colors.transparent],
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    Text(game.icon, style: TextStyle(fontSize: 24)),
-                    SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            game.name,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            game.description,
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 14,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          )
+          .map((game) => _buildFeaturedGameCard(game))
           .toList(),
     );
   }
 
+  // PERBAIKAN: Method _buildFeaturedGameCard sekarang dalam class
   Widget _buildFeaturedGameCard(GameItem game) {
+    final canPlay = _canPlayGame(game);
+
     return Container(
-      margin: EdgeInsets.only(bottom: 16),
+      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () => _navigateToGame(game),
+          onTap: canPlay ? () => _navigateToGame(game) : null,
           borderRadius: BorderRadius.circular(16),
           child: Container(
             padding: EdgeInsets.all(20),
@@ -290,11 +545,17 @@ class _GamesScreenState extends State<GamesScreen> {
               gradient: LinearGradient(
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
-                colors: [
-                  Colors.white.withOpacity(0.9),
-                  Colors.white.withOpacity(0.7),
-                  Colors.white.withOpacity(0.3),
-                ],
+                colors: canPlay
+                    ? [
+                        Colors.white.withOpacity(0.9),
+                        Colors.white.withOpacity(0.7),
+                        Colors.white.withOpacity(0.3),
+                      ]
+                    : [
+                        Colors.grey.withOpacity(0.5),
+                        Colors.grey.withOpacity(0.3),
+                        Colors.grey.withOpacity(0.1),
+                      ],
               ),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
@@ -327,6 +588,30 @@ class _GamesScreenState extends State<GamesScreen> {
                   ),
                 ),
 
+                // Status indicator
+                if (!canPlay)
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.8),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        !_isOnline && !game.offline
+                            ? 'Requires Internet'
+                            : 'Coming Soon',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 8,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+
                 // Content
                 Row(
                   children: [
@@ -335,7 +620,13 @@ class _GamesScreenState extends State<GamesScreen> {
                       width: 60,
                       height: 60,
                       child: Center(
-                        child: Text(game.icon, style: TextStyle(fontSize: 40)),
+                        child: Text(
+                          game.icon,
+                          style: TextStyle(
+                            fontSize: 40,
+                            color: canPlay ? null : Colors.grey,
+                          ),
+                        ),
                       ),
                     ),
 
@@ -351,7 +642,9 @@ class _GamesScreenState extends State<GamesScreen> {
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: Colors.grey[800],
+                              color: canPlay
+                                  ? Colors.grey[800]
+                                  : Colors.grey[500],
                             ),
                           ),
                           SizedBox(height: 8),
@@ -359,7 +652,9 @@ class _GamesScreenState extends State<GamesScreen> {
                             game.description,
                             style: TextStyle(
                               fontSize: 14,
-                              color: Colors.grey[700],
+                              color: canPlay
+                                  ? Colors.grey[700]
+                                  : Colors.grey[400],
                             ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
@@ -372,7 +667,9 @@ class _GamesScreenState extends State<GamesScreen> {
                             ),
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
-                                colors: [Colors.blue[600]!, Colors.blue[700]!],
+                                colors: canPlay
+                                    ? [Colors.blue[600]!, Colors.blue[700]!]
+                                    : [Colors.grey[400]!, Colors.grey[500]!],
                               ),
                               borderRadius: BorderRadius.circular(8),
                             ),
@@ -380,13 +677,13 @@ class _GamesScreenState extends State<GamesScreen> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(
-                                  Icons.play_arrow,
+                                  canPlay ? Icons.play_arrow : Icons.lock,
                                   color: Colors.white,
                                   size: 16,
                                 ),
                                 SizedBox(width: 4),
                                 Text(
-                                  'Play Now',
+                                  canPlay ? 'Play Now' : 'Locked',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 14,
@@ -410,10 +707,14 @@ class _GamesScreenState extends State<GamesScreen> {
   }
 
   Widget _buildAllGames(List<GameItem> games) {
-    final activeGames = games.where((game) => game.status == 'active').toList();
+    final allGames = games
+        .where((game) => !game.featured && game.status == 'active')
+        .toList();
+
+    if (allGames.isEmpty) return SizedBox.shrink();
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16),
+      padding: EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -422,7 +723,7 @@ class _GamesScreenState extends State<GamesScreen> {
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.grey[200],
+              color: Colors.white,
             ),
           ),
           SizedBox(height: 16),
@@ -430,200 +731,154 @@ class _GamesScreenState extends State<GamesScreen> {
             shrinkWrap: true,
             physics: NeverScrollableScrollPhysics(),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: _getCrossAxisCount(context),
+              crossAxisCount: 2,
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
               childAspectRatio: 0.8,
             ),
-            itemCount: activeGames.length,
+            itemCount: allGames.length,
             itemBuilder: (context, index) {
-              return _buildGameCard(activeGames[index]);
+              final game = allGames[index];
+              final canPlay = _canPlayGame(game);
+
+              return Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: canPlay ? () => _navigateToGame(game) : null,
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: canPlay
+                            ? [
+                                Colors.white.withOpacity(0.2),
+                                Colors.white.withOpacity(0.1),
+                              ]
+                            : [
+                                Colors.grey.withOpacity(0.2),
+                                Colors.grey.withOpacity(0.1),
+                              ],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.2),
+                        width: 1,
+                      ),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Status indicator
+                        if (!canPlay)
+                          Container(
+                            margin: EdgeInsets.only(bottom: 8),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.red.withOpacity(0.8),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              _isOnline ? 'Coming Soon' : 'Offline Only',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+
+                        // Game Icon
+                        Text(
+                          game.icon,
+                          style: TextStyle(
+                            fontSize: 40,
+                            color: canPlay ? null : Colors.grey,
+                          ),
+                        ),
+                        SizedBox(height: 12),
+
+                        // Game Name
+                        Text(
+                          game.name,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: canPlay ? Colors.white : Colors.grey,
+                          ),
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        SizedBox(height: 8),
+
+                        // Play Button
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: canPlay
+                                ? Colors.blue[600]
+                                : Colors.grey[600],
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                canPlay ? Icons.play_arrow : Icons.lock,
+                                color: Colors.white,
+                                size: 14,
+                              ),
+                              SizedBox(width: 4),
+                              Text(
+                                canPlay ? 'Play' : 'Locked',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
             },
           ),
-          SizedBox(height: 100), // Space for time display
         ],
-      ),
-    );
-  }
-
-  int _getCrossAxisCount(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    if (width < 400) return 2;
-    if (width < 600) return 3;
-    if (width < 900) return 4;
-    return 5;
-  }
-
-  Widget _buildGameCard(GameItem game) {
-    final isActive = game.status == 'active' && game.url != null;
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: isActive ? () => _navigateToGame(game) : null,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: isActive
-                  ? [
-                      Colors.white.withOpacity(0.9),
-                      Colors.grey[50]!.withOpacity(0.8),
-                    ]
-                  : [
-                      Colors.grey[300]!.withOpacity(0.5),
-                      Colors.grey[400]!.withOpacity(0.3),
-                    ],
-            ),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isActive
-                  ? Colors.white.withOpacity(0.3)
-                  : Colors.grey.withOpacity(0.2),
-              width: 1,
-            ),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Game Icon
-              Text(
-                game.icon,
-                style: TextStyle(
-                  fontSize: 32,
-                  color: isActive ? null : Colors.grey[500],
-                ),
-              ),
-
-              SizedBox(height: 8),
-
-              // Game Name
-              Text(
-                game.name,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: isActive ? Colors.grey[800] : Colors.grey[500],
-                ),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-
-              SizedBox(height: 4),
-
-              // Game Description (hidden on small screens)
-              if (MediaQuery.of(context).size.width > 400)
-                Text(
-                  game.description,
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: isActive ? Colors.grey[600] : Colors.grey[400],
-                  ),
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-
-              SizedBox(height: 8),
-
-              // Status Indicator
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: isActive ? Colors.green[100] : Colors.orange[100],
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  isActive ? 'Available' : 'Coming Soon',
-                  style: TextStyle(
-                    color: isActive ? Colors.green[700] : Colors.orange[700],
-                    fontSize: 8,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
 
   Widget _buildTimeDisplay() {
     return Positioned(
-      bottom: 24,
-      right: 24,
+      top: 45,
+      right: 16,
       child: Container(
-        padding: EdgeInsets.all(16),
+        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.9),
+          color: Colors.black.withOpacity(0.3),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: Offset(0, 4),
-            ),
-          ],
+          border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              'NOW',
-              style: TextStyle(
-                color: Colors.blue[600],
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.2,
-              ),
-            ),
-            Text(
-              _currentTime,
-              style: TextStyle(
-                color: Colors.grey[800],
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
+        child: Text(
+          _currentTime,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
         ),
-      ),
-    );
-  }
-
-  void _navigateToGame(GameItem game) {
-    // Check if game URL is available
-    if (game.url == null || game.url!.isEmpty) {
-      // Show dialog for games that don't have URL (coming soon)
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Game Not Available'),
-            content: Text('${game.name} is coming soon!'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text('OK'),
-              ),
-            ],
-          );
-        },
-      );
-      return;
-    }
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => GamePlayerScreen(gameUrl: game.url!),
       ),
     );
   }
