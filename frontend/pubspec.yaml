@@ -30,31 +30,31 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  http: ^0.13.6
+  http: ^0.13.5
   path_provider: ^2.1.1
   provider: ^6.1.1
   flutter_background_service: ^5.0.5
   flutter_background_service_android: ^6.2.2
   dio: ^5.4.3
-  # Untuk animasi dan efek visual
   animate_do: ^3.1.2
-  # Untuk loading gambar dan caching
   cached_network_image: ^3.3.0
   just_audio: ^0.9.36
-  just_audio_background: ^0.0.1-beta.11 # Untuk background playback
+  just_audio_background: ^0.0.1-beta.11
   audio_session: ^0.1.16
   video_player: ^2.7.0
   webview_flutter: ^4.2.2
-  connectivity_plus: ^5.0.1 # For checking internet connection
+  connectivity_plus: ^5.0.1
   shared_preferences: ^2.2.2
   flutter_map: ^4.0.0
   latlong2: ^0.8.2
   geolocator: ^10.1.0
   permission_handler: ^11.2.0
   flame: ^1.16.0
-
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
+  flame_audio: 2.11.7
+  flame_svg: ^1.9.1
+  # audioplayers: ^5.2.1
+  hive: 2.2.3
+  hive_flutter: 1.1.0
   cupertino_icons: ^1.0.8
 
 dev_dependencies:
@@ -80,6 +80,7 @@ flutter:
 
   assets:
     - assets/images/
+    - assets/images/car/
     - assets/images/background/
     - assets/images/logo/
     - assets/images/logo/tarikan.png
@@ -95,6 +96,11 @@ flutter:
     - assets/games/ts-floppybird/
     - assets/games/candy-crush-master/
     - assets/games/2048/
+    # video assets
+    - assets/video/bebas_seenaknya_grabfood.mp4
+    - assets/video/grabmart_beauty_ready.mp4
+
+    # dino assetsf
 
   # To add assets to your application, add an assets section, like this:
   # assets:

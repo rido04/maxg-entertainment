@@ -136,8 +136,8 @@ class _MainLayoutWrapperState extends State<MainLayoutWrapper> {
   Timer? _inactivityTimer;
   bool _isMapModalVisible = false; // Tambahkan state untuk map modal
   static const Duration _inactivityDuration = Duration(
-    minutes: 3,
-  ); // 3 menit idle
+    minutes: 1,
+  ); // 1 minute idle
 
   @override
   void initState() {

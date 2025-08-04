@@ -115,7 +115,7 @@ class _MusicSearchScreenState extends State<MusicSearchScreen> {
       setState(() {
         _isSearching = false;
       });
-      _showErrorSnackBar(context, 'Search failed: $e');
+      _showErrorSnackBar(context, 'Pencarian gagal: $e');
     }
   }
 
@@ -191,7 +191,7 @@ class _MusicSearchScreenState extends State<MusicSearchScreen> {
                           fontWeight: FontWeight.w500,
                         ),
                         decoration: InputDecoration(
-                          hintText: 'Search songs, artists, albums...',
+                          hintText: 'Cari Music, Artist, atau Albums...',
                           hintStyle: TextStyle(
                             color: Colors.white.withOpacity(0.6),
                             fontSize: 16,
@@ -282,7 +282,7 @@ class _MusicSearchScreenState extends State<MusicSearchScreen> {
           ),
           const SizedBox(height: 24),
           Text(
-            'Searching...',
+            'Mencari...',
             style: TextStyle(
               color: Colors.white.withOpacity(0.8),
               fontSize: 16,
@@ -319,7 +319,7 @@ class _MusicSearchScreenState extends State<MusicSearchScreen> {
           ),
           const SizedBox(height: 24),
           Text(
-            'No results found',
+            'Hasil tidak ditemukan',
             style: TextStyle(
               color: Colors.white.withOpacity(0.8),
               fontSize: 20,
@@ -328,7 +328,7 @@ class _MusicSearchScreenState extends State<MusicSearchScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Try searching with different keywords',
+            'Coba gunakan kata kunci lain atau periksa ejaan',
             style: TextStyle(
               color: Colors.white.withOpacity(0.5),
               fontSize: 14,
@@ -352,7 +352,7 @@ class _MusicSearchScreenState extends State<MusicSearchScreen> {
           // Search History
           if (_searchHistory.isNotEmpty) ...[
             Text(
-              'Recent searches',
+              'Pencarian Terakhir',
               style: TextStyle(
                 color: Colors.white.withOpacity(0.9),
                 fontSize: 18,
@@ -433,7 +433,7 @@ class _MusicSearchScreenState extends State<MusicSearchScreen> {
           // Popular Genres/Categories
           const SizedBox(height: 32),
           Text(
-            'Browse by genre',
+            'Cari Genre atau Kategori',
             style: TextStyle(
               color: Colors.white.withOpacity(0.9),
               fontSize: 18,
@@ -579,7 +579,7 @@ class _MusicSearchScreenState extends State<MusicSearchScreen> {
               children: [
                 const SizedBox(height: 6),
                 Text(
-                  music.artist ?? 'Unknown Artist',
+                  music.artist ?? 'Artis tidak dikenal',
                   style: TextStyle(
                     color: isCurrentlyPlaying
                         ? const Color(0xFF1DB954).withOpacity(0.8)
@@ -662,7 +662,7 @@ class _MusicSearchScreenState extends State<MusicSearchScreen> {
                         try {
                           await _globalAudioService.playMusic(music);
                         } catch (e) {
-                          _showErrorSnackBar(context, 'Failed to play: $e');
+                          _showErrorSnackBar(context, 'Gagal memutar: $e');
                         }
                       }
                     },
@@ -873,7 +873,7 @@ class _MusicSearchScreenState extends State<MusicSearchScreen> {
               ),
               const SizedBox(height: 24),
               const Text(
-                'Downloading',
+                'Mengunduh...',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 18,
@@ -925,7 +925,7 @@ class _MusicSearchScreenState extends State<MusicSearchScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const Text(
-                      'Download completed!',
+                      'Mengunduh selesai!',
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w600,
@@ -955,7 +955,7 @@ class _MusicSearchScreenState extends State<MusicSearchScreen> {
       );
     } catch (e) {
       Navigator.of(context).pop();
-      _showErrorSnackBar(context, 'Failed to download: $e');
+      _showErrorSnackBar(context, 'Gagal mengunduh: $e');
     }
   }
 }
