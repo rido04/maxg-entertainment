@@ -11,7 +11,19 @@ import 'widgets/mini_player.dart';
 import 'widgets/map_trigger_button.dart';
 import 'widgets/map_modal_widget.dart';
 
-void main() {
+void main() async {
+  // Pastikan Flutter binding sudah diinisialisasi
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Set orientation ke landscape dan fullscreen
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.landscapeLeft,
+    DeviceOrientation.landscapeRight,
+  ]);
+
+  // Set fullscreen immersive
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+
   runApp(const MaxgApp());
 }
 
@@ -114,6 +126,8 @@ class MaxgApp extends StatelessWidget {
           value: const SystemUiOverlayStyle(
             statusBarColor: Colors.transparent,
             statusBarIconBrightness: Brightness.light,
+            systemNavigationBarColor: Colors.transparent,
+            systemNavigationBarIconBrightness: Brightness.light,
           ),
           child: child!,
         );
@@ -145,12 +159,19 @@ class _MainLayoutWrapperState extends State<MainLayoutWrapper> {
     // Initialize global audio service when entering main layout
     GlobalAudioService().initialize();
     _startInactivityTimer();
+
+    // Pastikan fullscreen tetap aktif
+    _setFullscreen();
   }
 
   @override
   void dispose() {
     _inactivityTimer?.cancel();
     super.dispose();
+  }
+
+  void _setFullscreen() {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   }
 
   void _startInactivityTimer() {
@@ -163,6 +184,7 @@ class _MainLayoutWrapperState extends State<MainLayoutWrapper> {
 
   void _resetInactivityTimer() {
     _startInactivityTimer();
+    _setFullscreen(); // Reset fullscreen juga
   }
 
   // Method untuk show/hide map modal
