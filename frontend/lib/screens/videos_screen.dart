@@ -471,6 +471,7 @@ class _VideosScreenState extends State<VideosScreen>
   }
 
   // [Rest of the build methods remain the same as original...]
+  // Update method _buildMovieList untuk support mobile
   Widget _buildMovieList(List<MediaItem> videoItems) {
     return Container(
       height: 400,
@@ -482,376 +483,403 @@ class _VideosScreenState extends State<VideosScreen>
 
           // Check if this media is downloaded
           return FutureBuilder<bool>(
-            future: StorageService.isMediaDownloaded(
-              media.localFileName, // Menggunakan getter localFileName
-            ),
+            future: StorageService.isMediaDownloaded(media.localFileName),
             builder: (context, downloadSnapshot) {
               final isDownloaded = downloadSnapshot.data ?? false;
 
               return AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 margin: const EdgeInsets.only(bottom: 16),
-                child: MouseRegion(
-                  onEnter: (_) => _onMovieHover(media, true),
-                  onExit: (_) => _onMovieHover(null, false),
-                  child: AnimatedBuilder(
-                    animation: _hoverAnimationController,
-                    builder: (context, child) {
-                      return Transform.translate(
-                        offset: isHovered
-                            ? _slideAnimation.value *
-                                  MediaQuery.of(context).size.width
-                            : Offset.zero,
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 350),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: isHovered
+                child: GestureDetector(
+                  // Mobile gestures
+                  onTap: () => _handleMediaTap(media),
+                  onLongPress: () => _onMovieHover(media, true),
+                  onTapDown: (_) => _onMovieHover(media, true),
+                  onTapUp: (_) {
+                    // Delay untuk menunjukkan thumbnail sejenak
+                    Future.delayed(const Duration(milliseconds: 1500), () {
+                      if (mounted) _onMovieHover(null, false);
+                    });
+                  },
+                  onTapCancel: () => _onMovieHover(null, false),
+
+                  // Desktop hover (tetap untuk desktop compatibility)
+                  child: MouseRegion(
+                    onEnter: (_) => _onMovieHover(media, true),
+                    onExit: (_) => _onMovieHover(null, false),
+                    child: AnimatedBuilder(
+                      animation: _hoverAnimationController,
+                      builder: (context, child) {
+                        return Transform.translate(
+                          offset: isHovered
+                              ? _slideAnimation.value *
+                                    MediaQuery.of(context).size.width
+                              : Offset.zero,
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 350),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: isHovered
+                                    ? [
+                                        const Color(0xFF00E863),
+                                        const Color(0xFF00B14F),
+                                        const Color(0xFF007A37),
+                                      ]
+                                    : [
+                                        const Color(0xFF1E3A5F),
+                                        const Color(0xFF2D5A87),
+                                        const Color(0xFF3B6FA5),
+                                      ],
+                                stops: const [0.0, 0.5, 1.0],
+                              ),
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: isHovered
                                   ? [
-                                      const Color(0xFF00E863),
-                                      const Color(0xFF00B14F),
-                                      const Color(0xFF007A37),
+                                      BoxShadow(
+                                        color: const Color(
+                                          0xFF00B14F,
+                                        ).withOpacity(0.6),
+                                        blurRadius: 30,
+                                        spreadRadius: 4,
+                                        offset: const Offset(-3, 6),
+                                      ),
+                                      BoxShadow(
+                                        color: const Color(
+                                          0xFF00E863,
+                                        ).withOpacity(0.3),
+                                        blurRadius: 15,
+                                        spreadRadius: 1,
+                                        offset: const Offset(2, -2),
+                                      ),
                                     ]
                                   : [
-                                      const Color(0xFF1E3A5F),
-                                      const Color(0xFF2D5A87),
-                                      const Color(0xFF3B6FA5),
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.15),
+                                        blurRadius: 12,
+                                        spreadRadius: 2,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.08),
+                                        blurRadius: 6,
+                                        spreadRadius: 0,
+                                        offset: const Offset(0, 2),
+                                      ),
                                     ],
-                              stops: const [0.0, 0.5, 1.0],
                             ),
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: isHovered
-                                ? [
-                                    BoxShadow(
-                                      color: const Color(
-                                        0xFF00B14F,
-                                      ).withOpacity(0.6),
-                                      blurRadius: 30,
-                                      spreadRadius: 4,
-                                      offset: const Offset(-3, 6),
-                                    ),
-                                    BoxShadow(
-                                      color: const Color(
-                                        0xFF00E863,
-                                      ).withOpacity(0.3),
-                                      blurRadius: 15,
-                                      spreadRadius: 1,
-                                      offset: const Offset(2, -2),
-                                    ),
-                                  ]
-                                : [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.15),
-                                      blurRadius: 12,
-                                      spreadRadius: 2,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.08),
-                                      blurRadius: 6,
-                                      spreadRadius: 0,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                          ),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: isHovered
-                                    ? Colors.white.withOpacity(0.3)
-                                    : Colors.white.withOpacity(0.1),
-                                width: 1.5,
-                              ),
-                            ),
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
+                            child: Container(
+                              decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(20),
-                                onTap: () => _handleMediaTap(media),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(20),
-                                  child: Row(
-                                    children: [
-                                      // Movie icon with download indicator
-                                      Stack(
-                                        children: [
-                                          AnimatedContainer(
-                                            duration: const Duration(
-                                              milliseconds: 300,
-                                            ),
-                                            width: 58,
-                                            height: 58,
-                                            decoration: BoxDecoration(
-                                              gradient: LinearGradient(
-                                                begin: Alignment.topLeft,
-                                                end: Alignment.bottomRight,
-                                                colors: isHovered
-                                                    ? [
-                                                        Colors.white
-                                                            .withOpacity(0.4),
-                                                        Colors.white
-                                                            .withOpacity(0.2),
-                                                        Colors.white
-                                                            .withOpacity(0.1),
-                                                      ]
-                                                    : [
-                                                        Colors.white
-                                                            .withOpacity(0.3),
-                                                        Colors.white
-                                                            .withOpacity(0.15),
-                                                        Colors.white
-                                                            .withOpacity(0.08),
-                                                      ],
-                                              ),
-                                              borderRadius:
-                                                  BorderRadius.circular(18),
-                                              border: Border.all(
-                                                color: Colors.white.withOpacity(
-                                                  0.25,
-                                                ),
-                                                width: 1.5,
-                                              ),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.black
-                                                      .withOpacity(0.1),
-                                                  blurRadius: 8,
-                                                  offset: const Offset(0, 2),
-                                                ),
-                                              ],
-                                            ),
-                                            child: Icon(
-                                              Icons.movie_filter_outlined,
-                                              color: Colors.white,
-                                              size: isHovered ? 30 : 28,
-                                            ),
-                                          ),
-                                          // Download indicator
-                                          if (isDownloaded)
-                                            Positioned(
-                                              right: -2,
-                                              top: -2,
-                                              child: Container(
-                                                width: 20,
-                                                height: 20,
-                                                decoration: BoxDecoration(
-                                                  color: Colors.green,
-                                                  shape: BoxShape.circle,
-                                                  border: Border.all(
-                                                    color: Colors.white,
-                                                    width: 2,
-                                                  ),
-                                                ),
-                                                child: const Icon(
-                                                  Icons.download_done,
-                                                  color: Colors.white,
-                                                  size: 12,
-                                                ),
-                                              ),
-                                            ),
-                                        ],
-                                      ),
-                                      const SizedBox(width: 18),
-                                      // Movie info
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                border: Border.all(
+                                  color: isHovered
+                                      ? Colors.white.withOpacity(0.3)
+                                      : Colors.white.withOpacity(0.1),
+                                  width: 1.5,
+                                ),
+                              ),
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(20),
+                                  onTap: () => _handleMediaTap(media),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(20),
+                                    child: Row(
+                                      children: [
+                                        // Movie icon with download indicator
+                                        Stack(
                                           children: [
-                                            Text(
-                                              media.title,
-                                              style: TextStyle(
-                                                fontSize: isHovered ? 17 : 16,
-                                                fontWeight: FontWeight.w700,
-                                                color: Colors.white,
-                                                letterSpacing: 0.3,
-                                                shadows: [
-                                                  Shadow(
-                                                    color: Colors.black
-                                                        .withOpacity(0.3),
-                                                    offset: const Offset(1, 1),
-                                                    blurRadius: 2,
-                                                  ),
-                                                ],
+                                            AnimatedContainer(
+                                              duration: const Duration(
+                                                milliseconds: 300,
                                               ),
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                            const SizedBox(height: 6),
-                                            Row(
-                                              children: [
-                                                AnimatedContainer(
-                                                  duration: const Duration(
-                                                    milliseconds: 300,
-                                                  ),
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                        horizontal: 10,
-                                                        vertical: 4,
-                                                      ),
-                                                  decoration: BoxDecoration(
-                                                    gradient: LinearGradient(
-                                                      colors: isHovered
-                                                          ? [
-                                                              const Color(
-                                                                0xFF00B14F,
-                                                              ).withOpacity(
-                                                                0.8,
+                                              width: 58,
+                                              height: 58,
+                                              decoration: BoxDecoration(
+                                                gradient: LinearGradient(
+                                                  begin: Alignment.topLeft,
+                                                  end: Alignment.bottomRight,
+                                                  colors: isHovered
+                                                      ? [
+                                                          Colors.white
+                                                              .withOpacity(0.4),
+                                                          Colors.white
+                                                              .withOpacity(0.2),
+                                                          Colors.white
+                                                              .withOpacity(0.1),
+                                                        ]
+                                                      : [
+                                                          Colors.white
+                                                              .withOpacity(0.3),
+                                                          Colors.white
+                                                              .withOpacity(
+                                                                0.15,
                                                               ),
-                                                              const Color(
-                                                                0xFF007A37,
-                                                              ).withOpacity(
-                                                                0.8,
+                                                          Colors.white
+                                                              .withOpacity(
+                                                                0.08,
                                                               ),
-                                                            ]
-                                                          : [
-                                                              Colors.white
-                                                                  .withOpacity(
-                                                                    0.2,
-                                                                  ),
-                                                              Colors.white
-                                                                  .withOpacity(
-                                                                    0.1,
-                                                                  ),
-                                                            ],
-                                                    ),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          10,
-                                                        ),
-                                                    border: Border.all(
-                                                      color: Colors.white
-                                                          .withOpacity(0.2),
-                                                      width: 1,
-                                                    ),
-                                                  ),
-                                                  child: Text(
-                                                    _getFileTypeFromUrl(
-                                                      media.fileUrl,
-                                                    ),
-                                                    style: TextStyle(
-                                                      fontSize: 12,
-                                                      color: Colors.white
-                                                          .withOpacity(0.95),
-                                                      fontWeight:
-                                                          FontWeight.w700,
-                                                      letterSpacing: 0.5,
-                                                    ),
-                                                  ),
+                                                        ],
                                                 ),
-                                                const SizedBox(width: 8),
-                                                // Offline indicator
-                                                if (isDownloaded)
-                                                  Container(
-                                                    padding:
-                                                        const EdgeInsets.symmetric(
-                                                          horizontal: 8,
-                                                          vertical: 2,
-                                                        ),
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.green
-                                                          .withOpacity(0.8),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            8,
-                                                          ),
-                                                    ),
-                                                    child: const Text(
-                                                      'OFFLINE',
-                                                      style: TextStyle(
-                                                        fontSize: 10,
-                                                        color: Colors.white,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    ),
-                                                  ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      const SizedBox(width: 16),
-                                      // Play button
-                                      AnimatedContainer(
-                                        duration: const Duration(
-                                          milliseconds: 300,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          gradient: LinearGradient(
-                                            begin: Alignment.topLeft,
-                                            end: Alignment.bottomRight,
-                                            colors: isHovered
-                                                ? [
-                                                    const Color(0xFF00E863),
-                                                    const Color(0xFF00B14F),
-                                                    const Color(0xFF007A37),
-                                                  ]
-                                                : [
-                                                    Colors.white.withOpacity(
-                                                      0.25,
-                                                    ),
-                                                    Colors.white.withOpacity(
-                                                      0.15,
-                                                    ),
-                                                    Colors.white.withOpacity(
-                                                      0.08,
-                                                    ),
-                                                  ],
-                                          ),
-                                          borderRadius: BorderRadius.circular(
-                                            28,
-                                          ),
-                                          border: Border.all(
-                                            color: Colors.white.withOpacity(
-                                              0.3,
-                                            ),
-                                            width: 1.5,
-                                          ),
-                                          boxShadow: isHovered
-                                              ? [
-                                                  BoxShadow(
-                                                    color: const Color(
-                                                      0xFF00B14F,
-                                                    ).withOpacity(0.4),
-                                                    blurRadius: 12,
-                                                    spreadRadius: 2,
-                                                    offset: const Offset(0, 3),
-                                                  ),
-                                                ]
-                                              : [
+                                                borderRadius:
+                                                    BorderRadius.circular(18),
+                                                border: Border.all(
+                                                  color: Colors.white
+                                                      .withOpacity(0.25),
+                                                  width: 1.5,
+                                                ),
+                                                boxShadow: [
                                                   BoxShadow(
                                                     color: Colors.black
                                                         .withOpacity(0.1),
-                                                    blurRadius: 6,
+                                                    blurRadius: 8,
                                                     offset: const Offset(0, 2),
                                                   ),
                                                 ],
+                                              ),
+                                              child: Icon(
+                                                Icons.movie_filter_outlined,
+                                                color: Colors.white,
+                                                size: isHovered ? 30 : 28,
+                                              ),
+                                            ),
+                                            // Download indicator
+                                            if (isDownloaded)
+                                              Positioned(
+                                                right: -2,
+                                                top: -2,
+                                                child: Container(
+                                                  width: 20,
+                                                  height: 20,
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.green,
+                                                    shape: BoxShape.circle,
+                                                    border: Border.all(
+                                                      color: Colors.white,
+                                                      width: 2,
+                                                    ),
+                                                  ),
+                                                  child: const Icon(
+                                                    Icons.download_done,
+                                                    color: Colors.white,
+                                                    size: 12,
+                                                  ),
+                                                ),
+                                              ),
+                                          ],
                                         ),
-                                        child: IconButton(
-                                          icon: Icon(
-                                            Icons.play_circle_filled,
-                                            color: isHovered
-                                                ? Colors.white
-                                                : Colors.white.withOpacity(0.9),
-                                            size: isHovered ? 32 : 30,
+                                        const SizedBox(width: 18),
+                                        // Movie info
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                media.title,
+                                                style: TextStyle(
+                                                  fontSize: isHovered ? 17 : 16,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: Colors.white,
+                                                  letterSpacing: 0.3,
+                                                  shadows: [
+                                                    Shadow(
+                                                      color: Colors.black
+                                                          .withOpacity(0.3),
+                                                      offset: const Offset(
+                                                        1,
+                                                        1,
+                                                      ),
+                                                      blurRadius: 2,
+                                                    ),
+                                                  ],
+                                                ),
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              const SizedBox(height: 6),
+                                              Row(
+                                                children: [
+                                                  AnimatedContainer(
+                                                    duration: const Duration(
+                                                      milliseconds: 300,
+                                                    ),
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal: 10,
+                                                          vertical: 4,
+                                                        ),
+                                                    decoration: BoxDecoration(
+                                                      gradient: LinearGradient(
+                                                        colors: isHovered
+                                                            ? [
+                                                                const Color(
+                                                                  0xFF00B14F,
+                                                                ).withOpacity(
+                                                                  0.8,
+                                                                ),
+                                                                const Color(
+                                                                  0xFF007A37,
+                                                                ).withOpacity(
+                                                                  0.8,
+                                                                ),
+                                                              ]
+                                                            : [
+                                                                Colors.white
+                                                                    .withOpacity(
+                                                                      0.2,
+                                                                    ),
+                                                                Colors.white
+                                                                    .withOpacity(
+                                                                      0.1,
+                                                                    ),
+                                                              ],
+                                                      ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            10,
+                                                          ),
+                                                      border: Border.all(
+                                                        color: Colors.white
+                                                            .withOpacity(0.2),
+                                                        width: 1,
+                                                      ),
+                                                    ),
+                                                    child: Text(
+                                                      _getFileTypeFromUrl(
+                                                        media.fileUrl,
+                                                      ),
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        color: Colors.white
+                                                            .withOpacity(0.95),
+                                                        fontWeight:
+                                                            FontWeight.w700,
+                                                        letterSpacing: 0.5,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 8),
+                                                  // Offline indicator
+                                                  if (isDownloaded)
+                                                    Container(
+                                                      padding:
+                                                          const EdgeInsets.symmetric(
+                                                            horizontal: 8,
+                                                            vertical: 2,
+                                                          ),
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.green
+                                                            .withOpacity(0.8),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              8,
+                                                            ),
+                                                      ),
+                                                      child: const Text(
+                                                        'OFFLINE',
+                                                        style: TextStyle(
+                                                          fontSize: 10,
+                                                          color: Colors.white,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                ],
+                                              ),
+                                            ],
                                           ),
-                                          onPressed: () =>
-                                              _handlePlayButton(media),
                                         ),
-                                      ),
-                                    ],
+                                        const SizedBox(width: 16),
+                                        // Play button
+                                        AnimatedContainer(
+                                          duration: const Duration(
+                                            milliseconds: 300,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            gradient: LinearGradient(
+                                              begin: Alignment.topLeft,
+                                              end: Alignment.bottomRight,
+                                              colors: isHovered
+                                                  ? [
+                                                      const Color(0xFF00E863),
+                                                      const Color(0xFF00B14F),
+                                                      const Color(0xFF007A37),
+                                                    ]
+                                                  : [
+                                                      Colors.white.withOpacity(
+                                                        0.25,
+                                                      ),
+                                                      Colors.white.withOpacity(
+                                                        0.15,
+                                                      ),
+                                                      Colors.white.withOpacity(
+                                                        0.08,
+                                                      ),
+                                                    ],
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              28,
+                                            ),
+                                            border: Border.all(
+                                              color: Colors.white.withOpacity(
+                                                0.3,
+                                              ),
+                                              width: 1.5,
+                                            ),
+                                            boxShadow: isHovered
+                                                ? [
+                                                    BoxShadow(
+                                                      color: const Color(
+                                                        0xFF00B14F,
+                                                      ).withOpacity(0.4),
+                                                      blurRadius: 12,
+                                                      spreadRadius: 2,
+                                                      offset: const Offset(
+                                                        0,
+                                                        3,
+                                                      ),
+                                                    ),
+                                                  ]
+                                                : [
+                                                    BoxShadow(
+                                                      color: Colors.black
+                                                          .withOpacity(0.1),
+                                                      blurRadius: 6,
+                                                      offset: const Offset(
+                                                        0,
+                                                        2,
+                                                      ),
+                                                    ),
+                                                  ],
+                                          ),
+                                          child: IconButton(
+                                            icon: Icon(
+                                              Icons.play_circle_filled,
+                                              color: isHovered
+                                                  ? Colors.white
+                                                  : Colors.white.withOpacity(
+                                                      0.9,
+                                                    ),
+                                              size: isHovered ? 32 : 30,
+                                            ),
+                                            onPressed: () =>
+                                                _handlePlayButton(media),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   ),
                 ),
               );

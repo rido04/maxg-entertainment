@@ -51,7 +51,7 @@ class _CarAnimationWidgetState extends State<CarAnimationWidget>
               return Transform.translate(
                 offset: Offset(0, _floatAnimation.value),
                 child: Transform.translate(
-                  offset: Offset(-150, -100),
+                  offset: Offset(-100, -100),
                   child: Stack(
                     children: [
                       // Shadow layer - positioned behind the main image
