@@ -5,6 +5,7 @@ import '../services/storage_service.dart'; // Update import
 import 'videos_player_screen.dart';
 import 'video_search_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'movie_detail_screen.dart';
 
 class VideosScreen extends StatefulWidget {
   const VideosScreen({super.key});
@@ -1425,53 +1426,27 @@ class _VideosScreenState extends State<VideosScreen>
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => VideoPlayerScreen(mediaItem: media),
+        builder: (context) => MovieDetailScreen(mediaItem: media),
       ),
     );
   }
 
   Future<void> _handlePlayButton(MediaItem media) async {
     try {
-      final filename = media.localFileName; // Menggunakan getter localFileName
+      final filename = media.localFileName;
       final isDownloaded = await StorageService.isMediaDownloaded(filename);
 
       if (isDownloaded) {
         _showSuccessMessage('Playing from device storage');
       } else {
-        if (!_isOnlineMode) {
-          _showErrorMessage(
-            'Video not available offline. Download when online.',
-          );
-          return;
-        }
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Text('Preparing ${media.title}...'),
-              ],
-            ),
-            backgroundColor: const Color(0xFF00B14F),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            duration: const Duration(seconds: 2),
+        // Jika tidak ada offline, navigasi ke detail untuk download
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MovieDetailScreen(mediaItem: media),
           ),
         );
-
-        await StorageService.downloadMedia(media.downloadUrl, filename);
-        _showSuccessMessage('Media downloaded and ready to play');
+        return;
       }
 
       Navigator.push(

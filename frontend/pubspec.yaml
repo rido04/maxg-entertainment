@@ -32,6 +32,8 @@ dependencies:
     sdk: flutter
   http: ^0.13.5
   path_provider: ^2.1.1
+  sqflite: ^2.3.0
+  path: ^1.8.3
   provider: ^6.1.1
   flutter_background_service: ^5.0.5
   flutter_background_service_android: ^6.2.2
@@ -52,6 +54,7 @@ dependencies:
   flame: ^1.16.0
   flame_audio: 2.11.7
   flame_svg: ^1.9.1
+  url_launcher: ^6.2.1
   # audioplayers: ^5.2.1
   hive: 2.2.3
   hive_flutter: 1.1.0
@@ -86,6 +89,7 @@ flutter:
     - assets/images/logo/tarikan.png
     - assets/images/background/Background_Color.png
     - assets/images/logo/Maxg-ent_white.gif
+    - assets/images/logo/Logo-Maxg-Green.gif
     - assets/images/logo/mcm x grab_.png
     - assets/images/background/Grabcar_MasAdam.gif
     - assets/games/

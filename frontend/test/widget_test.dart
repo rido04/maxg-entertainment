@@ -8,12 +8,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:frontend/main.dart';
+import '../lib/main.dart'; // Adjust the import based on your project structure
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const ());
+    await tester.pumpWidget(const MaxgApp());
 
     // Verify that our counter starts at 0.
     expect(find.text('0'), findsOneWidget);

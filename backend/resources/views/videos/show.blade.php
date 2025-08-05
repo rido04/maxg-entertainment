@@ -20,108 +20,221 @@
     </div>
   </div>
 
-  <!-- Main Content - Enhanced responsive layout -->
-  <div class="relative z-10 flex-1 flex flex-row lg:flex-row pt-12 sm:pt-16 md:pt-20 pb-6 sm:pb-8 md:pb-12 lg:pb-20">
+  <!-- Main Content -->
+  <div class="relative z-10 flex-1 flex flex-row pt-20 pb-20">
 
-    <!-- Poster Section - Improved responsive behavior -->
-    <div class="w-full lg:w-2/5 xl:w-1/3 p-3 sm:p-4 md:p-6 lg:p-8 order-2 lg:order-1">
+    <!-- Poster Section -->
+    <div class="w-2/3 p-8">
         @if($video->thumbnail)
-        <div class="relative group max-w-xs sm:max-w-sm md:max-w-md lg:max-w-none mx-auto shadow-2xl">
+        <div class="relative group">
             <img src="{{ $video->thumbnail }}"
                 alt="{{ $video->title }}"
-                class="w-full h-auto rounded-xl sm:rounded-2xl shadow-2xl fade-in border border-gray-700/50 group-hover:shadow-blue-500/20 transition-all duration-500 transform group-hover:scale-[1.02]">
+                class="w-full h-auto rounded-2xl shadow-2xl fade-in border border-gray-700/50 group-hover:shadow-blue-500/20 transition-all duration-500 transform group-hover:scale-[1.02]">
             <!-- Enhanced glow effect -->
-            <div class="absolute inset-0 rounded-xl sm:rounded-2xl bg-gradient-to-t from-blue-600/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <div class="absolute inset-0 rounded-2xl bg-gradient-to-t from-blue-600/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             <!-- Subtle border glow -->
-            <div class="absolute inset-0 rounded-xl sm:rounded-2xl border-2 border-blue-500/0 group-hover:border-blue-500/30 transition-all duration-500"></div>
+            <div class="absolute inset-0 rounded-2xl border-2 border-blue-500/0 group-hover:border-blue-500/30 transition-all duration-500"></div>
         </div>
         @else
-        <div class="w-full h-48 sm:h-64 md:h-80 lg:h-96 bg-gradient-to-br from-gray-800 to-slate-800 flex items-center justify-center rounded-xl sm:rounded-2xl shadow-2xl fade-in border border-gray-700/50 max-w-xs sm:max-w-sm md:max-w-md lg:max-w-none mx-auto">
+        <div class="w-full h-96 bg-gradient-to-br from-gray-800 to-slate-800 flex items-center justify-center rounded-2xl shadow-2xl fade-in border border-gray-700/50">
             <div class="text-center">
-                <svg class="w-8 h-8 sm:w-12 sm:h-12 md:w-16 md:h-16 text-blue-400 mx-auto mb-2" fill="currentColor" viewBox="0 0 24 24">
+                <svg class="w-16 h-16 text-blue-400 mx-auto mb-2" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M8 5v14l11-7z"/>
                 </svg>
-                <p class="text-gray-400 text-xs sm:text-sm">No Thumbnail</p>
+                <p class="text-gray-400 text-sm">No Thumbnail</p>
             </div>
         </div>
         @endif
     </div>
 
-    <!-- Content Section - Enhanced responsive design -->
-    <div class="w-full lg:w-3/5 xl:w-2/3 p-3 sm:p-4 md:p-6 lg:p-8 flex flex-col justify-center slide-up order-1 lg:order-2 mt-">
-
-        <!-- Title - Improved typography scaling -->
-        <h1 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold mb-3 sm:mb-4 md:mb-5 lg:mb-6 bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent leading-tight text-center lg:text-left">
-          {{ $video->title }}
-        </h1>
-
-        <!-- Rating and Info Tags - Always inline layout -->
-        <div class="flex flex-row justify-center lg:justify-between items-center gap-1 sm:gap-2 md:gap-3 lg:gap-4 mb-4 sm:mb-5 md:mb-6 py-4 px-2 sm:px-4 md:px-6 overflow-x-auto">
-
-            <div class="flex items-center gap-0.5 sm:gap-1 px-2 sm:px-3 md:px-4 lg:px-5 py-1.5 sm:py-2 md:py-2.5 lg:py-3 bg-gradient-to-b from-slate-700/80 to-slate-950/80 backdrop-blur-sm text-white text-xs sm:text-sm font-bold rounded-lg sm:rounded-xl transition-all duration-300 hover:scale-105 hover:bg-white/30 whitespace-nowrap min-w-0 flex-shrink-0">
-                <svg class="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
-                </svg>
-                <span class="truncate">{{ ucfirst($video->category ?? 'N/A') }}</span>
-            </div>
-
-            <div class="flex items-center gap-0.5 sm:gap-1 px-2 sm:px-3 md:px-4 lg:px-5 py-1.5 sm:py-2 md:py-2.5 lg:py-3 bg-gradient-to-b from-amber-500/80 to-amber-700/80 backdrop-blur-sm text-white text-xs sm:text-sm font-bold rounded-lg sm:rounded-xl transition-all duration-300 hover:scale-105 hover:bg-white/30 whitespace-nowrap min-w-0 flex-shrink-0">
-                <svg class="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                </svg>
-                <span class="truncate">{{ $video->rating ?? 'N/A' }}/10</span>
-            </div>
-
-            <div class="flex items-center gap-0.5 sm:gap-1 px-2 sm:px-3 md:px-4 lg:px-5 py-1.5 sm:py-2 md:py-2.5 lg:py-3 bg-gradient-to-b from-stone-600/80 to-stone-800/80 backdrop-blur-sm text-white text-xs sm:text-sm font-bold rounded-lg sm:rounded-xl transition-all duration-300 hover:scale-105 hover:bg-white/30 whitespace-nowrap min-w-0 flex-shrink-0">
-                <svg class="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
-                </svg>
-                <span class="truncate">{{ $video->release_date ? \Carbon\Carbon::parse($video->release_date)->format('Y') : 'N/A' }}</span>
-            </div>
-
-            <div class="flex items-center gap-0.5 sm:gap-1 px-2 sm:px-3 md:px-4 lg:px-5 py-1.5 sm:py-2 md:py-2.5 lg:py-3 bg-gradient-to-b from-green-500/80 to-green-700/80 backdrop-blur-sm text-white text-xs sm:text-sm font-bold rounded-lg sm:rounded-xl transition-all duration-300 hover:scale-105 hover:bg-white/30 whitespace-nowrap min-w-0 flex-shrink-0">
-                <svg class="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>
-                </svg>
-                <span class="truncate">{{ $video->duration ?? 'N/A' }} Min</span>
+    <!-- Content Section -->
+    <div class="w-2/3 p-8 flex flex-col justify-center slide-up">
+        <!-- Category -->
+        <div class="flex justify-start mb-4">
+            <div class="text-white text-sm font-bold rounded-xl transition-all duration-300 hover:scale-105 hover:bg-white/20 -ml-1 py-1">
+                <span>{{ ucfirst($video->category ?? 'N/A') }}</span>
             </div>
         </div>
 
-        <!-- Description Box - Enhanced design -->
-        <div class="bg-white/50 backdrop-blur-md border border-gray-300/50 rounded-xl md:rounded-2xl p-3 sm:p-4 md:p-5 lg:p-6 mb-4 sm:mb-5 md:mb-6 lg:mb-8 shadow-xl hover:shadow-2xl transition-all duration-300">
-          <div class="flex items-start gap-3 mb-2">
-            <h3 class="text-sm sm:text-base font-semibold text-gray-800">Sinopsis</h3>
-          </div>
-          <p class="text-gray-700 text-sm sm:text-base lg:text-lg leading-relaxed text-justify pl-4">
+        <!-- Title -->
+        <h1 class="text-5xl font-bold mb-6 bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent leading-tight">
+          {{ $video->title }}
+        </h1>
+
+        <!-- Rating and Info Tags -->
+        <div class="flex flex-row items-center gap-4 mb-6 flex-wrap">
+            <!-- IMDb Rating -->
+            <div class="flex items-center gap-2 px-4 py-2 bg-white/10 text-white text-sm font-bold rounded-xl transition-all duration-300 hover:scale-105 hover:bg-white/20 whitespace-nowrap">
+               <span class="px-2 py-1 bg-yellow-600 text-black rounded-lg text-xs">IMDb</span>
+                <span>{{ $video->rating ?? 'N/A' }}/10</span>
+            </div>
+
+            <!-- Release Year -->
+            <div class="flex items-center gap-2 px-4 py-2 bg-white/10 text-white text-sm font-bold rounded-xl transition-all duration-300 hover:scale-105 hover:bg-white/20 whitespace-nowrap">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+                </svg>
+                <span>{{ $video->release_date ? \Carbon\Carbon::parse($video->release_date)->format('Y') : 'N/A' }}</span>
+            </div>
+
+            <!-- Duration -->
+            <div class="flex items-center gap-2 px-4 py-2 bg-white/10 text-white text-sm font-bold rounded-xl transition-all duration-300 hover:scale-105 hover:bg-white/20 whitespace-nowrap">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>
+                </svg>
+                <span>{{ $video->duration ?? 'N/A' }} Min</span>
+            </div>
+
+            <!-- Content Rating -->
+            @if($video->content_rating)
+            <div class="flex items-center gap-2 px-4 py-2 bg-purple-600/20 text-purple-200 text-sm font-bold rounded-xl border border-purple-500/30 whitespace-nowrap">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                </svg>
+                <span>{{ $video->content_rating }}</span>
+            </div>
+            @endif
+        </div>
+
+        <!-- Star Rating Section -->
+        <div class="flex items-center gap-4 mb-6">
+            <!-- Star Rating Display -->
+            <div class="flex items-center gap-1">
+                @php
+                    $rating = $video->rating ?? 0;
+                    $starRating = $rating > 0 ? round($rating / 2, 1) : 0; // Convert 0-10 to 0-5
+                    $fullStars = floor($starRating);
+                    $hasPartialStar = ($starRating - $fullStars) >= 0.5;
+                    $emptyStars = 5 - $fullStars - ($hasPartialStar ? 1 : 0);
+                @endphp
+
+                {{-- Full Stars --}}
+                @for($i = 0; $i < $fullStars; $i++)
+                    <svg class="w-4 h-5 text-yellow-400 fill-current" viewBox="0 0 24 24">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                @endfor
+
+                {{-- Partial Star --}}
+                @if($hasPartialStar)
+                    <div class="relative">
+                        <svg class="w-4 h-5 text-gray-400 fill-current" viewBox="0 0 24 24">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                        <div class="absolute inset-0 overflow-hidden" style="width: 50%;">
+                            <svg class="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 24 24">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                        </div>
+                    </div>
+                @endif
+
+                {{-- Empty Stars --}}
+                @for($i = 0; $i < $emptyStars; $i++)
+                    <svg class="w-4 h-5 text-gray-400 fill-current" viewBox="0 0 24 24">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                @endfor
+            </div>
+
+            <div class="flex flex-col">
+                <span class="text-white font-semibold text-sm">
+                    {{ $starRating > 0 ? number_format($starRating, 1) : 'N/A' }}/5
+                </span>
+                @if($rating > 0)
+                    <span class="text-gray-400 text-xs">
+                        {{ number_format($rating, 1) }}/10 TMDb
+                    </span>
+                @endif
+            </div>
+
+            <!-- Vote Count (jika ada) -->
+            @if(isset($movieDetail['vote_count']) && $movieDetail['vote_count'] > 0)
+                <div class="flex items-center gap-2 px-3 py-2 bg-blue-600/20 text-blue-200 text-sm rounded-lg border border-blue-500/30">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>{{ number_format($movieDetail['vote_count']) }} votes</span>
+                </div>
+            @endif
+        </div>
+
+        <!-- Description Box -->
+        <div class="p-6 mb-6 bg-white/5 rounded-2xl border border-gray-700/30 backdrop-blur-sm">
+          <h3 class="text-white font-semibold text-lg mb-3">Synopsis</h3>
+          <p class="text-gray-100 text-base lg:text-lg leading-relaxed">
             {{ $video->description ?? 'No description available for this movie. Please contact support for more information.' }}
           </p>
         </div>
 
-        <!-- Action Buttons - Enhanced responsive design -->
-        <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-2 sm:gap-3 md:gap-4">
+        <!-- Cast & Crew Section -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <!-- Cast -->
+            <div class="p-4 bg-white/5 rounded-xl border border-gray-700/30 backdrop-blur-sm">
+                <h3 class="text-white font-semibold text-lg mb-3 flex items-center gap-2">
+                    Cast
+                </h3>
+                <div class="text-gray-300 text-sm leading-relaxed">
+                    @if($video->cast)
+                        @php
+                            $castArray = explode(', ', $video->cast);
+                            $displayCast = array_slice($castArray, 0, 8); // Show max 8 actors
+                        @endphp
+                        {{ implode(', ', $displayCast) }}
+                        @if(count($castArray) > 8)
+                            <span class="text-blue-400">... and {{ count($castArray) - 8 }} more</span>
+                        @endif
+                    @else
+                        Cast information will be updated soon.
+                    @endif
+                </div>
+            </div>
+
+            <!-- Director & Writers -->
+            <div class="p-4 bg-white/5 rounded-xl border border-gray-700/30 backdrop-blur-sm">
+                <h3 class="text-white font-semibold text-lg mb-3 flex items-center gap-2">
+                    Director
+                </h3>
+                <div class="text-gray-300 text-sm leading-relaxed mb-4">
+                    {{ $video->director ?? 'Director information will be updated soon.' }}
+                </div>
+
+                @if($video->writers)
+                <h4 class="text-white font-semibold text-base mb-2 flex items-center gap-2">
+                    Writers
+                </h4>
+                <div class="text-gray-300 text-sm leading-relaxed">
+                    {{ $video->writers }}
+                </div>
+                @endif
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-4">
             @if($video->file_path)
             <button onclick="playFullscreen('{{ asset($video->file_path) }}')"
-               class="w-full sm:w-auto flex items-center justify-center gap-2 sm:gap-2.5 md:gap-3 bg-gradient-to-r from-green-600 via-green-700 to-green-800 px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 md:py-4 rounded-xl md:rounded-2xl hover:from-green-700 hover:via-green-800 hover:to-green-900 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-green-500/30 border border-green-500/30 group">
-              <svg class="w-10 h-auto sm:w-10 sm:h-auto md:w-6 md:h-6 text-white transition-transform group-hover:scale-110" fill="currentColor" viewBox="0 0 24 24">
+               class="inline-flex items-center justify-center gap-3 px-6 py-3 bg-gradient-to-r from-teal-600 to-teal-700 text-white font-semibold text-base rounded-xl hover:from-red-700 hover:to-red-800 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-red-500/20 group">
+              <svg class="w-5 h-5 transition-transform group-hover:scale-110" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M8 5v14l11-7z"/>
               </svg>
-              <span class="font-semibold text-sm sm:text-base md:text-lg text-white">Mainkan</span>
+              <span>Play Now</span>
             </button>
             @else
-            <button disabled class="w-full sm:w-auto flex items-center justify-center gap-2 sm:gap-2.5 md:gap-3 bg-gray-700/70 px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 md:py-4 rounded-xl md:rounded-2xl cursor-not-allowed opacity-50 border border-gray-600/30">
-              <svg class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+            <button disabled class="flex items-center justify-center gap-3 bg-gray-700/70 px-6 py-3 rounded-xl cursor-not-allowed opacity-50 border border-gray-600/30">
+              <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M8 5v14l11-7z"/>
               </svg>
-              <span class="font-semibold text-sm sm:text-base md:text-lg text-gray-300">Video Not Available</span>
+              <span class="font-semibold text-base text-gray-300">Video Not Available</span>
             </button>
             @endif
 
             <button onclick="history.back()"
-                    class="w-full sm:w-auto flex items-center justify-center gap-2 sm:gap-2.5 md:gap-3 px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 md:py-4 bg-gradient-to-r from-red-600 to-red-700 backdrop-blur-sm border border-red-500/30 rounded-xl md:rounded-2xl hover:from-red-700 hover:to-red-800 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-red-500/20 group">
-                <svg class="w-10 h-auto sm:w-10 sm:h-auto md:w-6 md:h-6 text-white transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    class="inline-flex items-center justify-center gap-3 px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold text-base rounded-xl hover:from-gray-700 hover:to-gray-800 transition-all duration-300 transform hover:scale-105 shadow-lg group">
+                <svg class="w-5 h-5 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3"/>
                 </svg>
-                <span class="font-semibold text-sm sm:text-base md:text-lg text-white">Kembali</span>
+                <span>Back</span>
             </button>
         </div>
     </div>

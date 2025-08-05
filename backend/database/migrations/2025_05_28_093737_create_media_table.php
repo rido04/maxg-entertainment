@@ -28,6 +28,10 @@ return new class extends Migration
             $table->string('tmdb_id')->nullable(); // untuk referensi ID TMDb
             $table->string('artist')->nullable();
             $table->string('artist_image')->nullable();
+            $table->text('cast')->nullable();
+            $table->json('cast_json')->nullable();
+            $table->string('director')->nullable();
+            $table->text('writers')->nullable();
             $table->string('album')->nullable();
             $table->index('is_adult_content');
             $table->index('content_rating');

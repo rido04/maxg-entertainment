@@ -36,6 +36,10 @@ class MediaController extends Controller
                 'duration' => $item->duration,  // ✅ Tambah ini juga
                 'artist' => $item->artist,      // ✅ Dan ini
                 'album' => $item->album,        // ✅ Dan ini
+                'cast' => $item->cast,        // ✅ Dan ini
+                'cast_json' => $item->cast_json,        // ✅ Dan ini
+                'director' => $item->director,        // ✅ Dan ini
+                'writers' => $item->writers,        // ✅ Dan ini
             ];
         });
 

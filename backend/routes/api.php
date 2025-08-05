@@ -9,6 +9,7 @@ use App\Http\Controllers\MusicController;
 use App\Http\Controllers\VideoController;
 use App\Http\Controllers\Api\NewsController;
 use App\Http\Controllers\Api\MediaController;
+use App\Http\Controllers\Api\NewsRssApiController;
 
 // News Route
 // Route::get('/news', [NewsController::class, 'index'])->name('news.index');
@@ -55,4 +56,28 @@ Route::get('/news', function () {
             ];
         });
 });
+
+Route::prefix('news')->group(function () {
+    // Get all news dengan parameter opsional
+    Route::get('/', [NewsRssApiController::class, 'index']);
+
+    // Get news dengan pagination
+    Route::get('/paginated', [NewsRssApiController::class, 'paginated']);
+
+    // Get popular/trending news
+    Route::get('/popular', [NewsRssApiController::class, 'popular']);
+
+    // Get news statistics
+    Route::get('/stats', [NewsRssApiController::class, 'stats']);
+
+    // Search news
+    Route::get('/search', [NewsRssApiController::class, 'search']);
+
+    // Get news by category
+    Route::get('/category/{category}', [NewsRssApiController::class, 'category']);
+
+    // Get single article by slug
+    Route::get('/{slug}', [NewsRssApiController::class, 'show']);
+});
+
 

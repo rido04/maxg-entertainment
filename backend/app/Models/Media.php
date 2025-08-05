@@ -26,6 +26,10 @@ class Media extends Model
         'checksum',
         'hash_type',
         'filesize',
+        'cast',
+        'cast_json',
+        'director',
+        'writers',
     ];
 
     protected $casts = [

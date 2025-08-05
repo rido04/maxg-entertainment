@@ -67,43 +67,44 @@ class _MapTriggerButtonState extends State<MapTriggerButton>
         child: Container(
           alignment: Alignment.center,
           child: Stack(
-            alignment: Alignment.center,
+            alignment: Alignment.bottomCenter,
             children: [
-              // Background image (tarikan.png equivalent)
-              Container(
-                width: 200,
-                height: 100,
-                child: Image.asset(
-                  'assets/images/logo/tarikan.png',
-                  width: 200,
-                  height: 100,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) {
-                    // Fallback jika gambar tidak ditemukan
-                    return Container(
-                      width: 200,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.grey.withOpacity(0.3),
-                            Colors.grey.withOpacity(0.6),
-                            Colors.grey.withOpacity(0.3),
+              // Background image (tarikan.png equivalent) dengan efek transparan
+              // CARA 1: Pakai Opacity widget (paling mudah)
+              Opacity(
+                opacity: 0.7, // 0.0 = transparan penuh, 1.0 = tidak transparan
+                child: SizedBox(
+                  width: 180,
+                  child: Image.asset(
+                    'assets/images/logo/tarikan.png',
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      // Fallback jika gambar tidak ditemukan
+                      return Container(
+                        width: 180,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.grey.withOpacity(0.3),
+                              Colors.grey.withOpacity(0.6),
+                              Colors.grey.withOpacity(0.3),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(50),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: Offset(0, 4),
+                            ),
                           ],
                         ),
-                        borderRadius: BorderRadius.circular(50),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.3),
-                            blurRadius: 8,
-                            offset: Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
               ),
 
