@@ -14,7 +14,6 @@ class _TimeDisplayWidgetState extends State<TimeDisplayWidget> {
   void initState() {
     super.initState();
     _updateTime();
-    // Update setiap detik (seperti setInterval di JavaScript)
     _timer = Timer.periodic(Duration(seconds: 1), (timer) {
       _updateTime();
     });
@@ -41,9 +40,8 @@ class _TimeDisplayWidgetState extends State<TimeDisplayWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        // Glass effect seperti backdrop-blur di CSS
         color: Colors.white.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
@@ -57,7 +55,6 @@ class _TimeDisplayWidgetState extends State<TimeDisplayWidget> {
       ),
       child: InkWell(
         onTap: () {
-          // Hover effect dengan setState untuk scale
           setState(() {});
         },
         borderRadius: BorderRadius.circular(12),
@@ -78,7 +75,6 @@ class _TimeDisplayWidgetState extends State<TimeDisplayWidget> {
 
             SizedBox(height: 4),
 
-            // Current time display
             Text(
               _currentTime,
               style: TextStyle(

@@ -1,4 +1,5 @@
 // lib/services/database_service.dart
+// database service for news page and its model
 import 'dart:async';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';

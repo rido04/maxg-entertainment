@@ -17,7 +17,6 @@ class _CarAnimationWidgetState extends State<CarAnimationWidget>
   void initState() {
     super.initState();
 
-    // Setup floating animation (seperti CSS keyframes float)
     _floatController = AnimationController(
       duration: Duration(seconds: 3),
       vsync: this,
@@ -51,10 +50,9 @@ class _CarAnimationWidgetState extends State<CarAnimationWidget>
               return Transform.translate(
                 offset: Offset(0, _floatAnimation.value),
                 child: Transform.translate(
-                  offset: Offset(-100, -100),
+                  offset: Offset(-50, -50),
                   child: Stack(
                     children: [
-                      // Shadow layer - positioned behind the main image
                       Transform.translate(
                         offset: Offset(4, 6), // Shadow offset
                         child: ColorFiltered(
@@ -69,7 +67,6 @@ class _CarAnimationWidgetState extends State<CarAnimationWidget>
                           ),
                         ),
                       ),
-                      // Blurred shadow for softer effect
                       Transform.translate(
                         offset: Offset(4, 6),
                         child: ImageFiltered(

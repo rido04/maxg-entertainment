@@ -7,6 +7,7 @@ import '../screens/music_player.dart';
 import '../screens/music_search_screen.dart';
 import '../screens/all_artist_screen.dart';
 import '../screens/artist_detail_screen.dart';
+import 'dart:io';
 
 class MusicScreen extends StatefulWidget {
   const MusicScreen({super.key});
@@ -442,6 +443,26 @@ class _MusicScreenState extends State<MusicScreen> {
     );
   }
 
+  Widget _buildThumbnailImage(MediaItem music, bool isTablet) {
+    // Check if it's local file path
+    if (music.thumbnail!.startsWith('/')) {
+      return Image.file(
+        File(music.thumbnail!),
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) =>
+            _buildThumbnailPlaceholder(music, isTablet),
+      );
+    } else {
+      // It's network URL
+      return Image.network(
+        music.thumbnail!,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) =>
+            _buildThumbnailPlaceholder(music, isTablet),
+      );
+    }
+  }
+
   Widget _buildQuickAccessCard(MediaItem music, bool isTablet) {
     return Container(
       decoration: BoxDecoration(
@@ -476,12 +497,7 @@ class _MusicScreenState extends State<MusicScreen> {
                     borderRadius: BorderRadius.circular(8),
                     child:
                         music.thumbnail != null && music.thumbnail!.isNotEmpty
-                        ? Image.network(
-                            music.thumbnail!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                _buildThumbnailPlaceholder(music, isTablet),
-                          )
+                        ? _buildThumbnailImage(music, isTablet)
                         : _buildThumbnailPlaceholder(music, isTablet),
                   ),
                 ),
@@ -625,12 +641,10 @@ class _MusicScreenState extends State<MusicScreen> {
                 child:
                     artistSong.thumbnail != null &&
                         artistSong.thumbnail!.isNotEmpty
-                    ? Image.network(
-                        artistSong.thumbnail!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            _buildArtistPlaceholder(artist, isTablet),
-                      )
+                    ? _buildThumbnailImage(
+                        artistSong,
+                        isTablet,
+                      ) // <- Ganti jadi ini
                     : _buildArtistPlaceholder(artist, isTablet),
               ),
             ),
@@ -725,12 +739,7 @@ class _MusicScreenState extends State<MusicScreen> {
                     borderRadius: BorderRadius.circular(8),
                     child:
                         music.thumbnail != null && music.thumbnail!.isNotEmpty
-                        ? Image.network(
-                            music.thumbnail!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                _buildThumbnailPlaceholder(music, isTablet),
-                          )
+                        ? _buildThumbnailImage(music, isTablet)
                         : _buildThumbnailPlaceholder(music, isTablet),
                   ),
                 ),
@@ -901,12 +910,7 @@ class _MusicScreenState extends State<MusicScreen> {
                     borderRadius: BorderRadius.circular(8),
                     child:
                         music.thumbnail != null && music.thumbnail!.isNotEmpty
-                        ? Image.network(
-                            music.thumbnail!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                _buildThumbnailPlaceholder(music, isTablet),
-                          )
+                        ? _buildThumbnailImage(music, isTablet)
                         : _buildThumbnailPlaceholder(music, isTablet),
                   ),
                 ),

@@ -753,9 +753,8 @@ class _BladeStyleMovieDetailScreenState extends State<MovieDetailScreen>
   Widget _buildActionButtons() {
     return Row(
       children: [
-        // Play Button
         Expanded(
-          flex: 2,
+          flex: 1,
           child: ElevatedButton.icon(
             onPressed: _handlePlayMovie,
             icon: const Icon(Icons.play_arrow, size: 24, color: Colors.white),
@@ -768,10 +767,10 @@ class _BladeStyleMovieDetailScreenState extends State<MovieDetailScreen>
               ),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.teal.shade600,
-              padding: const EdgeInsets.symmetric(vertical: 16),
+              backgroundColor: Colors.green.shade600,
+              padding: const EdgeInsets.symmetric(vertical: 12),
               elevation: 8,
-              shadowColor: Colors.teal.shade600.withOpacity(0.4),
+              shadowColor: Colors.green.shade600.withOpacity(0.4),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(30),
               ),
@@ -779,7 +778,7 @@ class _BladeStyleMovieDetailScreenState extends State<MovieDetailScreen>
           ),
         ),
 
-        const SizedBox(width: 16),
+        const SizedBox(width: 10),
 
         // Download Button
         Expanded(

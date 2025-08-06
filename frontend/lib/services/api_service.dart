@@ -5,6 +5,7 @@ import 'storage_service.dart';
 
 class ApiService {
   static const String baseUrl = 'https://maxg.app.medialoger.com/api';
+  static const String downloadBaseUrl = 'https://maxg.app.medialoger.com';
   static const Duration timeoutDuration = Duration(seconds: 10);
 
   /// Fetch media list dengan offline-first approach

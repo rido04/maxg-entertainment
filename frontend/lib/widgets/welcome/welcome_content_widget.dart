@@ -6,29 +6,26 @@ class WelcomeContentWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 48, vertical: 80),
+      padding: EdgeInsets.symmetric(horizontal: 48, vertical: 40),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Animated welcome text (seperti fade-in di CSS)
           FadeInUp(
             duration: Duration(milliseconds: 2000),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // "Welcome to" text
                 Text(
                   'Welcome to',
                   style: TextStyle(
-                    fontSize: 48,
+                    fontSize: 24,
                     fontWeight: FontWeight.w500,
                     color: Colors.white,
                     height: 1.2,
                   ),
                 ),
 
-                // "MaxG" dengan gradient text (seperti bg-gradient-to-r di CSS)
                 ShaderMask(
                   shaderCallback: (bounds) => LinearGradient(
                     colors: [
@@ -39,18 +36,17 @@ class WelcomeContentWidget extends StatelessWidget {
                   child: Text(
                     'MaxG',
                     style: TextStyle(
-                      fontSize: 144,
+                      fontSize: 72,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white, // Akan di-override oleh ShaderMask
+                      color: Colors.white,
                     ),
                   ),
                 ),
 
-                // "Entertainment Hub" text
                 Text(
                   'Entertainment Hub',
                   style: TextStyle(
-                    fontSize: 48,
+                    fontSize: 24,
                     fontWeight: FontWeight.w500,
                     color: Colors.white,
                     height: 1.2,
@@ -59,12 +55,11 @@ class WelcomeContentWidget extends StatelessWidget {
 
                 SizedBox(height: 32),
 
-                // Subtitle
                 Text(
                   'Your Everyday everything App',
                   style: TextStyle(
-                    fontSize: 20,
-                    color: Color(0xFFf3f4f6), // gray-100
+                    fontSize: 15,
+                    color: Color(0xFFf3f4f6),
                     height: 1.6,
                   ),
                 ),
