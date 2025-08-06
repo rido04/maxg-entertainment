@@ -32,14 +32,16 @@ class MediaController extends Controller
                 'category' => $item->category,
                 'file_path' => $item->file_path,
                 'download_url' => url(ltrim($item->file_path, '/')),
-                'thumbnail' => $item->thumbnail ? url(ltrim($item->thumbnail, '/')) : null, // ✅ Tambah ini
-                'duration' => $item->duration,  // ✅ Tambah ini juga
-                'artist' => $item->artist,      // ✅ Dan ini
-                'album' => $item->album,        // ✅ Dan ini
-                'cast' => $item->cast,        // ✅ Dan ini
-                'cast_json' => $item->cast_json,        // ✅ Dan ini
-                'director' => $item->director,        // ✅ Dan ini
-                'writers' => $item->writers,        // ✅ Dan ini
+                'thumbnail' => $item->thumbnail ? url(ltrim($item->thumbnail, '/')) : null, 
+                'duration' => $item->duration, 
+                'artist' => $item->artist,      
+                'description' => $item->description,      
+                'rating' => $item->rating,      
+                'album' => $item->album,        
+                'cast' => $item->cast,        
+                'cast_json' => $item->cast_json,        
+                'director' => $item->director,        
+                'writers' => $item->writers,        
             ];
         });
 

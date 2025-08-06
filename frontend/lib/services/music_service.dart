@@ -8,7 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/media_item.dart';
 
 class MusicService {
-  static const String _baseUrl = 'http://192.168.1.18:8000';
+  static const String _baseUrl = 'https://maxg.app.medialoger.com';
   static const String _downloadedMusicKey = 'downloaded_music';
 
   // Check internet connectivity

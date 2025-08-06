@@ -14,6 +14,8 @@ class MediaItem {
   final List<CastMember>? castList;
   final String? director;
   final String? writers;
+  final String? description; // Added description field
+  final dynamic rating; // Added rating field (can be String or double)
 
   MediaItem({
     required this.id,
@@ -29,6 +31,8 @@ class MediaItem {
     this.castList,
     this.director,
     this.writers,
+    this.description,
+    this.rating,
   });
 
   factory MediaItem.fromJson(Map<String, dynamic> json) {
@@ -61,6 +65,8 @@ class MediaItem {
       castList: parsedCast,
       director: json['director'],
       writers: json['writers'],
+      description: json['description'], // Parse description
+      rating: json['rating'], // Parse rating
     );
   }
 
@@ -85,6 +91,8 @@ class MediaItem {
       'cast_json': castJsonString,
       'director': director,
       'writers': writers,
+      'description': description,
+      'rating': rating,
     };
   }
 
@@ -95,7 +103,7 @@ class MediaItem {
   }
 
   // Getter untuk download URL
-  String get downloadUrl => 'http://192.168.1.18:8000/$fileUrl';
+  String get downloadUrl => 'https://maxg.app.medialoger.com/$fileUrl';
 
   // Getter untuk ekstensi file
   String get fileExtension {
@@ -136,6 +144,42 @@ class MediaItem {
     return castList!.take(5).toList();
   }
 
+  // Getter untuk rating dalam bentuk numerik
+  double get numericRating {
+    if (rating == null) return 0.0;
+    if (rating is double) return rating as double;
+    if (rating is int) return (rating as int).toDouble();
+    if (rating is String) {
+      try {
+        return double.parse(rating as String);
+      } catch (e) {
+        return 0.0;
+      }
+    }
+    return 0.0;
+  }
+
+  // Getter untuk format rating yang user-friendly
+  String get formattedRating {
+    final numRating = numericRating;
+    if (numRating == 0.0) return 'N/A/10';
+    return '${numRating.toStringAsFixed(1)}/10';
+  }
+
+  // Getter untuk rating dalam skala 5 bintang
+  double get starRating {
+    final numRating = numericRating;
+    if (numRating == 0.0) return 0.0;
+    return numRating / 2; // Convert dari skala 10 ke skala 5
+  }
+
+  // Getter untuk format star rating
+  String get formattedStarRating {
+    final stars = starRating;
+    if (stars == 0.0) return 'N/A/5';
+    return '${stars.toStringAsFixed(1)}/5';
+  }
+
   // Override equality operators
   @override
   bool operator ==(Object other) {
@@ -149,7 +193,7 @@ class MediaItem {
   // Override toString untuk debugging
   @override
   String toString() {
-    return 'MediaItem(id: $id, title: $title, fileUrl: $fileUrl)';
+    return 'MediaItem(id: $id, title: $title, fileUrl: $fileUrl, rating: $rating)';
   }
 
   // Helper method untuk format durasi

@@ -193,9 +193,10 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     _controller?.dispose();
     _controlsAnimationController.dispose();
 
-    // Reset orientation
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    if (_isFullScreen) {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      // Jangan paksa portrait, biarkan sistem atau halaman sebelumnya yang mengatur
+    }
 
     super.dispose();
   }

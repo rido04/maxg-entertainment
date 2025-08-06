@@ -7,7 +7,7 @@ import 'package:flutter/services.dart';
 import '../models/game_item.dart';
 
 class OfflineGameService {
-  static const String baseUrl = 'http://192.168.1.18:8000';
+  static const String baseUrl = 'https://maxg.app.medialoger.com';
   static const String _cacheKey = 'cached_games';
   static const String _lastUpdateKey = 'last_update';
   static const Duration _cacheExpiry = Duration(hours: 24);

@@ -359,22 +359,22 @@ class _VideosScreenState extends State<VideosScreen>
             ),
           ),
 
-        IconButton(
-          icon: _isRefreshing
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                )
-              : const Icon(Icons.refresh),
-          onPressed: _isRefreshing || _isAutoDownloading
-              ? null
-              : _refreshMediaList,
-        ),
-        const SizedBox(width: 8),
+        // IconButton(
+        //   icon: _isRefreshing
+        //       ? const SizedBox(
+        //           width: 20,
+        //           height: 20,
+        //           child: CircularProgressIndicator(
+        //             strokeWidth: 2,
+        //             color: Colors.white,
+        //           ),
+        //         )
+        //       : const Icon(Icons.refresh),
+        //   onPressed: _isRefreshing || _isAutoDownloading
+        //       ? null
+        //       : _refreshMediaList,
+        // ),
+        // const SizedBox(width: 8),
       ],
     );
   }

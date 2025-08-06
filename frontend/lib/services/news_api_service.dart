@@ -8,7 +8,7 @@ import '../models/news_model.dart';
 
 class NewsApiService {
   static const String baseUrl =
-      'http://192.168.1.18:8000'; // Ganti dengan URL API kamu
+      'https://maxg.app.medialoger.com';
 
   // Get latest news for home page
   Future<NewsListResponse> getLatestNews({

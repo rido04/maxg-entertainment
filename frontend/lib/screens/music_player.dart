@@ -1,9 +1,10 @@
-// lib/screens/music_player.dart - Updated version
+// lib/screens/music_player.dart - Updated dengan ActivityTrackerWrapper
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import '../models/media_item.dart';
 import '../services/music_service.dart';
 import '../services/global_audio_service.dart';
+import '../widgets/activity_tracker_wrapper.dart'; // Import wrapper
 
 class MusicPlayer extends StatefulWidget {
   final MediaItem music;
@@ -127,122 +128,126 @@ class _MusicPlayerScreenState extends State<MusicPlayer>
     final screenWidth = MediaQuery.of(context).size.width;
     final isTablet = screenWidth > 600;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF121212),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              const Color(0xFF1DB954).withOpacity(0.3),
-              const Color(0xFF121212),
-              const Color(0xFF000000),
-            ],
+    return ActivityTrackerWrapper(
+      screenName:
+          'MusicPlayer', // Music player tidak di-whitelist, jadi timer tetap berjalan
+      child: Scaffold(
+        backgroundColor: const Color(0xFF121212),
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                const Color(0xFF1DB954).withOpacity(0.3),
+                const Color(0xFF121212),
+                const Color(0xFF000000),
+              ],
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Custom App Bar
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
+          child: SafeArea(
+            child: Column(
+              children: [
+                // Custom App Bar
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.keyboard_arrow_down,
+                            color: Colors.white,
+                            size: 28,
+                          ),
+                          onPressed: () => Navigator.pop(context),
+                        ),
                       ),
-                      child: IconButton(
-                        icon: const Icon(
-                          Icons.keyboard_arrow_down,
+                      const Spacer(),
+                      // Logo placeholder di header
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.music_note,
                           color: Colors.white,
-                          size: 28,
+                          size: 24,
                         ),
-                        onPressed: () => Navigator.pop(context),
                       ),
-                    ),
-                    const Spacer(),
-                    // Logo placeholder di header
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(
-                        Icons.music_note,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                    ),
-                    const Spacer(),
-                    // Online/Offline indicator
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: _isOfflineMode
-                            ? const Color(0xFF1DB954).withOpacity(0.2)
-                            : Colors.blue.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
+                      const Spacer(),
+                      // Online/Offline indicator
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
                           color: _isOfflineMode
-                              ? const Color(0xFF1DB954)
-                              : Colors.blue,
-                          width: 1,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            _isOfflineMode ? Icons.offline_pin : Icons.cloud,
-                            size: 16,
+                              ? const Color(0xFF1DB954).withOpacity(0.2)
+                              : Colors.blue.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
                             color: _isOfflineMode
                                 ? const Color(0xFF1DB954)
                                 : Colors.blue,
+                            width: 1,
                           ),
-                          const SizedBox(width: 6),
-                          Text(
-                            _isOfflineMode ? 'Offline' : 'Online',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              _isOfflineMode ? Icons.offline_pin : Icons.cloud,
+                              size: 16,
                               color: _isOfflineMode
                                   ? const Color(0xFF1DB954)
                                   : Colors.blue,
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Main Content
-              Expanded(
-                child: _isLoading
-                    ? const Center(
-                        child: CircularProgressIndicator(
-                          color: Color(0xFF1DB954),
+                            const SizedBox(width: 6),
+                            Text(
+                              _isOfflineMode ? 'Offline' : 'Online',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: _isOfflineMode
+                                    ? const Color(0xFF1DB954)
+                                    : Colors.blue,
+                              ),
+                            ),
+                          ],
                         ),
-                      )
-                    : AnimatedBuilder(
-                        animation: _globalAudioService,
-                        builder: (context, child) {
-                          return isLandscape
-                              ? _buildLandscapeLayout(isTablet)
-                              : _buildPortraitLayout(isTablet);
-                        },
                       ),
-              ),
-            ],
+                    ],
+                  ),
+                ),
+
+                // Main Content
+                Expanded(
+                  child: _isLoading
+                      ? const Center(
+                          child: CircularProgressIndicator(
+                            color: Color(0xFF1DB954),
+                          ),
+                        )
+                      : AnimatedBuilder(
+                          animation: _globalAudioService,
+                          builder: (context, child) {
+                            return isLandscape
+                                ? _buildLandscapeLayout(isTablet)
+                                : _buildPortraitLayout(isTablet);
+                          },
+                        ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
