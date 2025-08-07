@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'dart:math' as math;
+// import 'dart:math' as math;
 import '../models/media_item.dart';
 import '../services/storage_service.dart';
 import 'videos_player_screen.dart';
@@ -753,8 +753,8 @@ class _BladeStyleMovieDetailScreenState extends State<MovieDetailScreen>
   Widget _buildActionButtons() {
     return Row(
       children: [
-        Expanded(
-          flex: 1,
+        SizedBox(
+          width: 150,
           child: ElevatedButton.icon(
             onPressed: _handlePlayMovie,
             icon: const Icon(Icons.play_arrow, size: 24, color: Colors.white),
@@ -772,7 +772,7 @@ class _BladeStyleMovieDetailScreenState extends State<MovieDetailScreen>
               elevation: 8,
               shadowColor: Colors.green.shade600.withOpacity(0.4),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
+                borderRadius: BorderRadius.circular(10),
               ),
             ),
           ),
@@ -781,49 +781,49 @@ class _BladeStyleMovieDetailScreenState extends State<MovieDetailScreen>
         const SizedBox(width: 10),
 
         // Download Button
-        Expanded(
-          child: OutlinedButton.icon(
-            onPressed: _isDownloading ? null : _handleDownload,
-            icon: _isDownloading
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                : Icon(
-                    _isDownloaded ? Icons.download_done : Icons.download,
-                    size: 20,
-                    color: _isDownloaded ? Colors.green : Colors.white,
-                  ),
-            label: Text(
-              _isDownloading
-                  ? 'Downloading...'
-                  : _isDownloaded
-                  ? 'Downloaded'
-                  : 'Download',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: _isDownloaded ? Colors.green : Colors.white,
-              ),
-            ),
-            style: OutlinedButton.styleFrom(
-              side: BorderSide(
-                color: _isDownloaded
-                    ? Colors.green
-                    : Colors.white.withOpacity(0.8),
-                width: 1.5,
-              ),
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
-              ),
-            ),
-          ),
-        ),
+        // Expanded(
+        //   child: OutlinedButton.icon(
+        //     onPressed: _isDownloading ? null : _handleDownload,
+        //     icon: _isDownloading
+        //         ? const SizedBox(
+        //             width: 16,
+        //             height: 16,
+        //             child: CircularProgressIndicator(
+        //               strokeWidth: 2,
+        //               color: Colors.white,
+        //             ),
+        //           )
+        //         : Icon(
+        //             _isDownloaded ? Icons.download_done : Icons.download,
+        //             size: 20,
+        //             color: _isDownloaded ? Colors.green : Colors.white,
+        //           ),
+        //     label: Text(
+        //       _isDownloading
+        //           ? 'Downloading...'
+        //           : _isDownloaded
+        //           ? 'Downloaded'
+        //           : 'Download',
+        //       style: TextStyle(
+        //         fontSize: 14,
+        //         fontWeight: FontWeight.w600,
+        //         color: _isDownloaded ? Colors.green : Colors.white,
+        //       ),
+        //     ),
+        //     style: OutlinedButton.styleFrom(
+        //       side: BorderSide(
+        //         color: _isDownloaded
+        //             ? Colors.green
+        //             : Colors.white.withOpacity(0.8),
+        //         width: 1.5,
+        //       ),
+        //       padding: const EdgeInsets.symmetric(vertical: 16),
+        //       shape: RoundedRectangleBorder(
+        //         borderRadius: BorderRadius.circular(30),
+        //       ),
+        //     ),
+        //   ),
+        // ),
       ],
     );
   }

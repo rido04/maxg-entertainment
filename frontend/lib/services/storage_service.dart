@@ -7,6 +7,61 @@ import '../models/media_item.dart';
 class StorageService {
   static const String _cacheFileName = 'media_cache.json';
 
+  // Tambah di StorageService class
+  static Future<String> getThumbnailFilePath(String filename) async {
+    final directory = await getApplicationDocumentsDirectory();
+    final thumbnailDir = Directory('${directory.path}/thumbnails');
+    if (!await thumbnailDir.exists()) {
+      await thumbnailDir.create(recursive: true);
+    }
+    return '${thumbnailDir.path}/$filename';
+  }
+
+  static Future<bool> isThumbnailDownloaded(int mediaId) async {
+    final extensions = ['jpg', 'png', 'webp', 'gif'];
+    for (final ext in extensions) {
+      final path = await getThumbnailFilePath('${mediaId}_thumb.$ext');
+      if (File(path).existsSync()) return true;
+    }
+    return false;
+  }
+
+  static Future<String?> getLocalThumbnailPath(int mediaId) async {
+    final extensions = ['jpg', 'png', 'webp', 'gif'];
+    for (final ext in extensions) {
+      final path = await getThumbnailFilePath('${mediaId}_thumb.$ext');
+      if (File(path).existsSync()) return path;
+    }
+    return null;
+  }
+
+  static Future<void> downloadThumbnail(String url, int mediaId) async {
+    if (url.isEmpty) return;
+
+    try {
+      final dio = Dio();
+      final extension = _getImageExtension(url);
+      final savePath = await getThumbnailFilePath(
+        '${mediaId}_thumb.$extension',
+      );
+
+      await dio.download(url, savePath);
+      print('Thumbnail downloaded: $savePath');
+    } catch (e) {
+      print('Failed to download thumbnail: $e');
+    }
+  }
+
+  static String _getImageExtension(String url) {
+    final uri = Uri.parse(url);
+    final path = uri.path.toLowerCase();
+
+    if (path.contains('.png')) return 'png';
+    if (path.contains('.webp')) return 'webp';
+    if (path.contains('.gif')) return 'gif';
+    return 'jpg'; // default
+  }
+
   /// Ambil path lokal untuk menyimpan file
   static Future<String> getLocalFilePath(String filename) async {
     final directory = await getApplicationDocumentsDirectory();
@@ -26,17 +81,41 @@ class StorageService {
   }
 
   /// Simpan metadata media list ke cache lokal
+  // Replace method cacheMediaList yang existing
   static Future<void> cacheMediaList(List<MediaItem> mediaList) async {
     try {
+      // Download thumbnails dan update paths
+      final List<Map<String, dynamic>> updatedJsonData = [];
+
+      for (final item in mediaList) {
+        // Download thumbnail jika belum ada
+        if (item.thumbnail != null && item.thumbnail!.isNotEmpty) {
+          final isDownloaded = await isThumbnailDownloaded(item.id);
+          if (!isDownloaded) {
+            await downloadThumbnail(item.thumbnail!, item.id);
+          }
+        }
+
+        // Get local thumbnail path
+        final localThumbnailPath = await getLocalThumbnailPath(item.id);
+
+        // Create JSON dengan local thumbnail path jika ada
+        final itemJson = item.toJson();
+        if (localThumbnailPath != null) {
+          itemJson['thumbnail'] = localThumbnailPath;
+        }
+
+        updatedJsonData.add(itemJson);
+      }
+
       final cacheFile = File(await getCacheFilePath());
-      final jsonData = mediaList.map((item) => item.toJson()).toList();
       await cacheFile.writeAsString(
         json.encode({
           'cached_at': DateTime.now().toIso8601String(),
-          'data': jsonData,
+          'data': updatedJsonData,
         }),
       );
-      print('Media list cached successfully');
+      print('Media list cached with local thumbnail paths');
     } catch (e) {
       print('Failed to cache media list: $e');
     }

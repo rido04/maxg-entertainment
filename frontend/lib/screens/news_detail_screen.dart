@@ -389,8 +389,7 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Description as a quote if different from content
-        if (_article!.description != null &&
-            _article!.description != _article!.content)
+        if (_article!.description != _article!.content)
           Container(
             padding: const EdgeInsets.all(24),
             margin: const EdgeInsets.only(bottom: 24),
@@ -422,7 +421,7 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
 
         // Main content
         Text(
-          _article!.content ?? _article!.description ?? 'No content available.',
+          _article!.content ?? _article!.description,
           style: const TextStyle(
             color: Colors.black,
             fontSize: 18,
@@ -644,17 +643,16 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                 const SizedBox(height: 8),
 
                 // Description
-                if (article.description != null)
-                  Text(
-                    article.description,
-                    style: const TextStyle(
-                      color: Color(0xFF7F7F7F),
-                      fontSize: 12,
-                      height: 1.4,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                Text(
+                  article.description,
+                  style: const TextStyle(
+                    color: Color(0xFF7F7F7F),
+                    fontSize: 12,
+                    height: 1.4,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 const SizedBox(height: 12),
 
                 // Read more button

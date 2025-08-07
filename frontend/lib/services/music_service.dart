@@ -143,7 +143,14 @@ class MusicService {
 
     if (musicJsonString != null) {
       final List<dynamic> musicJsonList = json.decode(musicJsonString);
-      return musicJsonList.map((json) => MediaItem.fromJson(json)).toList();
+      final musicItems = musicJsonList
+          .map((json) => MediaItem.fromJson(json))
+          .toList();
+
+      // ✅ UPDATE DENGAN LOCAL THUMBNAIL PATHS UNTUK OFFLINE MODE
+      final updatedMusicItems = await _updateWithLocalPaths(musicItems);
+
+      return updatedMusicItems;
     }
 
     return [];

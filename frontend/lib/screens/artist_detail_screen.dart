@@ -1,4 +1,6 @@
 // lib/screens/artist_detail_screen.dart
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import '../models/media_item.dart';
 import '../services/music_service.dart';
@@ -146,7 +148,7 @@ class _ArtistDetailScreenState extends State<ArtistDetailScreen>
                                     ),
                                   ],
                                 ),
-                                child: ClipOval(
+                                child: CircleAvatar(
                                   child: widget.musicList.isNotEmpty
                                       ? (widget.musicList.first.thumbnail !=
                                                     null &&
@@ -155,21 +157,12 @@ class _ArtistDetailScreenState extends State<ArtistDetailScreen>
                                                     .first
                                                     .thumbnail!
                                                     .isNotEmpty
-                                            ? Image.network(
+                                            ? _buildThumbnailImage(
                                                 widget
                                                     .musicList
                                                     .first
                                                     .thumbnail!,
-                                                fit: BoxFit.cover,
-                                                errorBuilder:
-                                                    (
-                                                      context,
-                                                      error,
-                                                      stackTrace,
-                                                    ) =>
-                                                        _buildArtistPlaceholder(
-                                                          isTablet,
-                                                        ),
+                                                isTablet,
                                               )
                                             : _buildArtistPlaceholder(isTablet))
                                       : _buildArtistPlaceholder(isTablet),
@@ -434,12 +427,7 @@ class _ArtistDetailScreenState extends State<ArtistDetailScreen>
                     borderRadius: BorderRadius.circular(8),
                     child:
                         music.thumbnail != null && music.thumbnail!.isNotEmpty
-                        ? Image.network(
-                            music.thumbnail!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                _buildThumbnailPlaceholder(music, isTablet),
-                          )
+                        ? _buildThumbnailImage(music.thumbnail!, isTablet)
                         : _buildThumbnailPlaceholder(music, isTablet),
                   ),
                 ),
@@ -538,6 +526,24 @@ class _ArtistDetailScreenState extends State<ArtistDetailScreen>
         );
       },
     );
+  }
+
+  Widget _buildThumbnailImage(String thumbnailPath, bool isTablet) {
+    if (thumbnailPath.startsWith('/')) {
+      return Image.file(
+        File(thumbnailPath),
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) =>
+            _buildArtistPlaceholder(isTablet),
+      );
+    } else {
+      return Image.network(
+        thumbnailPath,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) =>
+            _buildArtistPlaceholder(isTablet),
+      );
+    }
   }
 
   Widget _buildEmptyState() {

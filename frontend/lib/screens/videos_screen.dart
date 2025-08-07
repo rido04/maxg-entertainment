@@ -32,6 +32,12 @@ class _VideosScreenState extends State<VideosScreen>
   int _itemsPerPage = 4;
   MediaItem? _hoveredMedia;
   String? _currentTime;
+  String _selectedCategory = 'All';
+  String _selectedType = 'All';
+  double _minRating = 0.0;
+  bool _showOnlyDownloaded = false;
+  List<String> _availableCategories = ['All'];
+  List<String> _availableTypes = ['All'];
   List<MediaItem> _allVideoItems = [];
 
   @override
@@ -41,6 +47,7 @@ class _VideosScreenState extends State<VideosScreen>
     _updateTime();
     _initializeAnimations();
     _checkConnectionStatus();
+    _initializeFilterOptions();
 
     // Update time every second
     Stream.periodic(const Duration(seconds: 1)).listen((_) => _updateTime());
@@ -97,12 +104,75 @@ class _VideosScreenState extends State<VideosScreen>
     _animationController.forward();
   }
 
+  List<MediaItem> _applyFilters(List<MediaItem> items) {
+    return items.where((item) {
+      // Category filter
+      if (_selectedCategory != 'All' &&
+          (item.category == null || item.category != _selectedCategory)) {
+        return false;
+      }
+
+      // Type filter
+      if (_selectedType != 'All' &&
+          (item.type == null || item.type != _selectedType)) {
+        return false;
+      }
+
+      // Rating filter
+      if (item.numericRating < _minRating) {
+        return false;
+      }
+
+      // Downloaded only filter
+      if (_showOnlyDownloaded) {
+        // This will be checked asynchronously in the widget
+      }
+
+      return true;
+    }).toList();
+  }
+
+  void _resetFilters() {
+    setState(() {
+      _selectedCategory = 'All';
+      _selectedType = 'All';
+      _minRating = 0.0;
+      _showOnlyDownloaded = false;
+    });
+  }
+
   Future<void> _checkConnectionStatus() async {
     final isOnline = await ApiService.checkServerConnection();
     if (mounted) {
       setState(() {
         _isOnlineMode = isOnline;
       });
+    }
+  }
+
+  Future<void> _initializeFilterOptions() async {
+    try {
+      final allMedia = await ApiService.fetchMediaList();
+      final videoItems = StorageService.filterVideoFiles(allMedia);
+
+      final categories = videoItems
+          .map((item) => item.category ?? 'Unknown')
+          .where((category) => category.isNotEmpty)
+          .toSet()
+          .toList();
+
+      final types = videoItems
+          .map((item) => item.type ?? 'Unknown')
+          .where((type) => type.isNotEmpty)
+          .toSet()
+          .toList();
+
+      setState(() {
+        _availableCategories = ['All', ...categories];
+        _availableTypes = ['All', ...types];
+      });
+    } catch (e) {
+      print('Error initializing filter options: $e');
     }
   }
 
@@ -518,6 +588,52 @@ class _VideosScreenState extends State<VideosScreen>
     );
   }
 
+  Widget _buildNoResultsState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.search_off, color: Color(0xFF00B14F), size: 48),
+            const SizedBox(height: 16),
+            const Text(
+              'No Movies Found',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Try adjusting your filters to find more content',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white70, fontSize: 14),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: _resetFilters,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Reset Filters'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF00B14F),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _changePage(int newPage) {
     setState(() {
       _currentPage = newPage;
@@ -531,13 +647,18 @@ class _VideosScreenState extends State<VideosScreen>
 
   Widget _buildMainContent(List<MediaItem> videoItems) {
     _allVideoItems = videoItems;
-    final totalPages = (_allVideoItems.length / _itemsPerPage).ceil();
+
+    // Apply filters
+    final filteredItems = _applyFilters(_allVideoItems);
+
+    final totalPages = (filteredItems.length / _itemsPerPage).ceil();
     final startIndex = (_currentPage - 1) * _itemsPerPage;
     final endIndex = (startIndex + _itemsPerPage).clamp(
       0,
-      _allVideoItems.length,
+      filteredItems.length,
     );
-    final currentPageItems = _allVideoItems.sublist(startIndex, endIndex);
+    final currentPageItems = filteredItems.sublist(startIndex, endIndex);
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -552,6 +673,7 @@ class _VideosScreenState extends State<VideosScreen>
       child: Column(
         children: [
           _buildHeader(),
+          _buildFilterPanel(), // Tambahkan filter panel di sini
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -563,12 +685,12 @@ class _VideosScreenState extends State<VideosScreen>
                     child: Column(
                       children: [
                         Expanded(
-                          child: _buildMovieList(
-                            currentPageItems,
-                          ), // Pass current page items
+                          child: filteredItems.isEmpty
+                              ? _buildNoResultsState()
+                              : _buildMovieList(currentPageItems),
                         ),
                         const SizedBox(height: 16),
-                        _buildPagination(totalPages), // Tambahkan pagination
+                        if (totalPages > 1) _buildPagination(totalPages),
                       ],
                     ),
                   ),
@@ -585,8 +707,15 @@ class _VideosScreenState extends State<VideosScreen>
 
   Widget _buildHeader() {
     final totalVideos = _allVideoItems.length;
+    final filteredVideos = _applyFilters(_allVideoItems).length;
     final startItem = (_currentPage - 1) * _itemsPerPage + 1;
-    final endItem = (_currentPage * _itemsPerPage).clamp(1, totalVideos);
+    final endItem = (_currentPage * _itemsPerPage).clamp(1, filteredVideos);
+
+    final hasActiveFilters =
+        _selectedCategory != 'All' ||
+        _selectedType != 'All' ||
+        _minRating > 0.0 ||
+        _showOnlyDownloaded;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -641,22 +770,340 @@ class _VideosScreenState extends State<VideosScreen>
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+                  if (hasActiveFilters) ...[
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF00B14F).withOpacity(0.8),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Text(
+                        'FILTERED',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
-              if (totalVideos > 0)
-                Text(
-                  'Showing $startItem-$endItem of $totalVideos',
-                  style: const TextStyle(
-                    color: Colors.white60,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
+              if (filteredVideos > 0)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      'Showing $startItem-$endItem of $filteredVideos',
+                      style: const TextStyle(
+                        color: Colors.white60,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    if (hasActiveFilters && filteredVideos != totalVideos)
+                      Text(
+                        '(${totalVideos - filteredVideos} filtered out)',
+                        style: const TextStyle(
+                          color: Colors.white24,
+                          fontSize: 10,
+                        ),
+                      ),
+                  ],
                 ),
             ],
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildFilterPanel() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
+      ),
+      child: Column(
+        children: [
+          // Filter Header - Compact
+          Row(
+            children: [
+              const Icon(Icons.filter_list, color: Color(0xFF00B14F), size: 18),
+              const SizedBox(width: 6),
+              const Text(
+                'Filter',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              TextButton(
+                onPressed: _resetFilters,
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: const Text(
+                  'Reset',
+                  style: TextStyle(color: Color(0xFF00B14F), fontSize: 12),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 8),
+
+          // Filter Options - Single Row
+          Row(
+            children: [
+              // Category Dropdown
+              Expanded(
+                flex: 2,
+                child: _buildCompactDropdown(
+                  label: 'Genre',
+                  value: _selectedCategory,
+                  items: _availableCategories,
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedCategory = value!;
+                      _currentPage = 1;
+                    });
+                  },
+                ),
+              ),
+
+              const SizedBox(width: 8),
+
+              // Type Dropdown
+              Expanded(
+                flex: 2,
+                child: _buildCompactDropdown(
+                  label: 'Type',
+                  value: _selectedType,
+                  items: _availableTypes,
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedType = value!;
+                      _currentPage = 1;
+                    });
+                  },
+                ),
+              ),
+
+              const SizedBox(width: 8),
+
+              // Downloaded Toggle - Compact
+              Expanded(flex: 1, child: _buildCompactToggle()),
+            ],
+          ),
+
+          // Active Filters Display (Similar to your blade)
+          if (_hasActiveFilters()) ...[
+            const SizedBox(height: 8),
+            _buildActiveFilters(),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCompactDropdown({
+    required String label,
+    required String value,
+    required List<String> items,
+    required ValueChanged<String?> onChanged,
+  }) {
+    return Container(
+      height: 36,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.white.withOpacity(0.3)),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: value == 'All' ? null : value,
+          hint: Text(
+            label,
+            style: const TextStyle(color: Colors.white70, fontSize: 12),
+          ),
+          isExpanded: true,
+          items: items.map((String item) {
+            return DropdownMenuItem<String>(
+              value: item == 'All' ? null : item,
+              child: Text(
+                item == 'All' ? 'Semua ${label}s' : item,
+                style: const TextStyle(color: Colors.white, fontSize: 12),
+                overflow: TextOverflow.ellipsis,
+              ),
+            );
+          }).toList(),
+          onChanged: onChanged,
+          dropdownColor: const Color(0xFF1A1A2E),
+          iconEnabledColor: Colors.white70,
+          iconSize: 18,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCompactToggle() {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _showOnlyDownloaded = !_showOnlyDownloaded;
+          _currentPage = 1;
+        });
+      },
+      child: Container(
+        height: 36,
+        padding: const EdgeInsets.symmetric(horizontal: 6),
+        decoration: BoxDecoration(
+          color: _showOnlyDownloaded
+              ? const Color(0xFF00B14F).withOpacity(0.2)
+              : Colors.white.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: _showOnlyDownloaded
+                ? const Color(0xFF00B14F)
+                : Colors.white.withOpacity(0.3),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              _showOnlyDownloaded
+                  ? Icons.download_done
+                  : Icons.download_outlined,
+              size: 14,
+              color: _showOnlyDownloaded
+                  ? const Color(0xFF00B14F)
+                  : Colors.white70,
+            ),
+            const SizedBox(width: 2),
+            Flexible(
+              child: Text(
+                'DL',
+                style: TextStyle(
+                  color: _showOnlyDownloaded
+                      ? const Color(0xFF00B14F)
+                      : Colors.white70,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActiveFilters() {
+    List<Widget> activeFilters = [];
+
+    // Add active filter chips (similar to your blade template)
+    if (_selectedCategory != 'All') {
+      activeFilters.add(_buildFilterChip('Genre', _selectedCategory));
+    }
+
+    if (_selectedType != 'All') {
+      activeFilters.add(_buildFilterChip('Type', _selectedType));
+    }
+
+    if (_showOnlyDownloaded) {
+      activeFilters.add(_buildFilterChip('Status', 'Downloaded'));
+    }
+
+    if (activeFilters.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Wrap(
+        spacing: 6,
+        runSpacing: 4,
+        children: [
+          const Text(
+            'Filter aktif:',
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          ...activeFilters,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChip(String label, String value) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: const Color(0xFF00B14F).withOpacity(0.2),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF00B14F).withOpacity(0.5)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '$label: $value',
+            style: const TextStyle(
+              color: Color(0xFF00B14F),
+              fontSize: 10,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(width: 3),
+          GestureDetector(
+            onTap: () => _removeFilter(label),
+            child: const Icon(Icons.close, size: 12, color: Color(0xFF00B14F)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  bool _hasActiveFilters() {
+    return _selectedCategory != 'All' ||
+        _selectedType != 'All' ||
+        _showOnlyDownloaded;
+  }
+
+  void _removeFilter(String filterType) {
+    setState(() {
+      switch (filterType) {
+        case 'Genre':
+          _selectedCategory = 'All';
+          break;
+        case 'Type':
+          _selectedType = 'All';
+          break;
+        case 'Status':
+          _showOnlyDownloaded = false;
+          break;
+      }
+      _currentPage = 1;
+    });
   }
 
   Widget _buildMovieList(List<MediaItem> videoItems) {

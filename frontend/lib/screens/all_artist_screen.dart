@@ -1,4 +1,6 @@
 // lib/screens/all_artists_screen.dart
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import '../models/media_item.dart';
 import '../screens/artist_detail_screen.dart';
@@ -395,11 +397,9 @@ class _AllArtistsScreenState extends State<AllArtistsScreen>
                           child:
                               artistSong.thumbnail != null &&
                                   artistSong.thumbnail!.isNotEmpty
-                              ? Image.network(
+                              ? _buildThumbnailImage(
                                   artistSong.thumbnail!,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      _buildArtistPlaceholder(artist, isTablet),
+                                  isTablet,
                                 )
                               : _buildArtistPlaceholder(artist, isTablet),
                         ),
@@ -482,6 +482,27 @@ class _AllArtistsScreenState extends State<AllArtistsScreen>
         ),
       ),
     );
+  }
+
+  Widget _buildThumbnailImage(String thumbnailPath, bool isTablet) {
+    // Cek apakah local file atau network URL
+    if (thumbnailPath.startsWith('/')) {
+      // Local file
+      return Image.file(
+        File(thumbnailPath),
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) =>
+            _buildArtistPlaceholder("A", isTablet),
+      );
+    } else {
+      // Network URL
+      return Image.network(
+        thumbnailPath,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) =>
+            _buildArtistPlaceholder("A", isTablet),
+      );
+    }
   }
 
   Widget _buildArtistPlaceholder(String artist, bool isTablet) {

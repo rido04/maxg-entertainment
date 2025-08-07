@@ -1,10 +1,11 @@
+// lib/layouts/main_layouts.dart
 import 'package:flutter/material.dart';
 import '../widgets/navigation/slide_navigation.dart';
 import '../routes/app_routes.dart';
 import '../screens/home_screen.dart' as home;
 import '../screens/videos_screen.dart' as videos;
 import '../screens/music_screen.dart' as music;
-import '../screens/games_screen.dart' as games;
+import '../screens/games_screen.dart' as games; // Import games screen
 import '../screens/news_screen.dart' as news;
 import '../screens/about_screen.dart' as about;
 
@@ -43,7 +44,7 @@ class _MainLayoutState extends State<MainLayout> {
         return videos.VideosScreen();
       case AppRoutes.musicScreen:
         return music.MusicScreen();
-      case AppRoutes.gamesScreen:
+      case AppRoutes.gamesScreen: // Add games route
         return games.GamesScreen();
       case AppRoutes.newsScreen:
         return news.NewsScreen();

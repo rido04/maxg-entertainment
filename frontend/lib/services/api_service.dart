@@ -8,14 +8,12 @@ class ApiService {
   static const String downloadBaseUrl = 'https://maxg.app.medialoger.com';
   static const Duration timeoutDuration = Duration(seconds: 10);
 
-  /// Fetch media list dengan offline-first approach
   static Future<List<MediaItem>> fetchMediaList({
     bool forceOnline = false,
   }) async {
     try {
       print('Fetching media list...');
 
-      // Jika tidak force online, coba ambil dari cache dulu
       if (!forceOnline) {
         final cachedMedia = await StorageService.getCachedMediaList();
         if (cachedMedia != null && cachedMedia.isNotEmpty) {
