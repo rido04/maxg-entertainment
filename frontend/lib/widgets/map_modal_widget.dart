@@ -627,27 +627,6 @@ class _MapModalState extends State<MapModal> with TickerProviderStateMixin {
                                   ),
 
                                   // Start Point (if path exists)
-                                  // if (_pathPoints.isNotEmpty)
-                                  //   Marker(
-                                  //     point: _pathPoints.first,
-                                  //     width: 30,
-                                  //     height: 30,
-                                  //     builder: (context) => Container(
-                                  //       decoration: BoxDecoration(
-                                  //         color: Colors.green,
-                                  //         shape: BoxShape.circle,
-                                  //         border: Border.all(
-                                  //           color: Colors.white,
-                                  //           width: 2,
-                                  //         ),
-                                  //       ),
-                                  //       child: Icon(
-                                  //         Icons.play_arrow,
-                                  //         color: Colors.white,
-                                  //         size: 16,
-                                  //       ),
-                                  //     ),
-                                  //   ),
                                 ],
                               ),
                             ],

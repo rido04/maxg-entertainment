@@ -1111,7 +1111,7 @@ class _VideosScreenState extends State<VideosScreen>
 
     if (activeFilters.isEmpty) return const SizedBox.shrink();
 
-    return Container(
+    return SizedBox(
       width: double.infinity,
       child: Wrap(
         spacing: 6,
@@ -1130,7 +1130,7 @@ class _VideosScreenState extends State<VideosScreen>
       ),
     );
   }
- 
+
   Widget _buildFilterChip(String label, String value) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
