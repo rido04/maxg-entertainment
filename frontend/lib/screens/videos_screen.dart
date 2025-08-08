@@ -39,6 +39,22 @@ class _VideosScreenState extends State<VideosScreen>
   List<String> _availableCategories = ['All'];
   List<String> _availableTypes = ['All'];
   List<MediaItem> _allVideoItems = [];
+  int _getActiveFiltersCount() {
+    int count = 0;
+    if (_selectedCategory != 'All') count++;
+    if (_selectedType != 'All') count++;
+    if (_showOnlyDownloaded) count++;
+    return count;
+  }
+
+  void _showFilterModal() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => _buildFilterModal(),
+    );
+  }
 
   @override
   void initState() {
@@ -452,6 +468,233 @@ class _VideosScreenState extends State<VideosScreen>
     );
   }
 
+  Widget _buildFilterModal() {
+    return StatefulBuilder(
+      builder: (context, setModalState) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Color(0xFF1A1A2E),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            boxShadow: [
+              BoxShadow(color: Colors.black26, blurRadius: 15, spreadRadius: 5),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle bar
+              Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 8),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+
+              // Header
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Row(
+                  children: [
+                    const Icon(Icons.tune, color: Color(0xFF00B14F), size: 24),
+                    const SizedBox(width: 12),
+                    const Text(
+                      'Filter Movies',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Spacer(),
+                    TextButton(
+                      onPressed: () {
+                        setModalState(() {
+                          _resetFilters();
+                        });
+                        setState(() {});
+                      },
+                      child: const Text(
+                        'Reset All',
+                        style: TextStyle(color: Color(0xFF00B14F)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const Divider(color: Colors.white12, height: 1),
+
+              // Filter Options
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Category Filter
+                    const Text(
+                      'Genre',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.3),
+                        ),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: _selectedCategory,
+                          isExpanded: true,
+                          dropdownColor: const Color(0xFF1A1A2E),
+                          items: _availableCategories.map((String category) {
+                            return DropdownMenuItem<String>(
+                              value: category,
+                              child: Text(
+                                category,
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                            );
+                          }).toList(),
+                          onChanged: (String? newValue) {
+                            setModalState(() {
+                              _selectedCategory = newValue!;
+                              _currentPage = 1;
+                            });
+                            setState(() {});
+                          },
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Type Filter
+                    const Text(
+                      'Type',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.3),
+                        ),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: _selectedType,
+                          isExpanded: true,
+                          dropdownColor: const Color(0xFF1A1A2E),
+                          items: _availableTypes.map((String type) {
+                            return DropdownMenuItem<String>(
+                              value: type,
+                              child: Text(
+                                type,
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                            );
+                          }).toList(),
+                          onChanged: (String? newValue) {
+                            setModalState(() {
+                              _selectedType = newValue!;
+                              _currentPage = 1;
+                            });
+                            setState(() {});
+                          },
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Downloaded Only Toggle
+                    Row(
+                      children: [
+                        const Text(
+                          'Show Downloaded Only',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const Spacer(),
+                        Switch(
+                          value: _showOnlyDownloaded,
+                          onChanged: (bool value) {
+                            setModalState(() {
+                              _showOnlyDownloaded = value;
+                              _currentPage = 1;
+                            });
+                            setState(() {});
+                          },
+                          activeColor: const Color(0xFF00B14F),
+                          activeTrackColor: const Color(
+                            0xFF00B14F,
+                          ).withOpacity(0.3),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 30),
+
+                    // Apply Button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF00B14F),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 5,
+                        ),
+                        child: const Text(
+                          'Apply Filters',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildPagination(int totalPages) {
     if (totalPages <= 1) return const SizedBox.shrink();
 
@@ -672,8 +915,7 @@ class _VideosScreenState extends State<VideosScreen>
       ),
       child: Column(
         children: [
-          _buildHeader(),
-          _buildFilterPanel(), // Tambahkan filter panel di sini
+          _buildHeaderWithFilter(), // GANTI dari _buildHeader()
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -705,17 +947,13 @@ class _VideosScreenState extends State<VideosScreen>
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeaderWithFilter() {
     final totalVideos = _allVideoItems.length;
     final filteredVideos = _applyFilters(_allVideoItems).length;
     final startItem = (_currentPage - 1) * _itemsPerPage + 1;
     final endItem = (_currentPage * _itemsPerPage).clamp(1, filteredVideos);
 
-    final hasActiveFilters =
-        _selectedCategory != 'All' ||
-        _selectedType != 'All' ||
-        _minRating > 0.0 ||
-        _showOnlyDownloaded;
+    final hasActiveFilters = _hasActiveFilters();
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -770,27 +1008,9 @@ class _VideosScreenState extends State<VideosScreen>
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  if (hasActiveFilters) ...[
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF00B14F).withOpacity(0.8),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Text(
-                        'FILTERED',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
+                  const SizedBox(width: 16),
+                  // FILTER BUTTON - INI YANG BARU
+                  _buildFilterButton(),
                 ],
               ),
               if (filteredVideos > 0)
@@ -817,196 +1037,57 @@ class _VideosScreenState extends State<VideosScreen>
                 ),
             ],
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFilterPanel() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
-      ),
-      child: Column(
-        children: [
-          // Filter Header - Compact
-          Row(
-            children: [
-              const Icon(Icons.filter_list, color: Color(0xFF00B14F), size: 18),
-              const SizedBox(width: 6),
-              const Text(
-                'Filter',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const Spacer(),
-              TextButton(
-                onPressed: _resetFilters,
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                child: const Text(
-                  'Reset',
-                  style: TextStyle(color: Color(0xFF00B14F), fontSize: 12),
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 8),
-
-          // Filter Options - Single Row
-          Row(
-            children: [
-              // Category Dropdown
-              Expanded(
-                flex: 2,
-                child: _buildCompactDropdown(
-                  label: 'Genre',
-                  value: _selectedCategory,
-                  items: _availableCategories,
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedCategory = value!;
-                      _currentPage = 1;
-                    });
-                  },
-                ),
-              ),
-
-              const SizedBox(width: 8),
-
-              // Type Dropdown
-              Expanded(
-                flex: 2,
-                child: _buildCompactDropdown(
-                  label: 'Type',
-                  value: _selectedType,
-                  items: _availableTypes,
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedType = value!;
-                      _currentPage = 1;
-                    });
-                  },
-                ),
-              ),
-
-              const SizedBox(width: 8),
-
-              // Downloaded Toggle - Compact
-              Expanded(flex: 1, child: _buildCompactToggle()),
-            ],
-          ),
-
-          // Active Filters Display (Similar to your blade)
-          if (_hasActiveFilters()) ...[
-            const SizedBox(height: 8),
-            _buildActiveFilters(),
+          // Active filters chips - tetap di header
+          if (hasActiveFilters) ...[
+            const SizedBox(height: 12),
+            _buildActiveFiltersRow(),
           ],
         ],
       ),
     );
   }
 
-  Widget _buildCompactDropdown({
-    required String label,
-    required String value,
-    required List<String> items,
-    required ValueChanged<String?> onChanged,
-  }) {
-    return Container(
-      height: 36,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.white.withOpacity(0.3)),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: value == 'All' ? null : value,
-          hint: Text(
-            label,
-            style: const TextStyle(color: Colors.white70, fontSize: 12),
-          ),
-          isExpanded: true,
-          items: items.map((String item) {
-            return DropdownMenuItem<String>(
-              value: item == 'All' ? null : item,
-              child: Text(
-                item == 'All' ? 'Semua ${label}s' : item,
-                style: const TextStyle(color: Colors.white, fontSize: 12),
-                overflow: TextOverflow.ellipsis,
-              ),
-            );
-          }).toList(),
-          onChanged: onChanged,
-          dropdownColor: const Color(0xFF1A1A2E),
-          iconEnabledColor: Colors.white70,
-          iconSize: 18,
-        ),
-      ),
-    );
-  }
+  Widget _buildFilterButton() {
+    final hasActiveFilters = _hasActiveFilters();
 
-  Widget _buildCompactToggle() {
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          _showOnlyDownloaded = !_showOnlyDownloaded;
-          _currentPage = 1;
-        });
-      },
+      onTap: _showFilterModal,
       child: Container(
-        height: 36,
-        padding: const EdgeInsets.symmetric(horizontal: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: _showOnlyDownloaded
-              ? const Color(0xFF00B14F).withOpacity(0.2)
-              : Colors.white.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(8),
+          gradient: LinearGradient(
+            colors: hasActiveFilters
+                ? [const Color(0xFF00B14F), const Color(0xFF009940)]
+                : [
+                    Colors.white.withOpacity(0.1),
+                    Colors.white.withOpacity(0.05),
+                  ],
+          ),
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: _showOnlyDownloaded
-                ? const Color(0xFF00B14F)
+            color: hasActiveFilters
+                ? const Color(0xFF00B14F).withOpacity(0.8)
                 : Colors.white.withOpacity(0.3),
+            width: 1,
           ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              _showOnlyDownloaded
-                  ? Icons.download_done
-                  : Icons.download_outlined,
-              size: 14,
-              color: _showOnlyDownloaded
-                  ? const Color(0xFF00B14F)
-                  : Colors.white70,
+              Icons.tune,
+              size: 16,
+              color: hasActiveFilters ? Colors.white : Colors.white70,
             ),
-            const SizedBox(width: 2),
-            Flexible(
-              child: Text(
-                'DL',
-                style: TextStyle(
-                  color: _showOnlyDownloaded
-                      ? const Color(0xFF00B14F)
-                      : Colors.white70,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w500,
-                ),
+            const SizedBox(width: 6),
+            Text(
+              hasActiveFilters
+                  ? 'Filter (${_getActiveFiltersCount()})'
+                  : 'Filter',
+              style: TextStyle(
+                color: hasActiveFilters ? Colors.white : Colors.white70,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],
@@ -1015,18 +1096,15 @@ class _VideosScreenState extends State<VideosScreen>
     );
   }
 
-  Widget _buildActiveFilters() {
+  Widget _buildActiveFiltersRow() {
     List<Widget> activeFilters = [];
 
-    // Add active filter chips (similar to your blade template)
     if (_selectedCategory != 'All') {
       activeFilters.add(_buildFilterChip('Genre', _selectedCategory));
     }
-
     if (_selectedType != 'All') {
       activeFilters.add(_buildFilterChip('Type', _selectedType));
     }
-
     if (_showOnlyDownloaded) {
       activeFilters.add(_buildFilterChip('Status', 'Downloaded'));
     }
@@ -1035,15 +1113,14 @@ class _VideosScreenState extends State<VideosScreen>
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Wrap(
         spacing: 6,
         runSpacing: 4,
         children: [
           const Text(
-            'Filter aktif:',
+            'Active:',
             style: TextStyle(
-              color: Colors.white70,
+              color: Colors.white60,
               fontSize: 11,
               fontWeight: FontWeight.w500,
             ),
@@ -1053,7 +1130,7 @@ class _VideosScreenState extends State<VideosScreen>
       ),
     );
   }
-
+ 
   Widget _buildFilterChip(String label, String value) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),

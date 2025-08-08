@@ -13,7 +13,7 @@ class SnakeGame extends StatefulWidget {
 
 class _SnakeGameState extends State<SnakeGame> {
   static const int gridSize = 20;
-  static const int gameSpeed = 200; // milliseconds
+  static const int gameSpeed = 200;
 
   List<Point<int>> snake = [Point(10, 10)];
   Point<int> food = Point(15, 15);

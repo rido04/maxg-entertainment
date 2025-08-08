@@ -21,6 +21,7 @@ class AboutScreen extends StatelessWidget {
                 child: Column(
                   children: [
                     // Logo Section
+                    // Bagian Logo Section yang sudah diperbaiki
                     Container(
                       margin: const EdgeInsets.only(bottom: 40.0),
                       child: Column(
@@ -32,22 +33,30 @@ class AboutScreen extends StatelessWidget {
                               // MaxG Logo - menggunakan Image.asset
                               Image.asset(
                                 'assets/images/logo/Maxg-ent_green.gif',
-                                height: 120, // Diperbesar dari 80 ke 100
-                                width: 150, // Diperbesar dari 120 ke 150
-                                // Fallback jika gambar tidak ditemukan
+                                height: 120, // Ukuran yang diinginkan
+                                width: 150, // Ukuran yang diinginkan
+                                fit: BoxFit.contain,
+                                // Fallback jika gambar tidak ditemukan - ukuran harus sama!
                                 errorBuilder: (context, error, stackTrace) {
+                                  print(
+                                    'Error loading MaxG logo: $error',
+                                  ); // Debug print
                                   return Container(
                                     height:
-                                        100, // Sesuaikan dengan ukuran Image.asset
+                                        120, // DIPERBAIKI: sesuaikan dengan Image.asset
                                     width:
-                                        150, // Sesuaikan dengan ukuran Image.asset
+                                        150, // DIPERBAIKI: sesuaikan dengan Image.asset
                                     decoration: BoxDecoration(
                                       color: Colors.green[100],
                                       borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: Colors.red,
+                                        width: 2,
+                                      ), // Debug border
                                     ),
                                     child: Center(
                                       child: Text(
-                                        'MaxG\nEntertainment',
+                                        'MaxG\nEntertainment\n(Fallback)',
                                         textAlign: TextAlign.center,
                                         style: TextStyle(
                                           color: Colors.green[700],
@@ -85,6 +94,9 @@ class AboutScreen extends StatelessWidget {
                                         // Fallback jika gambar tidak ditemukan
                                         errorBuilder:
                                             (context, error, stackTrace) {
+                                              print(
+                                                'Error loading MCM logo: $error',
+                                              ); // Debug print
                                               return Container(
                                                 height: 32,
                                                 width: 80,
