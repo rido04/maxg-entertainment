@@ -8,7 +8,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/media_item.dart';
 
 class MusicService {
-  static const String _baseUrl = 'https://maxg.app.medialoger.com';
+  static const String _baseUrl =
+      'https://acorned-willis-overneatly.ngrok-free.dev';
   static const String _downloadedMusicKey = 'downloaded_music';
 
   // Check internet connectivity

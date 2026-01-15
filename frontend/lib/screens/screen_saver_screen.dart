@@ -1,9 +1,14 @@
+// lib/screens/screen_saver_screen.dart
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:video_player/video_player.dart';
 import 'dart:async';
-import '../widgets/welcome/header_widget.dart';
-import '../widgets/welcome/time_display_widget.dart';
+import 'dart:io';
+import '../services/session_manager_service.dart';
+import '../services/advertisement_service.dart';
+import '../models/advertisement_item.dart';
 
 class ScreensaverScreen extends StatefulWidget {
   @override
@@ -13,25 +18,21 @@ class ScreensaverScreen extends StatefulWidget {
 class _ScreensaverScreenState extends State<ScreensaverScreen> {
   PageController _pageController = PageController();
   Timer? _autoPlayTimer;
-  int _currentVideoIndex = 0;
+  int _currentAdIndex = 0;
+  int? _pausedVideoIndex; // 👈 Tambah variable ini di class state
+  Duration? _pausedVideoPosition; // 👈 Simpan posisi video
   List<VideoPlayerController> _videoControllers = [];
 
-  // Daftar video iklan berdasarkan screenshot Anda
-  final List<String> _advertisementVideos = [
-    'assets/video/bebas_seenaknya_grabfood.mp4',
-    'assets/video/grabmart_beauty_ready.mp4',
-  ];
-
-  // Daftar gambar fallback jika video tidak tersedia
-  final List<String> _advertisementImages = [
-    'assets/images/ads/grabfood_discount.jpg',
-    'assets/images/ads/grabmart_beauty.jpg',
-  ];
+  final SessionManagerService _sessionManager = SessionManagerService();
+  List<AdvertisementItem> _advertisements = [];
+  bool _isLoadingAds = true;
 
   @override
   void initState() {
     super.initState();
-    _initializeVideos();
+    _setFullScreen();
+    _initializeSessionManager();
+    _loadDefaultAdvertisements();
   }
 
   @override
@@ -39,256 +40,385 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     _autoPlayTimer?.cancel();
     _pageController.dispose();
     _disposeVideoControllers();
+    _sessionManager.stopMonitoring();
+    _sessionManager.dispose();
+    _restoreSystemUI();
     super.dispose();
   }
 
-  Future<bool> _checkAssetExists(String assetPath) async {
-    try {
-      await DefaultAssetBundle.of(context).load(assetPath);
-      return true;
-    } catch (e) {
-      print('Asset not found: $assetPath');
-      return false;
-    }
+  void _setFullScreen() {
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.immersiveSticky,
+      overlays: [],
+    );
   }
 
-  void _initializeVideos() async {
-    for (int i = 0; i < _advertisementVideos.length; i++) {
-      String videoPath = _advertisementVideos[i];
-      VideoPlayerController? controller;
+  void _restoreSystemUI() {
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.manual,
+      overlays: SystemUiOverlay.values,
+    );
+  }
 
-      try {
-        // Check if asset exists first
-        bool assetExists = await _checkAssetExists(videoPath);
-        if (!assetExists) {
-          print('Asset not found: $videoPath');
-          _videoControllers.add(VideoPlayerController.asset('')); // placeholder
-          continue;
+  Future<void> _initializeSessionManager() async {
+    print('🚀 Initializing session manager...');
+
+    await _sessionManager.initialize();
+    _sessionManager.setContext(context);
+
+    // 👇 Set pause/resume controls
+    _sessionManager.setVideoControls(
+      onPauseVideo: _pauseAllVideos,
+      onResumeVideo: _resumeAllVideos,
+    );
+
+    _sessionManager.onSessionStarted = (session) {
+      print('✅ Session started: ${session.sessionId}');
+    };
+
+    _sessionManager.onSessionEnded = (session) {
+      print(
+        '📊 Session ended: Duration=${session.durationSeconds}s, Ads viewed=${session.adViewCount}',
+      );
+      _loadDefaultAdvertisements();
+    };
+
+    _sessionManager.onAdsUpdated = (ads) {
+      print('🎯 Ads updated: ${ads.length} targeted ads');
+      _updateAdvertisements(ads);
+
+      // 👇 TAMBAH INI - Pause semua video setelah ads di-update
+      Future.delayed(Duration(milliseconds: 300), () {
+        if (_sessionManager.state == SessionState.detected ||
+            _sessionManager.state == SessionState.active) {
+          _pauseAllVideos();
+          print('🔇 Videos paused after ads update during active session');
         }
+      });
+    };
 
-        controller = VideoPlayerController.asset(videoPath);
-        await controller.initialize();
-        controller.setLooping(true);
-        _videoControllers.add(controller);
-        print('Video initialized successfully: $videoPath');
-      } catch (e) {
-        print('Error initializing video: $videoPath - $e');
-        // Add null controller to maintain index alignment
-        _videoControllers.add(VideoPlayerController.asset(''));
+    _sessionManager.onStateChanged = (state) {
+      print('🔄 State changed: $state');
+    };
+
+    _sessionManager.startMonitoring();
+
+    print('✅ Session manager ready');
+  }
+
+  void _pauseAllVideos() {
+    // 👇 Pause SEMUA video controllers
+    for (int i = 0; i < _videoControllers.length; i++) {
+      final controller = _videoControllers[i];
+      if (controller.value.isInitialized) {
+        controller.setVolume(0.0);
+        controller.pause();
       }
     }
 
-    // Start playing first video if available
-    if (_videoControllers.isNotEmpty &&
-        _videoControllers[0].value.isInitialized) {
+    // Simpan posisi video yang lagi aktif
+    final videoIndex = _getVideoControllerIndex(_currentAdIndex);
+    if (videoIndex >= 0 && videoIndex < _videoControllers.length) {
+      _pausedVideoIndex = videoIndex;
+      _pausedVideoPosition = _videoControllers[videoIndex].value.position;
+    }
+
+    print('⏸️🔇 All videos paused and muted');
+  }
+
+  void _resumeAllVideos() {
+    if (_pausedVideoIndex != null &&
+        _pausedVideoIndex! >= 0 &&
+        _pausedVideoIndex! < _videoControllers.length) {
+      final controller = _videoControllers[_pausedVideoIndex!];
+
+      if (controller.value.isInitialized) {
+        // Restore posisi
+        if (_pausedVideoPosition != null) {
+          controller.seekTo(_pausedVideoPosition!);
+        }
+
+        // 👇 Set volume dulu, baru play
+        controller.setVolume(1.0);
+
+        // 👇 Delay kecil
+        Future.delayed(Duration(milliseconds: 100), () {
+          controller.play();
+        });
+
+        print('▶️🔊 Video resumed from ${_pausedVideoPosition?.inSeconds}s');
+
+        _pausedVideoIndex = null;
+        _pausedVideoPosition = null;
+      }
+    }
+  }
+
+  Future<void> _loadDefaultAdvertisements() async {
+    try {
+      setState(() => _isLoadingAds = true);
+
+      print('📺 Loading default advertisements...');
+
+      final ads = await AdvertisementService.fetchAdvertisements();
+
+      if (ads.isNotEmpty) {
+        _updateAdvertisements(ads);
+      } else {
+        print('⚠️ No advertisements available');
+        setState(() => _isLoadingAds = false);
+      }
+    } catch (e) {
+      print('❌ Failed to load advertisements: $e');
+      setState(() => _isLoadingAds = false);
+    }
+  }
+
+  void _updateAdvertisements(List<AdvertisementItem> ads) {
+    _disposeVideoControllers();
+
+    setState(() {
+      _advertisements = ads;
+      _currentAdIndex = 0;
+      _isLoadingAds = false;
+    });
+
+    _initializeVideoControllers();
+  }
+
+  Future<void> _initializeVideoControllers() async {
+    for (int i = 0; i < _advertisements.length; i++) {
+      final ad = _advertisements[i];
+
+      if (!ad.isVideo) continue;
+
+      try {
+        final localPath = await AdvertisementService.getLocalAdPath(ad);
+
+        if (localPath == null || !File(localPath).existsSync()) {
+          print('⚠️ Video not downloaded: ${ad.title}');
+          continue;
+        }
+
+        final controller = VideoPlayerController.file(File(localPath));
+        await controller.initialize();
+        controller.setLooping(true);
+        _videoControllers.add(controller);
+
+        print('✅ Video initialized: ${ad.title}');
+      } catch (e) {
+        print('❌ Failed to initialize video ${ad.title}: $e');
+      }
+    }
+
+    if (_videoControllers.isNotEmpty && mounted) {
       _videoControllers[0].play();
+
+      if (_sessionManager.isActive) {
+        _sessionManager.trackAdView(_advertisements[0].id);
+      }
     }
 
     _startAutoPlay();
+
     if (mounted) setState(() {});
   }
 
   void _disposeVideoControllers() {
-    for (VideoPlayerController controller in _videoControllers) {
+    for (var controller in _videoControllers) {
       controller.dispose();
     }
     _videoControllers.clear();
   }
 
   void _startAutoPlay() {
-    _autoPlayTimer = Timer.periodic(Duration(seconds: 1), (timer) {
-      // Check if current video has finished
-      if (_videoControllers.isNotEmpty &&
-          _currentVideoIndex < _videoControllers.length &&
-          _videoControllers[_currentVideoIndex].value.isInitialized) {
-        VideoPlayerController currentController =
-            _videoControllers[_currentVideoIndex];
+    _autoPlayTimer?.cancel();
 
-        // If video finished or close to finish (within 1 second)
-        if (currentController.value.position >=
-            currentController.value.duration - Duration(seconds: 1)) {
-          // Move to next video
-          if (_currentVideoIndex < _advertisementVideos.length - 1) {
-            _currentVideoIndex++;
-          } else {
-            _currentVideoIndex = 0;
-          }
+    _autoPlayTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_advertisements.isEmpty) return;
 
-          // Restart current video (for looping)
-          currentController.seekTo(Duration.zero);
-          currentController.play();
+      final currentAd = _advertisements[_currentAdIndex];
 
-          if (_pageController.hasClients) {
-            _pageController.animateToPage(
-              _currentVideoIndex,
-              duration: Duration(milliseconds: 500),
-              curve: Curves.easeInOut,
-            );
+      if (currentAd.isVideo) {
+        final videoIndex = _getVideoControllerIndex(_currentAdIndex);
+
+        if (videoIndex >= 0 && videoIndex < _videoControllers.length) {
+          final controller = _videoControllers[videoIndex];
+
+          if (controller.value.isInitialized) {
+            if (controller.value.position >=
+                controller.value.duration - const Duration(seconds: 1)) {
+              _nextAd();
+            }
           }
         }
       } else {
-        // Fallback: if no video, use 15 second interval for images
-        if (timer.tick % 15 == 0) {
-          if (_currentVideoIndex < _advertisementImages.length - 1) {
-            _currentVideoIndex++;
-          } else {
-            _currentVideoIndex = 0;
-          }
-
-          if (_pageController.hasClients) {
-            _pageController.animateToPage(
-              _currentVideoIndex,
-              duration: Duration(milliseconds: 500),
-              curve: Curves.easeInOut,
-            );
-          }
+        if (timer.tick % currentAd.duration == 0) {
+          _nextAd();
         }
       }
     });
   }
 
+  void _nextAd() {
+    if (_advertisements.isEmpty) return;
+
+    final currentVideoIndex = _getVideoControllerIndex(_currentAdIndex);
+    if (currentVideoIndex >= 0 &&
+        currentVideoIndex < _videoControllers.length) {
+      _videoControllers[currentVideoIndex].pause();
+    }
+
+    _currentAdIndex = (_currentAdIndex + 1) % _advertisements.length;
+
+    if (_sessionManager.isActive) {
+      _sessionManager.trackAdView(_advertisements[_currentAdIndex].id);
+    }
+
+    final nextVideoIndex = _getVideoControllerIndex(_currentAdIndex);
+    if (nextVideoIndex >= 0 && nextVideoIndex < _videoControllers.length) {
+      _videoControllers[nextVideoIndex].seekTo(Duration.zero);
+      _videoControllers[nextVideoIndex].play();
+    }
+
+    if (_pageController.hasClients) {
+      _pageController.animateToPage(
+        _currentAdIndex,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  int _getVideoControllerIndex(int adIndex) {
+    int videoIndex = 0;
+    for (int i = 0; i < adIndex; i++) {
+      if (_advertisements[i].isVideo) videoIndex++;
+    }
+    return videoIndex;
+  }
+
   void _exitScreensaver() {
-    // Stop all videos before exiting
-    for (VideoPlayerController controller in _videoControllers) {
+    for (var controller in _videoControllers) {
       if (controller.value.isInitialized) {
         controller.pause();
       }
     }
-    // Kembali ke main screen ketika di-tap
+
+    _sessionManager.stopMonitoring();
+
     Navigator.of(context).pushReplacementNamed('/main');
   }
 
-  Widget _buildVideoPlayer(int index) {
-    // Always show fallback image if video controller is not properly initialized
-    if (index >= _videoControllers.length ||
-        _videoControllers[index] == null ||
-        !_videoControllers[index].value.isInitialized) {
-      return _buildFallbackImage(index);
+  void _muteAllVideos() {
+    for (var controller in _videoControllers) {
+      if (controller.value.isInitialized) {
+        controller.setVolume(0.0);
+      }
+    }
+    print('🔇 All videos muted');
+  }
+
+  void _unmuteAllVideos() {
+    for (var controller in _videoControllers) {
+      if (controller.value.isInitialized) {
+        controller.setVolume(1.0);
+      }
+    }
+    print('🔊 All videos unmuted');
+  }
+
+  Widget _buildAdPlayer(int index) {
+    if (index >= _advertisements.length) {
+      return _buildPlaceholder('No advertisement');
     }
 
-    VideoPlayerController controller = _videoControllers[index];
+    final ad = _advertisements[index];
 
     return Stack(
       fit: StackFit.expand,
       children: [
-        // Video Player
-        FittedBox(
-          fit: BoxFit.cover,
-          child: SizedBox(
-            width: controller.value.size.width,
-            height: controller.value.size.height,
-            child: VideoPlayer(controller),
-          ),
-        ),
-
-        Positioned(
-          bottom: 0,
-          left: 0,
-          right: 0,
-          child: Container(
-            padding: EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  _getVideoTitle(index),
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 5),
-                Text(
-                  'Touch anywhere to continue',
-                  style: TextStyle(color: Colors.white70, fontSize: 14),
-                ),
-              ],
-            ),
-          ),
-        ),
+        if (ad.isVideo) _buildVideoPlayer(ad) else _buildImagePlayer(ad),
       ],
     );
   }
 
-  Widget _buildFallbackImage(int index) {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        // Fallback image
-        index < _advertisementImages.length
-            ? Image.asset(
-                _advertisementImages[index],
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return _buildErrorPlaceholder(index);
-                },
-              )
-            : _buildErrorPlaceholder(index),
+  Widget _buildVideoPlayer(AdvertisementItem ad) {
+    final videoIndex = _getVideoControllerIndex(_currentAdIndex);
 
-        // Overlay dengan informasi
-        Positioned(
-          bottom: 0,
-          left: 0,
-          right: 0,
-          child: Container(
-            padding: EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  _getVideoTitle(index),
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 5),
-                Text(
-                  'Touch anywhere to continue',
-                  style: TextStyle(color: Colors.white70, fontSize: 14),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
+    if (videoIndex < 0 || videoIndex >= _videoControllers.length) {
+      return _buildPlaceholder('Video not ready');
+    }
+
+    final controller = _videoControllers[videoIndex];
+
+    if (!controller.value.isInitialized) {
+      return const Center(
+        child: CircularProgressIndicator(color: Color(0xFF00B14F)),
+      );
+    }
+
+    return FittedBox(
+      fit: BoxFit.cover,
+      child: SizedBox(
+        width: controller.value.size.width,
+        height: controller.value.size.height,
+        child: VideoPlayer(controller),
+      ),
     );
   }
 
-  Widget _buildErrorPlaceholder(int index) {
+  Widget _buildImagePlayer(AdvertisementItem ad) {
+    print('🖼️ Loading image for ad: ${ad.title}');
+    print('   File URL: ${ad.fileUrl}');
+
+    return FutureBuilder<String?>(
+      future: AdvertisementService.getLocalAdPath(ad),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(color: Color(0xFF00B14F)),
+          );
+        }
+
+        if (snapshot.hasData && snapshot.data != null) {
+          final file = File(snapshot.data!);
+
+          if (!file.existsSync()) {
+            return _buildPlaceholder('Image file not found');
+          }
+
+          return Image.file(
+            file,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              print('❌ Image load error: $error');
+              return _buildPlaceholder('Failed to load image');
+            },
+          );
+        }
+
+        return _buildPlaceholder('Image not available');
+      },
+    );
+  }
+
+  Widget _buildPlaceholder(String message) {
     return Container(
-      color: Colors.grey[800],
+      color: const Color(0xFF1e293b),
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.video_library, size: 100, color: Colors.white54),
-            SizedBox(height: 20),
+            const Icon(
+              Icons.image_not_supported_outlined,
+              size: 100,
+              color: Colors.white30,
+            ),
+            const SizedBox(height: 20),
             Text(
-              _getVideoTitle(index),
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              message,
+              style: const TextStyle(color: Colors.white54, fontSize: 18),
               textAlign: TextAlign.center,
             ),
           ],
@@ -297,148 +427,86 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     );
   }
 
-  String _getVideoTitle(int index) {
-    switch (index) {
-      case 0:
-        return 'Bebas Seenaknya Pasti Diskon';
-      case 1:
-        return 'GrabMart Beauty Ready';
-      default:
-        return 'Advertisement ${index + 1}';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       body: GestureDetector(
         onTap: _exitScreensaver,
-        child: Container(
-          width: double.infinity,
-          height: double.infinity,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color(0xFF1e293b).withOpacity(0.25),
-                Color(0xFF1e40af).withOpacity(0.15),
-                Color(0xFF1f2937).withOpacity(0.25),
-              ],
-            ),
-          ),
-          child: Stack(
-            children: [
-              // Background Image
-              Positioned.fill(
-                child: Image.asset(
-                  'assets/images/background/Background_Color.png',
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(color: Color(0xFF1e293b));
-                  },
-                ),
-              ),
-
-              // Video Slider
-              Positioned.fill(
-                child: PageView.builder(
-                  controller: _pageController,
-                  itemCount: _advertisementVideos.length,
-                  onPageChanged: (index) {
-                    // Stop previous video
-                    if (_videoControllers.isNotEmpty &&
-                        _currentVideoIndex < _videoControllers.length &&
-                        _videoControllers[_currentVideoIndex]
-                            .value
-                            .isInitialized) {
-                      _videoControllers[_currentVideoIndex].pause();
-                    }
-
-                    setState(() {
-                      _currentVideoIndex = index;
-                    });
-
-                    // Start current video
-                    if (_videoControllers.isNotEmpty &&
-                        _currentVideoIndex < _videoControllers.length &&
-                        _videoControllers[_currentVideoIndex]
-                            .value
-                            .isInitialized) {
-                      _videoControllers[_currentVideoIndex].play();
-                    }
-                  },
-                  itemBuilder: (context, index) {
-                    return Container(
-                      margin: EdgeInsets.all(40),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.3),
-                            blurRadius: 20,
-                            spreadRadius: 5,
-                          ),
-                        ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: _buildVideoPlayer(index),
-                      ),
-                    );
-                  },
-                ),
-              ),
-
-              // Header (Logo MaxG)
-              Positioned(top: 0, left: 0, right: 0, child: HeaderWidget()),
-
-              // Page Indicators
-              Positioned(
-                bottom: 100,
-                left: 0,
-                right: 0,
-                child: Row(
+        child: Stack(
+          children: [
+            if (_isLoadingAds)
+              const Center(
+                child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(
-                    _advertisementVideos.length,
-                    (index) => AnimatedContainer(
-                      duration: Duration(milliseconds: 300),
-                      margin: EdgeInsets.symmetric(horizontal: 4),
-                      width: _currentVideoIndex == index ? 30 : 10,
-                      height: 10,
-                      decoration: BoxDecoration(
-                        color: _currentVideoIndex == index
-                            ? Color(0xFF00B14F)
-                            : Colors.white54,
-                        borderRadius: BorderRadius.circular(5),
-                      ),
+                  children: [
+                    CircularProgressIndicator(color: Color(0xFF00B14F)),
+                    SizedBox(height: 20),
+                    Text(
+                      'Loading advertisements...',
+                      style: TextStyle(color: Colors.white, fontSize: 16),
                     ),
-                  ),
+                  ],
                 ),
+              )
+            else if (_advertisements.isEmpty)
+              const Center(
+                child: Text(
+                  'No advertisements available',
+                  style: TextStyle(color: Colors.white, fontSize: 18),
+                ),
+              )
+            else
+              PageView.builder(
+                controller: _pageController,
+                itemCount: _advertisements.length,
+                onPageChanged: (index) {
+                  final currentVideoIndex = _getVideoControllerIndex(
+                    _currentAdIndex,
+                  );
+                  if (currentVideoIndex >= 0 &&
+                      currentVideoIndex < _videoControllers.length) {
+                    _videoControllers[currentVideoIndex].pause();
+                  }
+
+                  setState(() {
+                    _currentAdIndex = index;
+                  });
+
+                  if (_sessionManager.isActive) {
+                    _sessionManager.trackAdView(_advertisements[index].id);
+                  }
+
+                  final nextVideoIndex = _getVideoControllerIndex(
+                    _currentAdIndex,
+                  );
+                  if (nextVideoIndex >= 0 &&
+                      nextVideoIndex < _videoControllers.length) {
+                    _videoControllers[nextVideoIndex].play();
+                  }
+                },
+                itemBuilder: (context, index) {
+                  return _buildAdPlayer(index);
+                },
               ),
 
-              // Time Display
-              Positioned(bottom: 24, right: 24, child: TimeDisplayWidget()),
-
-              // Subtle animation hint
+            if (!_isLoadingAds && _advertisements.isNotEmpty)
               Positioned(
-                bottom: 50,
+                bottom: 40,
                 left: 0,
                 right: 0,
                 child: FadeInUp(
-                  duration: Duration(seconds: 2),
-                  child: Center(
+                  duration: const Duration(seconds: 2),
+                  child: const Center(
                     child: Icon(
                       Icons.touch_app,
-                      color: Colors.white54,
-                      size: 30,
+                      color: Colors.white38,
+                      size: 32,
                     ),
                   ),
                 ),
               ),
-            ],
-          ),
+          ],
         ),
       ),
     );

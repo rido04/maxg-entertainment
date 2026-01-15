@@ -52,14 +52,21 @@ dependencies:
   geolocator: ^10.1.0
   permission_handler: ^11.2.0
   flame: ^1.16.0
-  flame_audio: 2.11.7
+  flame_audio: 2.11.12
   flame_svg: ^1.9.1
   url_launcher: ^6.2.1
-  # audioplayers: ^5.2.1
+  audioplayers: ^6.5.1
   hive: 2.2.3
   hive_flutter: 1.1.0
   cupertino_icons: ^1.0.8
   flutter_native_splash: ^2.3.10
+  uuid: ^4.5.2 # For generating session IDs
+  device_info_plus: ^12.3.0 # For getting device ID
+  google_mlkit_face_detection: ^0.13.1 # For face detection (next step)
+  camera: ^0.10.5+9 # For camera access
+  tflite_flutter: ^0.12.1
+  image: ^4.7.2
+  flutter_tts: ^4.2.5
 
 dev_dependencies:
   flutter_test:
@@ -104,6 +111,9 @@ flutter:
     # video assets
     - assets/video/bebas_seenaknya_grabfood.mp4
     - assets/video/grabmart_beauty_ready.mp4
+    - assets/models/model_age_q.tflite
+    - assets/models/model_gender_q.tflite
+    - assets/audio/greetings/
 
     # dino assetsf
 

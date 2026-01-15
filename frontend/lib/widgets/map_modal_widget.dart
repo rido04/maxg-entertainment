@@ -286,7 +286,6 @@ class _MapModalState extends State<MapModal> with TickerProviderStateMixin {
     final x =
         math.cos(lat1Rad) * math.sin(lat2Rad) -
         math.sin(lat1Rad) * math.cos(lat2Rad) * math.cos(dLng);
-
     double bearing = math.atan2(y, x) * 180 / math.pi;
     return (bearing + 360) % 360;
   }
@@ -424,7 +423,7 @@ class _MapModalState extends State<MapModal> with TickerProviderStateMixin {
                 height: carHeight,
                 fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) {
-                  // Fallback ke icon jika gambar tidak ditemukan
+                  // fallback
                   return _buildFallbackCarIcon(rotation);
                 },
               ),

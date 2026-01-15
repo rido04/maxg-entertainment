@@ -8,7 +8,7 @@ import '../models/news_model.dart';
 
 class NewsApiService {
   static const String baseUrl =
-      'https://maxg.app.medialoger.com';
+      'https://acorned-willis-overneatly.ngrok-free.dev'; // Base URL for the news API
 
   // Get latest news for home page
   Future<NewsListResponse> getLatestNews({

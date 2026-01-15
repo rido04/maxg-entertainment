@@ -1,0 +1,322 @@
+// lib/services/session_manager_service.dart
+
+import 'dart:async';
+import 'package:flutter/material.dart';
+import '../models/passenger_session.dart';
+import '../models/detection_result.dart';
+import '../models/advertisement_item.dart';
+import 'face_detection_service.dart';
+import 'session_log_service.dart';
+import 'greeting_service.dart';
+import 'advertisement_service.dart';
+
+enum SessionState { idle, detected, active, cooldown }
+
+class SessionManagerService {
+  static final SessionManagerService _instance =
+      SessionManagerService._internal();
+  factory SessionManagerService() => _instance;
+  SessionManagerService._internal();
+
+  // State
+  SessionState _state = SessionState.idle;
+  PassengerSession? _currentSession;
+  Timer? _cooldownTimer;
+  Timer? _detectionTimer;
+  List<AdvertisementItem> _currentAds = [];
+  BuildContext? _context;
+  int _consecutiveDetections = 0;
+  String? _lastDetectedGender;
+  final List<String> _recentDetections = [];
+  final int _historySize = 5;
+
+  VoidCallback? _onPauseVideo;
+  VoidCallback? _onResumeVideo;
+
+  // Configuration
+  final Duration sessionTimeout = const Duration(minutes: 3);
+  final Duration detectionInterval = const Duration(seconds: 3);
+  final double confidenceThreshold = 0.65;
+
+  // Callbacks
+  Function(SessionState)? onStateChanged;
+  Function(PassengerSession)? onSessionStarted;
+  Function(PassengerSession)? onSessionEnded;
+  Function(List<AdvertisementItem>)? onAdsUpdated;
+
+  // Getters
+  SessionState get state => _state;
+  PassengerSession? get currentSession => _currentSession;
+  List<AdvertisementItem> get currentAds => _currentAds;
+  bool get isActive =>
+      _state == SessionState.active || _state == SessionState.cooldown;
+
+  void setContext(BuildContext context) {
+    _context = context;
+  }
+
+  void setVideoControls({
+    VoidCallback? onPauseVideo,
+    VoidCallback? onResumeVideo,
+  }) {
+    _onPauseVideo = onPauseVideo;
+    _onResumeVideo = onResumeVideo;
+    print('🎛️ Video controls registered');
+  }
+
+  Future<void> initialize() async {
+    print('🚀 Initializing Session Manager...');
+    await FaceDetectionService.initialize();
+    print('✅ Session Manager initialized');
+  }
+
+  void startMonitoring() {
+    if (_detectionTimer != null && _detectionTimer!.isActive) {
+      print('⚠️ Monitoring already active');
+      return;
+    }
+
+    print('👁️ Starting face detection monitoring...');
+
+    _detectionTimer = Timer.periodic(detectionInterval, (_) async {
+      await _checkForFace();
+    });
+  }
+
+  void stopMonitoring() {
+    _detectionTimer?.cancel();
+    _detectionTimer = null;
+    print('🛑 Monitoring stopped');
+  }
+
+  Future<void> _checkForFace() async {
+    try {
+      final result = await FaceDetectionService.detectAndClassify();
+
+      switch (_state) {
+        case SessionState.idle:
+          if (result.hasFace && result.confidence >= confidenceThreshold) {
+            _recentDetections.add(result.gender);
+            if (_recentDetections.length > _historySize) {
+              _recentDetections.removeAt(0);
+            }
+
+            final majorityGender = _getMajorityGender();
+
+            if (_lastDetectedGender == majorityGender) {
+              _consecutiveDetections++;
+
+              if (_consecutiveDetections >= 2) {
+                final stableResult = DetectionResult.detected(
+                  gender: majorityGender,
+                  ageGroup: result.ageGroup,
+                  confidence: result.confidence,
+                );
+
+                await _startNewSession(stableResult);
+                _consecutiveDetections = 0;
+                _lastDetectedGender = null;
+                _recentDetections.clear();
+              }
+            } else {
+              _lastDetectedGender = majorityGender;
+              _consecutiveDetections = 1;
+            }
+          } else {
+            _consecutiveDetections = 0;
+            _lastDetectedGender = null;
+          }
+          break;
+
+        case SessionState.active:
+          if (result.hasFace) {
+            _resetCooldown();
+          } else {
+            _startCooldown();
+          }
+          break;
+
+        case SessionState.cooldown:
+          if (result.hasFace) {
+            _cancelCooldown();
+            _changeState(SessionState.active);
+          }
+          break;
+
+        case SessionState.detected:
+          break;
+      }
+    } catch (e) {
+      print('❌ Detection check failed: $e');
+    }
+  }
+
+  Future<void> _startNewSession(DetectionResult detection) async {
+    print('🎉 New passenger detected!');
+    _changeState(SessionState.detected);
+
+    _currentSession = PassengerSession.create(
+      gender: detection.gender,
+      ageGroup: detection.ageGroup,
+    );
+
+    _currentSession!.metadata = {
+      'detection_confidence': detection.confidence,
+      'app_version': '1.0.0',
+    };
+
+    print('📝 Session created: ${_currentSession!.sessionId}');
+
+    _onPauseVideo?.call();
+
+    await _playGreetingAndWait(detection); // ← Buat function baru ini
+
+    await _fetchTargetedAds(detection.gender, detection.ageGroup);
+
+    _changeState(SessionState.active);
+    onSessionStarted?.call(_currentSession!);
+
+    _onResumeVideo?.call();
+
+    print('✅ Session started successfully');
+  }
+
+  Future<void> _playGreetingAndWait(DetectionResult detection) async {
+    final completer = Completer<void>();
+
+    if (_context != null) {
+      GreetingService.playGreeting(
+        gender: detection.gender,
+        ageGroup: detection.ageGroup,
+        context: _context,
+        onComplete: () {
+          print('🎵 Greeting finished');
+          completer.complete();
+        },
+      );
+    } else {
+      print('⚠️ Context not available, greeting visual skipped');
+      GreetingService.playGreeting(
+        gender: detection.gender,
+        ageGroup: detection.ageGroup,
+        onComplete: () {
+          completer.complete();
+        },
+      );
+    }
+
+    await completer.future;
+  }
+
+  String _getMajorityGender() {
+    if (_recentDetections.isEmpty) return 'unknown';
+
+    final maleCount = _recentDetections.where((g) => g == 'male').length;
+    final femaleCount = _recentDetections.where((g) => g == 'female').length;
+
+    final majority = maleCount > femaleCount ? 'male' : 'female';
+    final confidence =
+        (maleCount > femaleCount ? maleCount : femaleCount) /
+        _recentDetections.length;
+
+    print(
+      '📊 Gender history: Male=$maleCount, Female=$femaleCount → $majority (${(confidence * 100).toStringAsFixed(0)}%)',
+    );
+
+    return majority;
+  }
+
+  Future<void> _fetchTargetedAds(String gender, String ageGroup) async {
+    try {
+      print('🎯 Fetching targeted ads for $gender, $ageGroup...');
+
+      final ads = await AdvertisementService.fetchAdvertisements(
+        gender: gender,
+        ageGroup: ageGroup,
+      );
+
+      _currentAds = ads;
+      onAdsUpdated?.call(_currentAds);
+
+      print('📺 Loaded ${_currentAds.length} targeted ads');
+    } catch (e) {
+      print('❌ Failed to fetch ads: $e');
+      _currentAds = [];
+    }
+  }
+
+  void trackAdView(int adId) {
+    if (_currentSession != null && _state == SessionState.active) {
+      _currentSession!.trackAdView(adId);
+      print('👁️ Ad viewed: $adId (Total: ${_currentSession!.adViewCount})');
+    }
+  }
+
+  void _startCooldown() {
+    if (_state == SessionState.cooldown) return;
+
+    print(
+      '⏳ No face detected, starting ${sessionTimeout.inMinutes}min cooldown...',
+    );
+    _changeState(SessionState.cooldown);
+
+    _cooldownTimer = Timer(sessionTimeout, () {
+      _endSession();
+    });
+  }
+
+  void _resetCooldown() {
+    _cooldownTimer?.cancel();
+    _cooldownTimer = null;
+  }
+
+  void _cancelCooldown() {
+    print('👤 Face detected again, session continues');
+    _resetCooldown();
+  }
+
+  Future<void> _endSession() async {
+    if (_currentSession == null) return;
+
+    print('📊 Ending session: ${_currentSession!.sessionId}');
+
+    _currentSession!.end();
+
+    final success = await SessionLogService.sendLog(_currentSession!);
+
+    if (success) {
+      print('✅ Session logged successfully');
+    } else {
+      print('⚠️ Session logged to queue (will retry later)');
+    }
+
+    onSessionEnded?.call(_currentSession!);
+
+    _currentSession = null;
+    _currentAds = [];
+    _changeState(SessionState.idle);
+
+    print('🔄 Back to idle state');
+  }
+
+  void _changeState(SessionState newState) {
+    if (_state == newState) return;
+
+    print('🔄 State: $_state → $newState');
+    _state = newState;
+    onStateChanged?.call(_state);
+  }
+
+  Future<void> forceEndSession() async {
+    _resetCooldown();
+    await _endSession();
+  }
+
+  void dispose() {
+    stopMonitoring();
+    _resetCooldown();
+    _currentSession = null;
+    _currentAds = [];
+    print('🔴 Session Manager disposed');
+  }
+}

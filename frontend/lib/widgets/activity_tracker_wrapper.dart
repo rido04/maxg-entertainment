@@ -81,8 +81,8 @@ class _ActivityTrackerWrapperState extends State<ActivityTrackerWrapper>
       child: GestureDetector(
         // Mendeteksi gesture
         onTap: _onUserActivity,
-        onPanStart: (_) => _onUserActivity(),
-        onPanUpdate: (_) => _onUserActivity(),
+        // onPanStart: (_) => _onUserActivity(),
+        // onPanUpdate: (_) => _onUserActivity(),
         onScaleStart: (_) => _onUserActivity(),
         onScaleUpdate: (_) => _onUserActivity(),
         behavior: HitTestBehavior.translucent,

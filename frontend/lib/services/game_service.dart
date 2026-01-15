@@ -49,7 +49,7 @@ class GameModel {
 
 class GameService {
   static const String baseUrl =
-      'http://your-laravel-backend.com'; // Ganti dengan URL backend kamu
+      'https://stateless-audrianna-unstingingly.ngrok-free.dev'; // Ganti dengan URL backend kamu
 
   // Static data sebagai fallback atau untuk testing
   static List<GameModel> _getLocalGames() {
