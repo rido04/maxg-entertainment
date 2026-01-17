@@ -38,6 +38,8 @@ class _VideosScreenState extends State<VideosScreen>
   List<String> _availableTypes = ['All'];
   List<MediaItem> _allVideoItems = [];
   final ScrollController _scrollController = ScrollController();
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
 
   int _getActiveFiltersCount() {
     int count = 0;
@@ -107,16 +109,35 @@ class _VideosScreenState extends State<VideosScreen>
 
   List<MediaItem> _applyFilters(List<MediaItem> items) {
     return items.where((item) {
+      // Search filter
+      if (_searchQuery.isNotEmpty) {
+        final query = _searchQuery.toLowerCase();
+        final titleMatch = item.title.toLowerCase().contains(query);
+        final categoryMatch = (item.category ?? '').toLowerCase().contains(
+          query,
+        );
+        final descriptionMatch = (item.description ?? '')
+            .toLowerCase()
+            .contains(query);
+
+        if (!titleMatch && !categoryMatch && !descriptionMatch) {
+          return false;
+        }
+      }
+
+      // Category filter
       if (_selectedCategory != 'All' &&
           (item.category == null || item.category != _selectedCategory)) {
         return false;
       }
 
+      // Type filter
       if (_selectedType != 'All' &&
           (item.type == null || item.type != _selectedType)) {
         return false;
       }
 
+      // Rating filter
       if (item.numericRating < _minRating) {
         return false;
       }
@@ -131,6 +152,8 @@ class _VideosScreenState extends State<VideosScreen>
       _selectedType = 'All';
       _minRating = 0.0;
       _showOnlyDownloaded = false;
+      _searchQuery = '';
+      _searchController.clear();
     });
   }
 
@@ -187,6 +210,7 @@ class _VideosScreenState extends State<VideosScreen>
     _animationController.dispose();
     _thumbnailAnimationController.dispose();
     _scrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -440,19 +464,41 @@ class _VideosScreenState extends State<VideosScreen>
                 ],
               ),
               child: TextField(
+                controller: _searchController,
                 style: TextStyle(color: Colors.grey[800]),
                 decoration: InputDecoration(
                   hintText: 'Lagi mau nonton apa nih?...',
                   hintStyle: TextStyle(color: Colors.grey[500]),
                   prefixIcon: Icon(Icons.search, color: Color(0xFF00B14F)),
+                  suffixIcon: _searchQuery.isNotEmpty
+                      ? IconButton(
+                          icon: Icon(Icons.clear, color: Colors.grey[600]),
+                          onPressed: () {
+                            setState(() {
+                              _searchController.clear();
+                              _searchQuery = '';
+                              _currentPage = 1;
+                            });
+                          },
+                        )
+                      : null,
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 12,
                   ),
                 ),
+                onChanged: (value) {
+                  setState(() {
+                    _searchQuery = value;
+                    _currentPage = 1; // Reset to first page on search
+                  });
+                },
                 onSubmitted: (value) {
-                  // Handle search
+                  setState(() {
+                    _searchQuery = value;
+                    _currentPage = 1;
+                  });
                 },
               ),
             ),
@@ -750,35 +796,82 @@ class _VideosScreenState extends State<VideosScreen>
   Widget _buildListHeader(List<MediaItem> filteredItems) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 4,
-            height: 24,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFFF0B513), Color(0xFFF5D271)],
+          Row(
+            children: [
+              Container(
+                width: 4,
+                height: 24,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFFF0B513), Color(0xFFF5D271)],
+                  ),
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
-              borderRadius: BorderRadius.circular(2),
-            ),
+              const SizedBox(width: 12),
+              Text(
+                _searchQuery.isNotEmpty ? 'Hasil Pencarian' : 'List semua film',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '${filteredItems.length} movies',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.7),
+                  fontSize: 14,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 12),
-          Text(
-            'List semua film',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+          // Show search query if active
+          if (_searchQuery.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Color(0xFFF0B513).withOpacity(0.5)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.search, size: 14, color: Color(0xFFF0B513)),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Searching: "$_searchQuery"',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.9),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _searchQuery = '';
+                        _searchController.clear();
+                        _currentPage = 1;
+                      });
+                    },
+                    child: Icon(
+                      Icons.close,
+                      size: 14,
+                      color: Colors.white.withOpacity(0.7),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          const Spacer(),
-          Text(
-            '${filteredItems.length} movies',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.7),
-              fontSize: 14,
-            ),
-          ),
+          ],
         ],
       ),
     );
@@ -896,7 +989,7 @@ class _VideosScreenState extends State<VideosScreen>
                                 ),
                                 const SizedBox(width: 6),
                                 Text(
-                                  (media.duration?.toString() ?? 'Live'),
+                                  _getDurationText(media),
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: isHovered
@@ -1451,6 +1544,28 @@ class _VideosScreenState extends State<VideosScreen>
       default:
         return 'VIDEO • MP4';
     }
+  }
+
+  String _getDurationText(MediaItem media) {
+    if (media.duration == null) return 'Live';
+
+    // Handle if duration is int (minutes)
+    if (media.duration is int) {
+      final minutes = media.duration as int;
+      if (minutes >= 60) {
+        final hours = minutes ~/ 60;
+        final mins = minutes % 60;
+        return '${hours}h ${mins}m';
+      }
+      return '${minutes}m';
+    }
+
+    // Handle if duration is String
+    if (media.duration is String) {
+      return media.duration as String;
+    }
+
+    return 'Live';
   }
 
   Future<void> _handleMediaTap(MediaItem media) async {

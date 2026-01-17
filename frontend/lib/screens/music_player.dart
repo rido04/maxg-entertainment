@@ -1,10 +1,10 @@
-// lib/screens/music_player.dart - Updated dengan ActivityTrackerWrapper
+// lib/screens/music_player.dart - Updated with Blade template styling
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import '../models/media_item.dart';
 import '../services/music_service.dart';
 import '../services/global_audio_service.dart';
-import '../widgets/activity_tracker_wrapper.dart'; // Import wrapper
+import '../widgets/activity_tracker_wrapper.dart';
 
 class MusicPlayer extends StatefulWidget {
   final MediaItem music;
@@ -21,35 +21,27 @@ class _MusicPlayerScreenState extends State<MusicPlayer>
   final GlobalAudioService _globalAudioService = GlobalAudioService();
   bool _isLoading = true;
   bool _isOfflineMode = false;
-  late AnimationController _rotationController;
-  late AnimationController _scaleController;
+  late AnimationController _pulseController;
 
   @override
   void initState() {
     super.initState();
-    _rotationController = AnimationController(
-      duration: const Duration(seconds: 10),
+    _pulseController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
       vsync: this,
-    );
-    _scaleController = AnimationController(
-      duration: const Duration(milliseconds: 200),
-      vsync: this,
-    );
+    )..repeat();
     _initializePlayer();
   }
 
   Future<void> _initializePlayer() async {
     try {
-      // Check if this music is already playing
       if (_globalAudioService.currentMusic?.id == widget.music.id) {
-        // Music is already loaded in global service
         final localPath = await _musicService.getLocalMusicPath(widget.music);
         setState(() {
           _isOfflineMode = localPath != null;
           _isLoading = false;
         });
       } else {
-        // Load new music in global service
         await _globalAudioService.playMusic(widget.music);
         final localPath = await _musicService.getLocalMusicPath(widget.music);
         setState(() {
@@ -57,52 +49,19 @@ class _MusicPlayerScreenState extends State<MusicPlayer>
           _isLoading = false;
         });
       }
-
-      // Listen to player state changes for rotation animation
-      _globalAudioService.playerStateStream.listen((state) {
-        if (mounted) {
-          if (state.playing) {
-            _rotationController.repeat();
-          } else {
-            _rotationController.stop();
-          }
-        }
-      });
     } catch (e) {
       if (mounted) {
         setState(() {
           _isLoading = false;
         });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.error, color: Colors.red),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'Failed to load audio: $e',
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                ),
-              ],
-            ),
-            backgroundColor: const Color(0xFF282828),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-        );
+        _showErrorSnackBar('Failed to load audio: $e');
       }
     }
   }
 
   @override
   void dispose() {
-    _rotationController.dispose();
-    _scaleController.dispose();
+    _pulseController.dispose();
     super.dispose();
   }
 
@@ -129,114 +88,27 @@ class _MusicPlayerScreenState extends State<MusicPlayer>
     final isTablet = screenWidth > 600;
 
     return ActivityTrackerWrapper(
-      screenName:
-          'MusicPlayer', // Music player tidak di-whitelist, jadi timer tetap berjalan
+      screenName: 'MusicPlayer',
       child: Scaffold(
-        backgroundColor: const Color(0xFF121212),
         body: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                const Color(0xFF1DB954).withOpacity(0.3),
-                const Color(0xFF121212),
-                const Color(0xFF000000),
-              ],
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage(
+                'assets/images/background/Background_Color.png',
+              ),
+              fit: BoxFit.cover,
             ),
           ),
           child: SafeArea(
             child: Column(
               children: [
-                // Custom App Bar
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: IconButton(
-                          icon: const Icon(
-                            Icons.keyboard_arrow_down,
-                            color: Colors.white,
-                            size: 28,
-                          ),
-                          onPressed: () => Navigator.pop(context),
-                        ),
-                      ),
-                      const Spacer(),
-                      // Logo placeholder di header
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Icon(
-                          Icons.music_note,
-                          color: Colors.white,
-                          size: 24,
-                        ),
-                      ),
-                      const Spacer(),
-                      // Online/Offline indicator
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: _isOfflineMode
-                              ? const Color(0xFF1DB954).withOpacity(0.2)
-                              : Colors.blue.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: _isOfflineMode
-                                ? const Color(0xFF1DB954)
-                                : Colors.blue,
-                            width: 1,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              _isOfflineMode ? Icons.offline_pin : Icons.cloud,
-                              size: 16,
-                              color: _isOfflineMode
-                                  ? const Color(0xFF1DB954)
-                                  : Colors.blue,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              _isOfflineMode ? 'Offline' : 'Online',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                                color: _isOfflineMode
-                                    ? const Color(0xFF1DB954)
-                                    : Colors.blue,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                // Header
+                _buildHeader(),
 
                 // Main Content
                 Expanded(
                   child: _isLoading
-                      ? const Center(
-                          child: CircularProgressIndicator(
-                            color: Color(0xFF1DB954),
-                          ),
-                        )
+                      ? _buildLoadingState()
                       : AnimatedBuilder(
                           animation: _globalAudioService,
                           builder: (context, child) {
@@ -254,12 +126,71 @@ class _MusicPlayerScreenState extends State<MusicPlayer>
     );
   }
 
-  Widget _buildPortraitLayout(bool isTablet) {
+  Widget _buildHeader() {
     return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Row(
+        children: [
+          // Back Button
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.grey[200]?.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: IconButton(
+              icon: Icon(
+                Icons.keyboard_arrow_down,
+                color: Colors.grey[200],
+                size: 28,
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+          const Spacer(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: const Color(0xFF22C55E).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(30),
+            ),
+            child: const Center(
+              child: CircularProgressIndicator(
+                color: Color(0xFF22C55E),
+                strokeWidth: 3,
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Loading...',
+            style: TextStyle(
+              color: Colors.grey[200],
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPortraitLayout(bool isTablet) {
+    return SingleChildScrollView(
       padding: EdgeInsets.all(isTablet ? 32.0 : 24.0),
       child: Column(
         children: [
-          const Spacer(),
+          const SizedBox(height: 20),
 
           // Album Art
           _buildAlbumArt(isTablet ? 280 : 240),
@@ -269,22 +200,36 @@ class _MusicPlayerScreenState extends State<MusicPlayer>
           // Music Info
           _buildMusicInfo(isTablet),
 
-          SizedBox(height: isTablet ? 48 : 40),
+          SizedBox(height: isTablet ? 32 : 24),
+
+          // Control Buttons Row
+          _buildControlButtonsRow(isTablet),
+
+          SizedBox(height: isTablet ? 32 : 24),
+
+          // Volume Control
+          _buildVolumeControl(),
+
+          SizedBox(height: isTablet ? 32 : 24),
 
           // Progress Bar
           _buildProgressBar(),
 
           SizedBox(height: isTablet ? 48 : 40),
 
-          // Control Buttons
-          _buildControlButtons(isTablet),
+          // Main Play Button
+          _buildMainPlayButton(isTablet),
 
-          SizedBox(height: isTablet ? 32 : 24),
+          const SizedBox(height: 40),
+
+          // Song Details
+          if (widget.music.description != null) ...[
+            _buildSongDetails(isTablet),
+            const SizedBox(height: 24),
+          ],
 
           // Download Section
           _buildDownloadSection(),
-
-          const Spacer(),
         ],
       ),
     );
@@ -306,17 +251,21 @@ class _MusicPlayerScreenState extends State<MusicPlayer>
           // Right side - Controls
           Expanded(
             flex: 1,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _buildMusicInfo(isTablet),
-                SizedBox(height: isTablet ? 32 : 24),
-                _buildProgressBar(),
-                SizedBox(height: isTablet ? 32 : 24),
-                _buildControlButtons(isTablet),
-                SizedBox(height: isTablet ? 24 : 16),
-                _buildDownloadSection(),
-              ],
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildMusicInfo(isTablet),
+                  SizedBox(height: isTablet ? 24 : 16),
+                  _buildControlButtonsRow(isTablet),
+                  SizedBox(height: isTablet ? 24 : 16),
+                  _buildVolumeControl(),
+                  SizedBox(height: isTablet ? 24 : 16),
+                  _buildProgressBar(),
+                  SizedBox(height: isTablet ? 24 : 16),
+                  _buildMainPlayButton(isTablet),
+                ],
+              ),
             ),
           ),
         ],
@@ -325,75 +274,199 @@ class _MusicPlayerScreenState extends State<MusicPlayer>
   }
 
   Widget _buildAlbumArt(double size) {
-    return AnimatedBuilder(
-      animation: _rotationController,
-      builder: (context, child) {
-        return Transform.rotate(
-          angle: _rotationController.value * 2 * 3.14159,
-          child: Container(
-            width: size,
-            height: size,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: const LinearGradient(
-                colors: [
-                  Color(0xFF1DB954),
-                  Color(0xFF1ED760),
-                  Color(0xFF1DB954),
-                ],
-              ),
-            ),
-            child: Center(
-              child: SizedBox(
-                width: 100,
-                height: 100,
-                child: Image.asset(
-                  'assets/images/logo/Logo-MaxG-White.gif',
-                  fit: BoxFit.contain,
-                ),
-              ),
-            ),
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF3B82F6), Color(0xFF1E3A8A), Color(0xFF22C55E)],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.5),
+            blurRadius: 30,
+            offset: const Offset(0, 15),
           ),
-        );
-      },
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child:
+            widget.music.thumbnail != null && widget.music.thumbnail!.isNotEmpty
+            ? Image.network(
+                widget.music.thumbnail!,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) =>
+                    _buildAlbumPlaceholder(),
+              )
+            : _buildAlbumPlaceholder(),
+      ),
+    );
+  }
+
+  Widget _buildAlbumPlaceholder() {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF22C55E), Color(0xFFD97706)],
+        ),
+      ),
+      child: const Center(
+        child: Icon(Icons.music_note_rounded, color: Colors.white, size: 80),
+      ),
     );
   }
 
   Widget _buildMusicInfo(bool isTablet) {
     return Column(
       children: [
+        // Song Type Badge
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'SONG',
+                style: TextStyle(
+                  color: Colors.grey[200]?.withOpacity(0.9),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1.5,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        // Title
         Text(
           widget.music.title,
           style: TextStyle(
-            color: Colors.white,
-            fontSize: isTablet ? 28 : 24,
-            fontWeight: FontWeight.bold,
+            color: Colors.grey[100],
+            fontSize: isTablet ? 32 : 28,
+            fontWeight: FontWeight.w900,
+            height: 1.2,
           ),
           textAlign: TextAlign.center,
-          maxLines: 2,
+          maxLines: 3,
           overflow: TextOverflow.ellipsis,
         ),
-        const SizedBox(height: 8),
-        Text(
-          widget.music.artist ?? 'Unknown Artist',
-          style: TextStyle(
-            color: Colors.white.withOpacity(0.7),
-            fontSize: isTablet ? 18 : 16,
-            fontWeight: FontWeight.w500,
-          ),
-          textAlign: TextAlign.center,
+        const SizedBox(height: 12),
+        // Artist & Album
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (widget.music.artist != null) ...[
+              Text(
+                widget.music.artist!,
+                style: TextStyle(
+                  color: Colors.grey[200]?.withOpacity(0.9),
+                  fontSize: isTablet ? 16 : 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+            if (widget.music.album != null) ...[
+              Text(
+                ' • ',
+                style: TextStyle(
+                  color: Colors.grey[200]?.withOpacity(0.7),
+                  fontSize: isTablet ? 16 : 14,
+                ),
+              ),
+              Text(
+                widget.music.album!,
+                style: TextStyle(
+                  color: Colors.grey[200]?.withOpacity(0.7),
+                  fontSize: isTablet ? 16 : 14,
+                ),
+              ),
+            ],
+          ],
         ),
-        if (widget.music.album != null) ...[
-          const SizedBox(height: 4),
+        if (widget.music.duration != null) ...[
+          const SizedBox(height: 8),
           Text(
-            widget.music.album!,
+            _formatDuration(Duration(seconds: widget.music.duration!)),
             style: TextStyle(
-              color: Colors.white.withOpacity(0.5),
-              fontSize: isTablet ? 16 : 14,
+              color: Colors.grey[200]?.withOpacity(0.7),
+              fontSize: isTablet ? 14 : 12,
             ),
-            textAlign: TextAlign.center,
           ),
         ],
+      ],
+    );
+  }
+
+  Widget _buildControlButtonsRow(bool isTablet) {
+    return StreamBuilder<PlayerState>(
+      stream: _globalAudioService.playerStateStream,
+      builder: (context, snapshot) {
+        final state = snapshot.data;
+        final playing = state?.playing ?? false;
+
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Previous button
+            Container(
+              width: isTablet ? 48 : 40,
+              height: isTablet ? 48 : 40,
+              decoration: BoxDecoration(
+                color: const Color(0xFF6B7280),
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: IconButton(
+                iconSize: isTablet ? 24 : 20,
+                icon: const Icon(
+                  Icons.skip_previous_rounded,
+                  color: Colors.white,
+                ),
+                onPressed: () {
+                  _globalAudioService.seek(Duration.zero);
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildVolumeControl() {
+    return Row(
+      children: [
+        Icon(Icons.volume_up, color: Colors.grey[200], size: 20),
+        const SizedBox(width: 12),
+        Expanded(
+          child: SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              activeTrackColor: const Color(0xFF22C55E),
+              inactiveTrackColor: Colors.white.withOpacity(0.3),
+              thumbColor: const Color(0xFF22C55E),
+              overlayColor: const Color(0xFF22C55E).withOpacity(0.2),
+              thumbShape: const RoundSliderThumbShape(
+                enabledThumbRadius: 6,
+                elevation: 0,
+              ),
+              trackHeight: 4,
+            ),
+            child: Slider(
+              value: _globalAudioService.player.volume,
+              onChanged: (value) {
+                _globalAudioService.player.setVolume(value);
+              },
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -407,50 +480,44 @@ class _MusicPlayerScreenState extends State<MusicPlayer>
 
         return Column(
           children: [
-            SliderTheme(
-              data: SliderTheme.of(context).copyWith(
-                activeTrackColor: const Color(0xFF1DB954),
-                inactiveTrackColor: Colors.white.withOpacity(0.3),
-                thumbColor: const Color(0xFF1DB954),
-                overlayColor: const Color(0xFF1DB954).withOpacity(0.2),
-                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-                trackHeight: 4,
-              ),
-              child: Slider(
-                value: duration.inMilliseconds > 0
-                    ? position.inMilliseconds / duration.inMilliseconds
-                    : 0.0,
-                onChanged: (value) {
-                  final newPosition = Duration(
-                    milliseconds: (value * duration.inMilliseconds).round(),
-                  );
-                  _globalAudioService.seek(newPosition);
-                },
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  _formatDuration(position),
+                  style: TextStyle(color: Colors.grey[200], fontSize: 12),
+                ),
+                Text(
+                  _formatDuration(duration),
+                  style: TextStyle(color: Colors.grey[200], fontSize: 12),
+                ),
+              ],
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    _formatDuration(position),
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
+            const SizedBox(height: 8),
+            Stack(
+              children: [
+                Container(
+                  width: double.infinity,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(3),
                   ),
-                  Text(
-                    _formatDuration(duration),
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
+                ),
+                Container(
+                  width: duration.inMilliseconds > 0
+                      ? MediaQuery.of(context).size.width *
+                            (position.inMilliseconds / duration.inMilliseconds)
+                      : 0,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF22C55E), Color(0xFFD97706)],
                     ),
+                    borderRadius: BorderRadius.circular(3),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ],
         );
@@ -458,7 +525,7 @@ class _MusicPlayerScreenState extends State<MusicPlayer>
     );
   }
 
-  Widget _buildControlButtons(bool isTablet) {
+  Widget _buildMainPlayButton(bool isTablet) {
     return StreamBuilder<PlayerState>(
       stream: _globalAudioService.playerStateStream,
       builder: (context, snapshot) {
@@ -467,95 +534,99 @@ class _MusicPlayerScreenState extends State<MusicPlayer>
 
         if (state?.processingState == ProcessingState.loading ||
             state?.processingState == ProcessingState.buffering) {
-          return const CircularProgressIndicator(color: Color(0xFF1DB954));
+          return const CircularProgressIndicator(color: Color(0xFF22C55E));
         }
 
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Previous button
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(25),
-              ),
-              child: IconButton(
-                iconSize: isTablet ? 32 : 28,
-                icon: const Icon(
-                  Icons.skip_previous_rounded,
-                  color: Colors.white,
-                ),
-                onPressed: () {
-                  _globalAudioService.seek(Duration.zero);
-                },
-              ),
-            ),
-
-            SizedBox(width: isTablet ? 32 : 24),
-
-            // Play/Pause button
-            GestureDetector(
-              onTapDown: (_) => _scaleController.forward(),
-              onTapUp: (_) => _scaleController.reverse(),
-              onTapCancel: () => _scaleController.reverse(),
-              child: AnimatedBuilder(
-                animation: _scaleController,
-                builder: (context, child) {
-                  return Transform.scale(
-                    scale: 1.0 - (_scaleController.value * 0.1),
-                    child: Container(
-                      width: isTablet ? 80 : 70,
-                      height: isTablet ? 80 : 70,
+        return GestureDetector(
+          onTap: playing ? _globalAudioService.pause : _globalAudioService.play,
+          child: AnimatedBuilder(
+            animation: _pulseController,
+            builder: (context, child) {
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Pulse ring
+                  if (playing)
+                    Container(
+                      width:
+                          (isTablet ? 80 : 70) *
+                          (1 + _pulseController.value * 0.2),
+                      height:
+                          (isTablet ? 80 : 70) *
+                          (1 + _pulseController.value * 0.2),
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF1DB954), Color(0xFF1ED760)],
-                        ),
                         shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF1DB954).withOpacity(0.4),
-                            blurRadius: 15,
-                            spreadRadius: 2,
-                          ),
-                        ],
-                      ),
-                      child: IconButton(
-                        iconSize: isTablet ? 40 : 35,
-                        color: Colors.white,
-                        icon: Icon(
-                          playing
-                              ? Icons.pause_rounded
-                              : Icons.play_arrow_rounded,
+                        border: Border.all(
+                          color: const Color(
+                            0xFF22C55E,
+                          ).withOpacity(1 - _pulseController.value),
+                          width: 2,
                         ),
-                        onPressed: playing
-                            ? _globalAudioService.pause
-                            : _globalAudioService.play,
                       ),
                     ),
-                  );
-                },
-              ),
-            ),
-
-            SizedBox(width: isTablet ? 32 : 24),
-
-            // Next button
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(25),
-              ),
-              child: IconButton(
-                iconSize: isTablet ? 32 : 28,
-                icon: const Icon(Icons.skip_next_rounded, color: Colors.white),
-                onPressed: () {
-                  // Implement next track functionality if needed
-                },
-              ),
-            ),
-          ],
+                  // Main button
+                  Container(
+                    width: isTablet ? 80 : 70,
+                    height: isTablet ? 80 : 70,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF22C55E), Color(0xFFD97706)],
+                      ),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF22C55E).withOpacity(0.4),
+                          blurRadius: 20,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                      color: Colors.white,
+                      size: isTablet ? 40 : 35,
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
         );
       },
+    );
+  }
+
+  Widget _buildSongDetails(bool isTablet) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.6),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.withOpacity(0.2), width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'About This Song',
+            style: TextStyle(
+              color: const Color(0xFF1F2937),
+              fontSize: isTablet ? 18 : 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            widget.music.description!,
+            style: TextStyle(
+              color: const Color(0xFF374151),
+              fontSize: isTablet ? 16 : 14,
+              height: 1.6,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -566,12 +637,11 @@ class _MusicPlayerScreenState extends State<MusicPlayer>
         final isDownloaded = snapshot.data ?? false;
 
         return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16),
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withOpacity(0.6),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+            border: Border.all(color: Colors.grey.withOpacity(0.2), width: 1),
           ),
           child: Row(
             children: [
@@ -579,8 +649,8 @@ class _MusicPlayerScreenState extends State<MusicPlayer>
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: isDownloaded
-                      ? const Color(0xFF1DB954).withOpacity(0.2)
-                      : Colors.white.withOpacity(0.1),
+                      ? const Color(0xFF22C55E).withOpacity(0.2)
+                      : Colors.white.withOpacity(0.5),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
@@ -588,8 +658,8 @@ class _MusicPlayerScreenState extends State<MusicPlayer>
                       ? Icons.download_done_rounded
                       : Icons.cloud_download_outlined,
                   color: isDownloaded
-                      ? const Color(0xFF1DB954)
-                      : Colors.white.withOpacity(0.7),
+                      ? const Color(0xFF22C55E)
+                      : const Color(0xFF6B7280),
                   size: 24,
                 ),
               ),
@@ -601,7 +671,7 @@ class _MusicPlayerScreenState extends State<MusicPlayer>
                     Text(
                       isDownloaded ? 'Downloaded' : 'Not Downloaded',
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: Color(0xFF1F2937),
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
@@ -612,7 +682,7 @@ class _MusicPlayerScreenState extends State<MusicPlayer>
                           ? 'Available for offline playback'
                           : 'Download for offline access',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.7),
+                        color: const Color(0xFF6B7280),
                         fontSize: 14,
                       ),
                     ),
@@ -622,13 +692,13 @@ class _MusicPlayerScreenState extends State<MusicPlayer>
               if (!isDownloaded)
                 Container(
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1DB954).withOpacity(0.2),
+                    color: const Color(0xFF22C55E).withOpacity(0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: IconButton(
                     icon: const Icon(
                       Icons.download_rounded,
-                      color: Color(0xFF1DB954),
+                      color: Color(0xFF22C55E),
                     ),
                     onPressed: _downloadMusic,
                   ),
@@ -646,18 +716,18 @@ class _MusicPlayerScreenState extends State<MusicPlayer>
         context: context,
         barrierDismissible: false,
         builder: (context) => AlertDialog(
-          backgroundColor: const Color(0xFF282828),
+          backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const CircularProgressIndicator(color: Color(0xFF1DB954)),
+              const CircularProgressIndicator(color: Color(0xFF22C55E)),
               const SizedBox(height: 20),
               Text(
                 'Downloading ${widget.music.title}...',
-                style: const TextStyle(color: Colors.white, fontSize: 16),
+                style: const TextStyle(color: Color(0xFF1F2937), fontSize: 16),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -674,15 +744,15 @@ class _MusicPlayerScreenState extends State<MusicPlayer>
         const SnackBar(
           content: Row(
             children: [
-              Icon(Icons.check_circle, color: Color(0xFF1DB954)),
+              Icon(Icons.check_circle, color: Color(0xFF22C55E)),
               SizedBox(width: 12),
               Text(
                 'Download completed!',
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(color: Color(0xFF1F2937)),
               ),
             ],
           ),
-          backgroundColor: Color(0xFF282828),
+          backgroundColor: Colors.white,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -690,25 +760,28 @@ class _MusicPlayerScreenState extends State<MusicPlayer>
       setState(() {});
     } catch (e) {
       Navigator.of(context).pop();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const Icon(Icons.error, color: Colors.red),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  'Download failed: $e',
-                  style: const TextStyle(color: Colors.white),
-                ),
-              ),
-            ],
-          ),
-          backgroundColor: const Color(0xFF282828),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      _showErrorSnackBar('Download failed: $e');
     }
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.error, color: Colors.red),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(color: Color(0xFF1F2937)),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.white,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 }

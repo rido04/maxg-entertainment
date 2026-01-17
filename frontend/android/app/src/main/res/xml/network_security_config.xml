@@ -10,7 +10,7 @@
     
     <!-- Specific domain config -->
     <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">maxg.app.medialoger.com</domain>
+        <domain includeSubdomains="true">acorned-willis-overneatly.ngrok-free.dev</domain>
         <trust-anchors>
             <certificates src="system" />
             <certificates src="user" />
