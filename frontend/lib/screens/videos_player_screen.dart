@@ -1,11 +1,8 @@
-// lib/screens/video_player_screen.dart - Updated dengan ActivityTrackerWrapper
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
-import 'package:path_provider/path_provider.dart';
 import '../models/media_item.dart';
 import '../services/storage_service.dart';
-import '../widgets/activity_tracker_wrapper.dart'; // Import wrapper
 import 'dart:io';
 
 class VideoPlayerScreen extends StatefulWidget {
@@ -25,8 +22,6 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   String _errorMessage = '';
   bool _showControls = true;
   bool _isPlaying = false;
-  bool _isFullScreen = false;
-  bool _isUsingLocalFile = false;
 
   // Animation controllers
   late AnimationController _controlsAnimationController;
@@ -40,9 +35,15 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   @override
   void initState() {
     super.initState();
+    _setFullscreen();
     _initializeAnimations();
     _initializeVideoPlayer();
     _hideControlsTimer();
+  }
+
+  void _setFullscreen() {
+    // Force immersive fullscreen
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   }
 
   void _initializeAnimations() {
@@ -64,289 +65,56 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       setState(() {
         _isLoading = true;
         _hasError = false;
-        _errorMessage = '';
       });
-
-      _controller?.dispose();
-      _controller = null;
 
       String videoPath;
       final filename = widget.mediaItem.localFileName;
 
-      print('🎬 Initializing video: $filename');
-      print('🔍 Looking for local file with ID-based name: $filename');
-      print(
-        '🌐 Original filename from URL: ${widget.mediaItem.downloadUrl.split('/').last}',
-      );
-
+      // Check if video is downloaded locally
       final isDownloaded = await StorageService.isMediaDownloaded(filename);
-      print('📱 Is downloaded locally: $isDownloaded');
 
       if (isDownloaded) {
         videoPath = await StorageService.getLocalFilePath(filename);
-        print('📁 Local path: $videoPath');
-
-        final file = File(videoPath);
-        final exists = await file.exists();
-        final fileSize = exists ? await file.length() : 0;
-
-        print('📄 File exists: $exists, Size: ${fileSize}KB');
-
-        if (!exists || fileSize == 0) {
-          print('❌ Local file invalid, falling back to network');
-          throw Exception('Local file not found or empty');
-        }
-
-        try {
-          final canRead = await file.readAsBytes();
-          print('✅ File is readable, size: ${canRead.length} bytes');
-        } catch (e) {
-          print('❌ Cannot read file: $e');
-          throw Exception('Cannot read local file: $e');
-        }
-
-        _controller = VideoPlayerController.file(file);
-        _isUsingLocalFile = true;
-        print('🎮 Created local file controller');
+        _controller = VideoPlayerController.file(File(videoPath));
       } else {
+        // Stream from network
         videoPath = widget.mediaItem.downloadUrl;
-        print('🌐 Streaming from network: $videoPath');
-
-        if (!videoPath.startsWith('http')) {
-          throw Exception('Invalid network URL: $videoPath');
-        }
-
         _controller = VideoPlayerController.networkUrl(Uri.parse(videoPath));
-        _isUsingLocalFile = false;
-        print('🎮 Created network controller');
       }
 
-      print('⏳ Initializing controller...');
-
-      await _controller!.initialize().timeout(
-        const Duration(seconds: 30),
-        onTimeout: () {
-          throw Exception('Video initialization timeout after 30 seconds');
-        },
-      );
-
-      if (!_controller!.value.isInitialized) {
-        throw Exception('Controller initialization failed');
-      }
-
-      if (_controller!.value.hasError) {
-        throw Exception(
-          'Controller error: ${_controller!.value.errorDescription}',
-        );
-      }
-
-      print('✅ Video initialized successfully');
-      print('📊 Duration: ${_controller!.value.duration}');
-      print('📐 Aspect ratio: ${_controller!.value.aspectRatio}');
+      await _controller!.initialize();
 
       setState(() {
         _isLoading = false;
         _duration = _controller!.value.duration;
       });
 
+      // Listen to video updates
       _controller!.addListener(_videoListener);
 
-      await _controller!.play();
+      // Auto play
+      _controller!.play();
       setState(() {
         _isPlaying = true;
       });
-
-      print('▶️ Started playing');
     } catch (e) {
-      print('❌ Video initialization error: $e');
-
-      if (_isUsingLocalFile && !e.toString().contains('network')) {
-        print('🔄 Local file failed, trying network fallback...');
-        await _tryNetworkFallback();
-        return;
-      }
-
       setState(() {
         _isLoading = false;
         _hasError = true;
-        _errorMessage = _getDetailedErrorMessage(e);
+        _errorMessage = 'Failed to load video: $e';
       });
-    }
-  }
-
-  Future<void> _tryNetworkFallback() async {
-    try {
-      print('🌐 Attempting network fallback...');
-
-      _controller?.dispose();
-      _controller = VideoPlayerController.networkUrl(
-        Uri.parse(widget.mediaItem.downloadUrl),
-      );
-      _isUsingLocalFile = false;
-
-      await _controller!.initialize().timeout(
-        const Duration(seconds: 30),
-        onTimeout: () {
-          throw Exception('Network fallback timeout');
-        },
-      );
-
-      setState(() {
-        _isLoading = false;
-        _duration = _controller!.value.duration;
-      });
-
-      _controller!.addListener(_videoListener);
-      await _controller!.play();
-      setState(() {
-        _isPlaying = true;
-      });
-
-      print('✅ Network fallback successful');
-    } catch (e) {
-      print('❌ Network fallback failed: $e');
-      setState(() {
-        _isLoading = false;
-        _hasError = true;
-        _errorMessage = 'Both local and network playback failed: $e';
-      });
-    }
-  }
-
-  String _getDetailedErrorMessage(dynamic error) {
-    String errorMsg = error.toString();
-
-    if (errorMsg.contains('PlatformException')) {
-      return 'Platform error: Video format may not be supported offline';
-    } else if (errorMsg.contains('timeout')) {
-      return 'Loading timeout: File may be too large or corrupted';
-    } else if (errorMsg.contains('Source error')) {
-      return 'Source error: File path or URL is invalid';
-    } else if (errorMsg.contains('not found')) {
-      return 'File not found: Video may not be properly downloaded';
-    } else {
-      return 'Error: $errorMsg';
-    }
-  }
-
-  Future<void> _debugStorageInfo() async {
-    try {
-      final filename = widget.mediaItem.localFileName;
-      final originalFilename = widget.mediaItem.downloadUrl.split('/').last;
-      final isDownloaded = await StorageService.isMediaDownloaded(filename);
-
-      print('\n=== 🔍 STORAGE DEBUG INFO ===');
-      print('🆔 Media ID: ${widget.mediaItem.id}');
-      print('📱 Local Filename (ID-based): $filename');
-      print('📄 Original Filename: $originalFilename');
-      print('💾 Is Downloaded: $isDownloaded');
-      print('🌐 Download URL: ${widget.mediaItem.downloadUrl}');
-      print('📂 File URL: ${widget.mediaItem.fileUrl}');
-
-      if (isDownloaded) {
-        try {
-          final localPath = await StorageService.getLocalFilePath(filename);
-          final file = File(localPath);
-          final exists = await file.exists();
-
-          print('📁 Local Path: $localPath');
-          print('📄 File Exists: $exists');
-
-          if (exists) {
-            final fileSize = await file.length();
-            final fileSizeMB = (fileSize / (1024 * 1024)).toStringAsFixed(2);
-            print('📊 File Size: ${fileSizeMB}MB ($fileSize bytes)');
-
-            try {
-              final stat = await file.stat();
-              print('📅 Modified: ${stat.modified}');
-              print('🔐 Mode: ${stat.modeString()}');
-            } catch (e) {
-              print('❌ Stat error: $e');
-            }
-          }
-        } catch (e) {
-          print('❌ Local file access error: $e');
-        }
-      } else {
-        print('🔍 Checking if file exists with original filename...');
-        final originalFileDownloaded = await StorageService.isMediaDownloaded(
-          originalFilename,
-        );
-        print('📄 Original filename downloaded: $originalFileDownloaded');
-
-        if (originalFileDownloaded) {
-          final originalPath = await StorageService.getLocalFilePath(
-            originalFilename,
-          );
-          final originalFile = File(originalPath);
-          final originalExists = await originalFile.exists();
-          print(
-            '⚠️ MISMATCH: File exists as "$originalFilename" but expected as "$filename"',
-          );
-          print('📁 Original path: $originalPath');
-          print('📄 Original exists: $originalExists');
-        }
-      }
-
-      try {
-        final appDir = await getApplicationDocumentsDirectory();
-        final supportDir = await getApplicationSupportDirectory();
-        final tempDir = await getTemporaryDirectory();
-
-        print('📂 App Documents: ${appDir.path}');
-        print('📂 App Support: ${supportDir.path}');
-        print('📂 Temp: ${tempDir.path}');
-
-        final documentsDir = Directory(appDir.path);
-        if (await documentsDir.exists()) {
-          final files = await documentsDir.list().toList();
-          print('📋 Files in documents directory:');
-          for (var file in files) {
-            if (file is File) {
-              final fileName = file.path.split('/').last;
-              final fileSize = await file.length();
-              final fileSizeMB = (fileSize / (1024 * 1024)).toStringAsFixed(2);
-              print('   📄 $fileName (${fileSizeMB}MB)');
-            }
-          }
-        }
-      } catch (e) {
-        print('❌ Directory access error: $e');
-      }
-
-      print('========================\n');
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Debug info printed to console. Check if filename mismatch exists.',
-          ),
-          backgroundColor: Colors.blue,
-          duration: Duration(seconds: 3),
-        ),
-      );
-    } catch (e) {
-      print('❌ Debug info error: $e');
     }
   }
 
   void _videoListener() {
-    if (!mounted || _controller == null) return;
+    if (!mounted) return;
 
     setState(() {
       _position = _controller!.value.position;
       _isPlaying = _controller!.value.isPlaying;
     });
 
-    if (_controller!.value.hasError) {
-      setState(() {
-        _hasError = true;
-        _errorMessage =
-            'Playback error: ${_controller!.value.errorDescription}';
-      });
-    }
-
+    // Auto-hide controls when playing
     if (_isPlaying && _showControls) {
       _hideControlsTimer();
     }
@@ -394,21 +162,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     _controller!.seekTo(position);
   }
 
-  void _toggleFullScreen() {
-    setState(() {
-      _isFullScreen = !_isFullScreen;
-    });
-
-    if (_isFullScreen) {
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.landscapeLeft,
-        DeviceOrientation.landscapeRight,
-      ]);
-    } else {
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-      SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    }
+  void _exitFullscreen() {
+    // Langsung pop balik ke MovieDetailScreen
+    Navigator.pop(context);
   }
 
   String _formatDuration(Duration duration) {
@@ -430,132 +186,15 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     _controller?.dispose();
     _controlsAnimationController.dispose();
 
-    if (_isFullScreen) {
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-      // Jangan paksa portrait, biarkan sistem atau halaman sebelumnya yang mengatur
-    }
+    // Reset UI mode ke edgeToEdge biar MovieDetailScreen normal lagi
+    // SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return ActivityTrackerWrapper(
-      screenName:
-          'VideoPlayerScreen', // Screen ini ada di whitelist, jadi timer akan di-pause
-      child: Scaffold(
-        backgroundColor: Colors.black,
-        body: SafeArea(
-          child: _isFullScreen
-              ? _buildFullScreenPlayer()
-              : _buildNormalPlayer(),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNormalPlayer() {
-    return Column(
-      children: [
-        // Header with connection status
-        Container(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () => Navigator.pop(context),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.mediaItem.title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(
-                          _isUsingLocalFile ? Icons.offline_pin : Icons.cloud,
-                          color: _isUsingLocalFile
-                              ? Colors.green
-                              : Colors.orange,
-                          size: 16,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          _isUsingLocalFile ? 'OFFLINE' : 'STREAMING',
-                          style: TextStyle(
-                            color: _isUsingLocalFile
-                                ? Colors.green
-                                : Colors.orange,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          _getFileTypeFromUrl(widget.mediaItem.fileUrl),
-                          style: TextStyle(
-                            color: Colors.grey[400],
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        // Video Player
-        Expanded(child: _buildVideoPlayer()),
-
-        // Video Info
-        Container(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Video Information',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              _buildInfoRow(
-                'Status',
-                _isUsingLocalFile ? '📱 Offline' : '🌐 Online',
-              ),
-              _buildInfoRow('Duration', _formatDuration(_duration)),
-              _buildInfoRow('File', widget.mediaItem.fileUrl.split('/').last),
-              _buildInfoRow(
-                'Type',
-                _getFileTypeFromUrl(widget.mediaItem.fileUrl),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFullScreenPlayer() {
-    return _buildVideoPlayer();
+    return Scaffold(backgroundColor: Colors.black, body: _buildVideoPlayer());
   }
 
   Widget _buildVideoPlayer() {
@@ -575,14 +214,17 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       onTap: _toggleControls,
       child: Container(
         width: double.infinity,
+        height: double.infinity,
         color: Colors.black,
         child: Stack(
           alignment: Alignment.center,
           children: [
             // Video
-            AspectRatio(
-              aspectRatio: _controller!.value.aspectRatio,
-              child: VideoPlayer(_controller!),
+            Center(
+              child: AspectRatio(
+                aspectRatio: _controller!.value.aspectRatio,
+                child: VideoPlayer(_controller!),
+              ),
             ),
 
             // Controls Overlay
@@ -604,24 +246,40 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Colors.black54,
+            Colors.black87,
             Colors.transparent,
             Colors.transparent,
-            Colors.black54,
+            Colors.black87,
           ],
         ),
       ),
       child: Stack(
         children: [
+          // Top Bar - Back Button
+          Positioned(
+            top: 16,
+            left: 16,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.black54,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                onPressed: _exitFullscreen,
+              ),
+            ),
+          ),
+
           // Center Play/Pause Button
           Center(
             child: Container(
               decoration: BoxDecoration(
                 color: Colors.black54,
-                borderRadius: BorderRadius.circular(35),
+                borderRadius: BorderRadius.circular(40),
               ),
               child: IconButton(
-                iconSize: 50,
+                iconSize: 64,
                 icon: Icon(
                   _isPlaying ? Icons.pause : Icons.play_arrow,
                   color: Colors.white,
@@ -647,7 +305,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                         _formatDuration(_position),
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 12,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                       Expanded(
@@ -665,7 +324,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                               _isDragging = false;
                             });
                           },
-                          activeColor: Theme.of(context).colorScheme.primary,
+                          activeColor: Colors.red,
                           inactiveColor: Colors.white24,
                         ),
                       ),
@@ -673,18 +332,26 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                         _formatDuration(_duration),
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 12,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
                   ),
 
+                  const SizedBox(height: 8),
+
                   // Control Buttons
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
+                      // Skip -10s
                       IconButton(
-                        icon: const Icon(Icons.replay_10, color: Colors.white),
+                        icon: const Icon(
+                          Icons.replay_10,
+                          color: Colors.white,
+                          size: 32,
+                        ),
                         onPressed: () {
                           final newPosition =
                               _position - const Duration(seconds: 10);
@@ -695,22 +362,30 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                           );
                         },
                       ),
+
+                      // Play/Pause
                       Container(
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary,
-                          borderRadius: BorderRadius.circular(25),
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(30),
                         ),
                         child: IconButton(
                           icon: Icon(
                             _isPlaying ? Icons.pause : Icons.play_arrow,
                             color: Colors.white,
-                            size: 28,
+                            size: 36,
                           ),
                           onPressed: _togglePlayPause,
                         ),
                       ),
+
+                      // Skip +10s
                       IconButton(
-                        icon: const Icon(Icons.forward_10, color: Colors.white),
+                        icon: const Icon(
+                          Icons.forward_10,
+                          color: Colors.white,
+                          size: 32,
+                        ),
                         onPressed: () {
                           final newPosition =
                               _position + const Duration(seconds: 10);
@@ -719,14 +394,15 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                           );
                         },
                       ),
+
+                      // Exit Fullscreen
                       IconButton(
-                        icon: Icon(
-                          _isFullScreen
-                              ? Icons.fullscreen_exit
-                              : Icons.fullscreen,
+                        icon: const Icon(
+                          Icons.fullscreen_exit,
                           color: Colors.white,
+                          size: 32,
                         ),
-                        onPressed: _toggleFullScreen,
+                        onPressed: _exitFullscreen,
                       ),
                     ],
                   ),
@@ -742,17 +418,15 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   Widget _buildLoadingState() {
     return Container(
       color: Colors.black,
-      child: Center(
+      child: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             CircularProgressIndicator(color: Colors.white),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             Text(
-              _isUsingLocalFile
-                  ? 'Loading offline video...'
-                  : 'Loading online video...',
-              style: TextStyle(color: Colors.white),
+              'Loading video...',
+              style: TextStyle(color: Colors.white, fontSize: 16),
             ),
           ],
         ),
@@ -783,127 +457,45 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
               Text(
                 _errorMessage,
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey[400], fontSize: 14),
+                style: const TextStyle(color: Colors.grey, fontSize: 14),
               ),
               const SizedBox(height: 24),
-
-              // Retry button
-              ElevatedButton.icon(
-                onPressed: _initializeVideoPlayer,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Retry'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  foregroundColor: Colors.white,
-                ),
-              ),
-
-              const SizedBox(height: 12),
-
-              // Force stream online button
-              ElevatedButton.icon(
-                onPressed: () async {
-                  try {
-                    setState(() {
-                      _isLoading = true;
-                      _hasError = false;
-                    });
-
-                    _controller?.dispose();
-                    _controller = VideoPlayerController.networkUrl(
-                      Uri.parse(widget.mediaItem.downloadUrl),
-                    );
-                    _isUsingLocalFile = false;
-
-                    await _controller!.initialize();
-
-                    setState(() {
-                      _isLoading = false;
-                      _duration = _controller!.value.duration;
-                    });
-
-                    _controller!.addListener(_videoListener);
-                    await _controller!.play();
-                    setState(() {
-                      _isPlaying = true;
-                    });
-                  } catch (e) {
-                    setState(() {
-                      _isLoading = false;
-                      _hasError = true;
-                      _errorMessage = 'Network streaming failed: $e';
-                    });
-                  }
-                },
-                icon: const Icon(Icons.cloud_download),
-                label: const Text('Force Stream Online'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  foregroundColor: Colors.white,
-                ),
-              ),
-
-              const SizedBox(height: 12),
-
-              // Debug button
-              TextButton.icon(
-                onPressed: _debugStorageInfo,
-                icon: const Icon(Icons.bug_report, color: Colors.grey),
-                label: const Text(
-                  'Debug Storage Info',
-                  style: TextStyle(color: Colors.grey),
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: _initializeVideoPlayer,
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Retry'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  OutlinedButton.icon(
+                    onPressed: _exitFullscreen,
+                    icon: const Icon(Icons.arrow_back),
+                    label: const Text('Back'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      side: const BorderSide(color: Colors.white),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
         ),
       ),
     );
-  }
-
-  Widget _buildInfoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 80,
-            child: Text(
-              '$label:',
-              style: TextStyle(color: Colors.grey[400], fontSize: 14),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(color: Colors.white, fontSize: 14),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _getFileTypeFromUrl(String url) {
-    final extension = url.split('.').last.toUpperCase();
-    switch (extension) {
-      case 'MP4':
-        return 'VIDEO • MP4';
-      case 'AVI':
-        return 'VIDEO • AVI';
-      case 'MOV':
-        return 'VIDEO • MOV';
-      case 'MKV':
-        return 'VIDEO • MKV';
-      case 'WMV':
-        return 'VIDEO • WMV';
-      case 'FLV':
-        return 'VIDEO • FLV';
-      case 'WEBM':
-        return 'VIDEO • WEBM';
-      default:
-        return 'VIDEO • $extension';
-    }
   }
 }

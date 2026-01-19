@@ -86,9 +86,9 @@ class _NewsScreenState extends State<NewsScreen> {
       title: Row(
         children: [
           Image.asset(
-            'assets/images/logo/Logo-Maxg-Green.gif',
-            height: 32,
-            width: 32,
+            'assets/images/logo/Logo-MaxG-Green.gif',
+            height: 64,
+            width: 64,
             fit: BoxFit.contain,
           ),
           SizedBox(width: 12),

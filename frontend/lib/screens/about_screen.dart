@@ -33,10 +33,9 @@ class AboutScreen extends StatelessWidget {
                               // MaxG Logo - menggunakan Image.asset
                               Image.asset(
                                 'assets/images/logo/Maxg-ent_green.gif',
-                                height: 120, // Ukuran yang diinginkan
-                                width: 150, // Ukuran yang diinginkan
+                                height: 120,
+                                width: 200,
                                 fit: BoxFit.contain,
-                                // Fallback jika gambar tidak ditemukan - ukuran harus sama!
                                 errorBuilder: (context, error, stackTrace) {
                                   print(
                                     'Error loading MaxG logo: $error',

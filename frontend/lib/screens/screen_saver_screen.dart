@@ -42,7 +42,6 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     _disposeVideoControllers();
     _sessionManager.stopMonitoring();
     _sessionManager.dispose();
-    _restoreSystemUI();
     super.dispose();
   }
 

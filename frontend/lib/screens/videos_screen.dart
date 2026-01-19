@@ -365,8 +365,8 @@ class _VideosScreenState extends State<VideosScreen>
             children: [
               Image.asset(
                 'assets/images/logo/Maxg-ent_white.gif',
-                width: 120,
-                height: 60,
+                width: 160,
+                height: 80,
                 color: Colors.white,
               ),
               const SizedBox(width: 12),
@@ -1006,7 +1006,7 @@ class _VideosScreenState extends State<VideosScreen>
                         duration: const Duration(milliseconds: 300),
                         opacity: isHovered ? 0 : 1,
                         child: Image.asset(
-                          'assets/images/logo/Logo-Maxg-Green.gif',
+                          'assets/images/logo/Logo-MaxG-Green.gif',
                           width: 60,
                           height: 60,
                         ),
@@ -1015,7 +1015,7 @@ class _VideosScreenState extends State<VideosScreen>
                         duration: const Duration(milliseconds: 300),
                         opacity: isHovered ? 1 : 0,
                         child: Image.asset(
-                          'assets/images/logo/Maxg-ent_white.gif',
+                          'assets/images/logo/Logo-MaxG-White.gif',
                           width: 60,
                           height: 60,
                           color: Colors.white,
@@ -1035,16 +1035,7 @@ class _VideosScreenState extends State<VideosScreen>
   Widget _buildThumbnailPreview() {
     return Container(
       margin: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            blurRadius: 20,
-            offset: Offset(0, 8),
-          ),
-        ],
-      ),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
         child: Stack(
@@ -1052,34 +1043,14 @@ class _VideosScreenState extends State<VideosScreen>
             // Default state
             if (_hoveredMedia == null)
               Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Color(0xFF1A1A2E),
-                      Color(0xFF16213E),
-                      Color(0xFF0F3460),
-                    ],
-                  ),
-                ),
                 child: Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Image.asset(
                         'assets/images/logo/Maxg-ent_white.gif',
-                        width: 200,
-                        color: Colors.white.withOpacity(0.3),
-                      ),
-                      const SizedBox(height: 20),
-                      Text(
-                        'MaxG Cinema',
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.3),
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        width: 400,
+                        color: Colors.white,
                       ),
                     ],
                   ),
