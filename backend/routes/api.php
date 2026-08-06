@@ -5,11 +5,12 @@ use App\Models\NewsArticle;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GameController;
-use App\Http\Controllers\MusicController;
-use App\Http\Controllers\VideoController;
 use App\Http\Controllers\Api\NewsController;
 use App\Http\Controllers\Api\MediaController;
+use App\Http\Controllers\Api\SessionController;
 use App\Http\Controllers\Api\NewsRssApiController;
+use App\Http\Controllers\Api\RunningTextController;
+use App\Http\Controllers\Api\AdvertisementController;
 
 // News Route
 // Route::get('/news', [NewsController::class, 'index'])->name('news.index');
@@ -80,4 +81,24 @@ Route::prefix('news')->group(function () {
     Route::get('/{slug}', [NewsRssApiController::class, 'show']);
 });
 
+Route::prefix('sessions')->group(function () {
+    Route::post('/log', [SessionController::class, 'store']);
+    Route::get('/', [SessionController::class, 'index']);
+    Route::get('/stats', [SessionController::class, 'stats']);
+});
 
+Route::prefix('advertisements')->group(function () {
+    Route::get('/', [AdvertisementController::class, 'index']);
+    Route::get('/active', [AdvertisementController::class, 'active']);
+});
+
+Route::prefix('running-texts')->group(function () {
+    // Public endpoint - untuk Flutter
+    Route::get('/active', [RunningTextController::class, 'active']);
+
+    // Admin endpoints (tambahkan auth middleware jika perlu)
+    Route::get('/', [RunningTextController::class, 'index']);
+    Route::post('/', [RunningTextController::class, 'store']);
+    Route::put('/{id}', [RunningTextController::class, 'update']);
+    Route::delete('/{id}', [RunningTextController::class, 'destroy']);
+});

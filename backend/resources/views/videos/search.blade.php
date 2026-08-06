@@ -2,7 +2,7 @@
 
 @section('content')
 <!-- Background with enhanced gradient matching app theme -->
-<div class="min-h-screen relative overflow-hidden" style="background-image: url('{{ asset('images/background/Background_Color.png') }}'); background-size: cover; background-position: center;">
+<div class="min-h-screen relative overflow-hidden" style="background-image: url('{{ asset('images/background/Background_Color.webp') }}'); background-size: cover; background-position: center;">
   <!-- Animated background particles with softer colors -->
   <div class="absolute inset-0 overflow-hidden">
     <div class="absolute -top-40 -left-40 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>

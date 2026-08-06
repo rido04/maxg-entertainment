@@ -13,6 +13,7 @@ import 'advertisement_service.dart';
 enum SessionState { idle, detected, active, cooldown }
 
 class SessionManagerService {
+  // Singleton pattern
   static final SessionManagerService _instance =
       SessionManagerService._internal();
   factory SessionManagerService() => _instance;
@@ -29,6 +30,7 @@ class SessionManagerService {
   String? _lastDetectedGender;
   final List<String> _recentDetections = [];
   final int _historySize = 5;
+  bool _isMonitoringPaused = false; // 👈 BARU - untuk pause/resume
 
   VoidCallback? _onPauseVideo;
   VoidCallback? _onResumeVideo;
@@ -36,6 +38,7 @@ class SessionManagerService {
   // Configuration
   final Duration sessionTimeout = const Duration(minutes: 3);
   final Duration detectionInterval = const Duration(seconds: 3);
+  final Duration postSessionCooldown = const Duration(seconds: 30); // 👈 TAMBAH
   final double confidenceThreshold = 0.65;
 
   // Callbacks
@@ -50,9 +53,12 @@ class SessionManagerService {
   List<AdvertisementItem> get currentAds => _currentAds;
   bool get isActive =>
       _state == SessionState.active || _state == SessionState.cooldown;
+  bool get isMonitoring => _detectionTimer != null && _detectionTimer!.isActive;
+  bool get isMonitoringPaused => _isMonitoringPaused;
 
   void setContext(BuildContext context) {
     _context = context;
+    print('📍 Context registered for SessionManager');
   }
 
   void setVideoControls({
@@ -70,22 +76,56 @@ class SessionManagerService {
     print('✅ Session Manager initialized');
   }
 
+  /// Start monitoring (called when entering screensaver)
   void startMonitoring() {
     if (_detectionTimer != null && _detectionTimer!.isActive) {
       print('⚠️ Monitoring already active');
       return;
     }
 
+    _isMonitoringPaused = false;
     print('👁️ Starting face detection monitoring...');
 
     _detectionTimer = Timer.periodic(detectionInterval, (_) async {
-      await _checkForFace();
+      if (!_isMonitoringPaused) {
+        await _checkForFace();
+      }
     });
   }
 
+  /// Pause monitoring (called when exiting screensaver, but keep session alive)
+  void pauseMonitoring() {
+    if (_detectionTimer == null || !_detectionTimer!.isActive) {
+      print('⚠️ Monitoring not active, nothing to pause');
+      return;
+    }
+
+    _isMonitoringPaused = true;
+    print(
+      '⏸️ Monitoring paused (session still active: ${_currentSession?.sessionId})',
+    );
+
+    // IMPORTANT: Don't cancel the timer, just pause it
+    // Session continues running in background
+  }
+
+  /// Resume monitoring (called when re-entering screensaver)
+  void resumeMonitoring() {
+    if (_detectionTimer == null || !_detectionTimer!.isActive) {
+      print('⚠️ Monitoring not active, restarting...');
+      startMonitoring();
+      return;
+    }
+
+    _isMonitoringPaused = false;
+    print('▶️ Monitoring resumed (session: ${_currentSession?.sessionId})');
+  }
+
+  /// Stop monitoring completely (only when disposing)
   void stopMonitoring() {
     _detectionTimer?.cancel();
     _detectionTimer = null;
+    _isMonitoringPaused = false;
     print('🛑 Monitoring stopped');
   }
 
@@ -137,6 +177,14 @@ class SessionManagerService {
           break;
 
         case SessionState.cooldown:
+          // Check if this is POST-SESSION cooldown or IN-SESSION cooldown
+          if (_currentSession == null) {
+            // POST-SESSION cooldown - ignore all face detection
+            print('⏳ Post-session cooldown active, ignoring face detection');
+            return;
+          }
+
+          // IN-SESSION cooldown - allow face to resume session
           if (result.hasFace) {
             _cancelCooldown();
             _changeState(SessionState.active);
@@ -169,7 +217,7 @@ class SessionManagerService {
 
     _onPauseVideo?.call();
 
-    await _playGreetingAndWait(detection); // ← Buat function baru ini
+    await _playGreetingAndWait(detection);
 
     await _fetchTargetedAds(detection.gender, detection.ageGroup);
 
@@ -245,10 +293,15 @@ class SessionManagerService {
     }
   }
 
-  void trackAdView(int adId) {
+  /// Track ad view (panggil dengan ID DAN TITLE)
+  void trackAdView(int adId, String adTitle) {
     if (_currentSession != null && _state == SessionState.active) {
-      _currentSession!.trackAdView(adId);
-      print('👁️ Ad viewed: $adId (Total: ${_currentSession!.adViewCount})');
+      _currentSession!.trackAdView(adId, adTitle);
+      print(
+        '👁️ Ad viewed: $adTitle (Total: ${_currentSession!.viewedAds.length})',
+      );
+    } else {
+      print('⚠️ Cannot track ad view: Session not active (state: $_state)');
     }
   }
 
@@ -279,6 +332,8 @@ class SessionManagerService {
     if (_currentSession == null) return;
 
     print('📊 Ending session: ${_currentSession!.sessionId}');
+    print('   - Duration: ${_currentSession!.durationSeconds}s');
+    print('   - Ads viewed: ${_currentSession!.viewedAds.length}');
 
     _currentSession!.end();
 
@@ -287,16 +342,27 @@ class SessionManagerService {
     if (success) {
       print('✅ Session logged successfully');
     } else {
-      print('⚠️ Session logged to queue (will retry later)');
+      print('⚠️ Session queued (will retry when online)');
     }
 
     onSessionEnded?.call(_currentSession!);
 
     _currentSession = null;
     _currentAds = [];
-    _changeState(SessionState.idle);
 
-    print('🔄 Back to idle state');
+    // 👇 UBAH: Stay in cooldown state (post-session cooldown)
+    _changeState(SessionState.cooldown);
+
+    // 👇 TAMBAH: Start post-session cooldown timer
+    _cooldownTimer?.cancel();
+    _cooldownTimer = Timer(postSessionCooldown, () {
+      _changeState(SessionState.idle);
+      print('🔄 Back to idle state (post-session cooldown finished)');
+    });
+
+    print(
+      '⏳ Post-session cooldown started (${postSessionCooldown.inSeconds}s)',
+    );
   }
 
   void _changeState(SessionState newState) {

@@ -15,7 +15,7 @@
 
     @stack('styles')
 </head>
-<body class="font-sans antialiased min-h-screen m-0 p-0" style="background-image: url('{{ asset('images/background/Background_Color.png') }}'); background-size: cover; background-position: center;">
+<body class="font-sans antialiased min-h-screen m-0 p-0" style="background-image: url('{{ asset('images/background/Background_Color.webp') }}'); background-size: cover; background-position: center;">
     @include('navbar')
     <!-- Main Content -->
     <main class="relative z-10">

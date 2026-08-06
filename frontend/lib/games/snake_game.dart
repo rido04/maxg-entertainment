@@ -11,21 +11,23 @@ class SnakeGame extends StatefulWidget {
   State<SnakeGame> createState() => _SnakeGameState();
 }
 
-class _SnakeGameState extends State<SnakeGame> with TickerProviderStateMixin {
+class _SnakeGameState extends State<SnakeGame>
+    with SingleTickerProviderStateMixin {
   static const int gridSize = 20;
   static const int gameSpeed = 200;
 
   List<Point<int>> snake = [Point(10, 10)];
   Point<int> food = Point(15, 15);
   Direction direction = Direction.right;
+  Direction? pendingDirection;
   bool isPlaying = false;
   bool gameOver = false;
   int score = 0;
   Timer? gameTimer;
 
-  // Animation controllers untuk efek visual
+  // Single animation controller untuk food pulse
   late AnimationController _foodAnimationController;
-  late AnimationController _gameOverAnimationController;
+  late Animation<double> _foodPulse;
 
   @override
   void initState() {
@@ -36,13 +38,15 @@ class _SnakeGameState extends State<SnakeGame> with TickerProviderStateMixin {
 
   void _setupAnimations() {
     _foodAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 1000),
       vsync: this,
     )..repeat(reverse: true);
 
-    _gameOverAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 1000),
-      vsync: this,
+    _foodPulse = Tween<double>(begin: 0.9, end: 1.1).animate(
+      CurvedAnimation(
+        parent: _foodAnimationController,
+        curve: Curves.easeInOut,
+      ),
     );
   }
 
@@ -50,7 +54,6 @@ class _SnakeGameState extends State<SnakeGame> with TickerProviderStateMixin {
   void dispose() {
     gameTimer?.cancel();
     _foodAnimationController.dispose();
-    _gameOverAnimationController.dispose();
     super.dispose();
   }
 
@@ -89,10 +92,10 @@ class _SnakeGameState extends State<SnakeGame> with TickerProviderStateMixin {
 
   void _resetGame() {
     gameTimer?.cancel();
-    _gameOverAnimationController.reset();
     setState(() {
       snake = [Point(10, 10)];
       direction = Direction.right;
+      pendingDirection = null;
       score = 0;
       gameOver = false;
       isPlaying = false;
@@ -101,6 +104,12 @@ class _SnakeGameState extends State<SnakeGame> with TickerProviderStateMixin {
   }
 
   void _updateGame() {
+    // Apply pending direction untuk smooth control
+    if (pendingDirection != null) {
+      direction = pendingDirection!;
+      pendingDirection = null;
+    }
+
     Point<int> newHead;
 
     switch (direction) {
@@ -127,20 +136,22 @@ class _SnakeGameState extends State<SnakeGame> with TickerProviderStateMixin {
       return;
     }
 
-    // Check self collision
+    // Check self collision (cek SEBELUM insert head baru)
     if (snake.contains(newHead)) {
       _gameOver();
       return;
     }
 
+    // Check food collision
+    bool ateFood = (newHead == food);
+
     setState(() {
       snake.insert(0, newHead);
 
-      // Check food collision
-      if (newHead == food) {
+      if (ateFood) {
         score += 10;
         _generateFood();
-        HapticFeedback.lightImpact(); // Haptic feedback saat makan
+        HapticFeedback.lightImpact();
       } else {
         snake.removeLast();
       }
@@ -149,8 +160,7 @@ class _SnakeGameState extends State<SnakeGame> with TickerProviderStateMixin {
 
   void _gameOver() {
     gameTimer?.cancel();
-    _gameOverAnimationController.forward();
-    HapticFeedback.heavyImpact(); // Haptic feedback saat game over
+    HapticFeedback.heavyImpact();
     setState(() {
       gameOver = true;
       isPlaying = false;
@@ -158,6 +168,8 @@ class _SnakeGameState extends State<SnakeGame> with TickerProviderStateMixin {
   }
 
   void _changeDirection(Direction newDirection) {
+    if (!isPlaying && !gameOver) return;
+
     // Prevent reverse direction
     if ((direction == Direction.up && newDirection == Direction.down) ||
         (direction == Direction.down && newDirection == Direction.up) ||
@@ -166,47 +178,33 @@ class _SnakeGameState extends State<SnakeGame> with TickerProviderStateMixin {
       return;
     }
 
-    if (isPlaying) {
-      HapticFeedback.selectionClick(); // Haptic feedback saat ubah arah
-      setState(() {
-        direction = newDirection;
-      });
-    }
+    HapticFeedback.selectionClick();
+    pendingDirection = newDirection;
   }
 
-  Widget _buildControlButton(
-    Direction dir,
-    IconData icon, {
-    bool isCenter = false,
-  }) {
-    bool isPressed = direction == dir && isPlaying;
+  void _handleSwipe(DragEndDetails details) {
+    if (!isPlaying || gameOver) return;
 
-    return GestureDetector(
-      onTap: () => _changeDirection(dir),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: EdgeInsets.all(isCenter ? 18 : 15),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: isPressed
-                ? [const Color(0xFF00E676), const Color(0xFF00B14F)]
-                : [const Color(0xFF00B14F), const Color(0xFF00A047)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF00B14F).withOpacity(0.4),
-              blurRadius: isPressed ? 15 : 8,
-              spreadRadius: isPressed ? 2 : 0,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Icon(icon, color: Colors.white, size: isCenter ? 35 : 30),
-      ),
-    );
+    final velocity = details.velocity.pixelsPerSecond;
+    final dx = velocity.dx.abs();
+    final dy = velocity.dy.abs();
+
+    // Determine swipe direction based on velocity
+    if (dx > dy) {
+      // Horizontal swipe
+      if (velocity.dx > 0) {
+        _changeDirection(Direction.right);
+      } else {
+        _changeDirection(Direction.left);
+      }
+    } else {
+      // Vertical swipe
+      if (velocity.dy > 0) {
+        _changeDirection(Direction.down);
+      } else {
+        _changeDirection(Direction.up);
+      }
+    }
   }
 
   @override
@@ -217,39 +215,41 @@ class _SnakeGameState extends State<SnakeGame> with TickerProviderStateMixin {
         title: Row(
           children: [
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [Color(0xFF00E676), Color(0xFF00B14F)],
                 ),
-                borderRadius: BorderRadius.circular(15),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
-                'Score: $score',
+                'SCORE: $score',
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  fontSize: 18,
+                  letterSpacing: 1.2,
                 ),
               ),
             ),
-            const Spacer(),
-            if (snake.length > 1)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  'Length: ${snake.length}',
-                  style: const TextStyle(
-                    color: Colors.orange,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
+            const SizedBox(width: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.orange.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.orange.withOpacity(0.5)),
+              ),
+              child: Text(
+                'LENGTH: ${snake.length}',
+                style: const TextStyle(
+                  color: Colors.orange,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1,
                 ),
               ),
+            ),
           ],
         ),
         backgroundColor: const Color(0xFF1B2332),
@@ -258,286 +258,230 @@ class _SnakeGameState extends State<SnakeGame> with TickerProviderStateMixin {
           icon: const Icon(Icons.arrow_back, color: Color(0xFF00E676)),
           onPressed: () => Navigator.pop(context),
         ),
-      ),
-      body: Row(
-        children: [
-          // Game Area (mengambil sebagian besar layar)
-          Expanded(
-            flex: 7,
-            child: Column(
-              children: [
-                // Status bar
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        const Color(0xFF1B2332),
-                        const Color(0xFF0D1421),
-                      ],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildStatusItem('🐍', 'Snake', '${snake.length}'),
-                      _buildStatusItem('🎯', 'Score', '$score'),
-                      _buildStatusItem(
-                        isPlaying ? '▶️' : (gameOver ? '💀' : '⏸️'),
-                        'Status',
-                        gameOver
-                            ? 'Game Over'
-                            : (isPlaying ? 'Playing' : 'Paused'),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Game Canvas
-                Expanded(
-                  child: Container(
-                    margin: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      gradient: RadialGradient(
-                        center: Alignment.center,
-                        colors: [
-                          const Color(0xFF1B2332),
-                          const Color(0xFF0D1421),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: const Color(0xFF00B14F).withOpacity(0.5),
-                        width: 3,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF00B14F).withOpacity(0.3),
-                          blurRadius: 20,
-                          spreadRadius: 2,
-                        ),
-                      ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(17),
-                      child: Stack(
-                        children: [
-                          // Game canvas
-                          CustomPaint(
-                            painter: EnhancedSnakePainter(
-                              snake,
-                              food,
-                              gridSize,
-                              _foodAnimationController,
-                            ),
-                            child: Container(),
-                          ),
-
-                          // Game Over overlay
-                          if (gameOver)
-                            AnimatedBuilder(
-                              animation: _gameOverAnimationController,
-                              builder: (context, child) {
-                                return Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withOpacity(
-                                      0.8 * _gameOverAnimationController.value,
-                                    ),
-                                    borderRadius: BorderRadius.circular(17),
-                                  ),
-                                  child: Center(
-                                    child: Transform.scale(
-                                      scale: _gameOverAnimationController.value,
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          const Text(
-                                            '💀',
-                                            style: TextStyle(fontSize: 50),
-                                          ),
-                                          const SizedBox(height: 10),
-                                          const Text(
-                                            'GAME OVER',
-                                            style: TextStyle(
-                                              color: Colors.red,
-                                              fontSize: 28,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 10),
-                                          Text(
-                                            'Final Score: $score',
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 18,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-
-                // Control buttons row
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildGameButton(
-                        isPlaying
-                            ? 'Pause'
-                            : (gameOver ? 'Play Again' : 'Start'),
-                        isPlaying ? Icons.pause : Icons.play_arrow,
-                        isPlaying ? _pauseGame : _startGame,
-                        Colors.green,
-                      ),
-                      _buildGameButton(
-                        'Reset',
-                        Icons.refresh,
-                        _resetGame,
-                        Colors.orange,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Control Panel (D-pad di samping kanan)
+        actions: [
           Container(
-            width: 140,
+            margin: const EdgeInsets.only(right: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [const Color(0xFF1B2332), const Color(0xFF0D1421)],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
-              border: Border(
-                left: BorderSide(
-                  color: const Color(0xFF00B14F).withOpacity(0.3),
-                  width: 1,
-                ),
+              color: isPlaying
+                  ? Colors.green.withOpacity(0.2)
+                  : (gameOver
+                        ? Colors.red.withOpacity(0.2)
+                        : Colors.grey.withOpacity(0.2)),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: isPlaying
+                    ? Colors.green
+                    : (gameOver ? Colors.red : Colors.grey),
               ),
             ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text(
-                  'CONTROLS',
-                  style: TextStyle(
-                    color: Color(0xFF00E676),
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1,
-                  ),
-                ),
-                const SizedBox(height: 30),
-
-                // D-pad layout
-                Column(
-                  children: [
-                    // Up button
-                    _buildControlButton(Direction.up, Icons.keyboard_arrow_up),
-                    const SizedBox(height: 15),
-
-                    // Left, Center, Right row
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _buildControlButton(
-                          Direction.left,
-                          Icons.keyboard_arrow_left,
-                        ),
-                        const SizedBox(width: 15),
-                        _buildControlButton(
-                          Direction.right,
-                          Icons.keyboard_arrow_right,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 15),
-
-                    // Down button
-                    _buildControlButton(
-                      Direction.down,
-                      Icons.keyboard_arrow_down,
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 30),
-
-                // Direction indicator
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF00B14F).withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        _getDirectionArrow(direction),
-                        style: const TextStyle(fontSize: 20),
-                      ),
-                      Text(
-                        _getDirectionText(direction),
-                        style: const TextStyle(
-                          color: Color(0xFF00E676),
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+            child: Text(
+              gameOver ? 'GAME OVER' : (isPlaying ? 'PLAYING' : 'PAUSED'),
+              style: TextStyle(
+                color: isPlaying
+                    ? Colors.green
+                    : (gameOver ? Colors.red : Colors.grey),
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1,
+              ),
             ),
           ),
         ],
       ),
-    );
-  }
+      body: Center(
+        child: AspectRatio(
+          aspectRatio: 1.0, // Force square ratio untuk prevent gepeng
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 600, maxHeight: 600),
+            margin: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                // Game Canvas (square/proporsional)
+                Expanded(
+                  child: GestureDetector(
+                    onVerticalDragEnd: _handleSwipe,
+                    onHorizontalDragEnd: _handleSwipe,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: const RadialGradient(
+                          center: Alignment.center,
+                          colors: [Color(0xFF1B2332), Color(0xFF0D1421)],
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: const Color(0xFF00B14F).withOpacity(0.5),
+                          width: 3,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF00B14F).withOpacity(0.3),
+                            blurRadius: 20,
+                            spreadRadius: 2,
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(17),
+                        child: Stack(
+                          children: [
+                            // Game canvas with AnimatedBuilder hanya untuk food
+                            AnimatedBuilder(
+                              animation: _foodPulse,
+                              builder: (context, child) {
+                                return CustomPaint(
+                                  painter: OptimizedSnakePainter(
+                                    snake,
+                                    food,
+                                    gridSize,
+                                    _foodPulse.value,
+                                  ),
+                                  child: Container(),
+                                );
+                              },
+                            ),
 
-  Widget _buildStatusItem(String emoji, String label, String value) {
-    return Column(
-      children: [
-        Text(emoji, style: const TextStyle(fontSize: 16)),
-        Text(
-          label,
-          style: const TextStyle(
-            color: Colors.white70,
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
+                            // Swipe hint overlay (hanya muncul saat pause)
+                            if (!isPlaying && !gameOver)
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.7),
+                                  borderRadius: BorderRadius.circular(17),
+                                ),
+                                child: const Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.swipe,
+                                        color: Color(0xFF00E676),
+                                        size: 48,
+                                      ),
+                                      SizedBox(height: 16),
+                                      Text(
+                                        'SWIPE TO CONTROL',
+                                        style: TextStyle(
+                                          color: Color(0xFF00E676),
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                          letterSpacing: 1.5,
+                                        ),
+                                      ),
+                                      SizedBox(height: 8),
+                                      Text(
+                                        'Swipe up, down, left, or right to move',
+                                        style: TextStyle(
+                                          color: Colors.white70,
+                                          fontSize: 14,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+
+                            // Game Over overlay
+                            if (gameOver)
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.85),
+                                  borderRadius: BorderRadius.circular(17),
+                                ),
+                                child: Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(20),
+                                        decoration: BoxDecoration(
+                                          color: Colors.red.withOpacity(0.2),
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: Colors.red,
+                                            width: 3,
+                                          ),
+                                        ),
+                                        child: const Icon(
+                                          Icons.close,
+                                          color: Colors.red,
+                                          size: 48,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 24),
+                                      const Text(
+                                        'GAME OVER',
+                                        style: TextStyle(
+                                          color: Colors.red,
+                                          fontSize: 32,
+                                          fontWeight: FontWeight.bold,
+                                          letterSpacing: 2,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 24,
+                                          vertical: 12,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          gradient: const LinearGradient(
+                                            colors: [
+                                              Color(0xFF00E676),
+                                              Color(0xFF00B14F),
+                                            ],
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          'FINAL SCORE: $score',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                            letterSpacing: 1.2,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // Control buttons
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildGameButton(
+                      isPlaying ? 'PAUSE' : (gameOver ? 'PLAY AGAIN' : 'START'),
+                      isPlaying ? Icons.pause : Icons.play_arrow,
+                      isPlaying ? _pauseGame : _startGame,
+                      isPlaying ? Colors.orange : Colors.green,
+                    ),
+                    const SizedBox(width: 16),
+                    _buildGameButton(
+                      'RESET',
+                      Icons.refresh,
+                      _resetGame,
+                      const Color(0xFF00B14F),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
-        Text(
-          value,
-          style: const TextStyle(
-            color: Color(0xFF00E676),
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ],
+      ),
     );
   }
 
@@ -549,211 +493,164 @@ class _SnakeGameState extends State<SnakeGame> with TickerProviderStateMixin {
   ) {
     return ElevatedButton.icon(
       onPressed: onPressed,
-      icon: Icon(icon, color: Colors.white),
+      icon: Icon(icon, color: Colors.white, size: 24),
       label: Text(
         text,
         style: const TextStyle(
           color: Colors.white,
           fontWeight: FontWeight.bold,
+          fontSize: 16,
+          letterSpacing: 1,
         ),
       ),
       style: ElevatedButton.styleFrom(
         backgroundColor: color,
-        elevation: 5,
+        elevation: 8,
         shadowColor: color.withOpacity(0.5),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
       ),
     );
-  }
-
-  String _getDirectionArrow(Direction dir) {
-    switch (dir) {
-      case Direction.up:
-        return '⬆️';
-      case Direction.down:
-        return '⬇️';
-      case Direction.left:
-        return '⬅️';
-      case Direction.right:
-        return '➡️';
-    }
-  }
-
-  String _getDirectionText(Direction dir) {
-    switch (dir) {
-      case Direction.up:
-        return 'UP';
-      case Direction.down:
-        return 'DOWN';
-      case Direction.left:
-        return 'LEFT';
-      case Direction.right:
-        return 'RIGHT';
-    }
   }
 }
 
 enum Direction { up, down, left, right }
 
-class EnhancedSnakePainter extends CustomPainter {
+class OptimizedSnakePainter extends CustomPainter {
   final List<Point<int>> snake;
   final Point<int> food;
   final int gridSize;
-  final AnimationController foodAnimation;
+  final double foodScale;
 
-  EnhancedSnakePainter(
-    this.snake,
-    this.food,
-    this.gridSize,
-    this.foodAnimation,
-  );
+  OptimizedSnakePainter(this.snake, this.food, this.gridSize, this.foodScale);
 
   @override
   void paint(Canvas canvas, Size size) {
-    final double cellWidth = size.width / gridSize;
-    final double cellHeight = size.height / gridSize;
+    final double cellSize = min(size.width, size.height) / gridSize;
 
-    // Draw subtle grid
+    // Draw subtle grid (optimized - hanya garis tipis)
     final gridPaint = Paint()
-      ..color = Colors.white.withOpacity(0.05)
+      ..color = Colors.white.withOpacity(0.03)
       ..strokeWidth = 0.5;
 
     for (int i = 0; i <= gridSize; i++) {
+      final offset = i * cellSize;
       canvas.drawLine(
-        Offset(i * cellWidth, 0),
-        Offset(i * cellWidth, size.height),
+        Offset(offset, 0),
+        Offset(offset, gridSize * cellSize),
         gridPaint,
       );
       canvas.drawLine(
-        Offset(0, i * cellHeight),
-        Offset(size.width, i * cellHeight),
+        Offset(0, offset),
+        Offset(gridSize * cellSize, offset),
         gridPaint,
       );
     }
 
-    // Draw snake dengan gradient dan efek glow
+    // Draw snake dengan optimized rendering
+    final headPaint = Paint()
+      ..shader = RadialGradient(
+        colors: [const Color(0xFF00E676), const Color(0xFF00B14F)],
+      ).createShader(Rect.fromLTWH(0, 0, cellSize, cellSize));
+
     for (int i = 0; i < snake.length; i++) {
       final point = snake[i];
       final rect = Rect.fromLTWH(
-        point.x * cellWidth + 2,
-        point.y * cellHeight + 2,
-        cellWidth - 4,
-        cellHeight - 4,
+        point.x * cellSize + 2,
+        point.y * cellSize + 2,
+        cellSize - 4,
+        cellSize - 4,
       );
 
-      // Snake head lebih besar dan berbeda warna
       final bool isHead = i == 0;
-      final paint = Paint();
 
       if (isHead) {
-        paint.shader = RadialGradient(
-          colors: [
-            const Color(0xFF00E676),
-            const Color(0xFF00B14F),
-            const Color(0xFF00A047),
-          ],
-        ).createShader(rect);
-      } else {
-        // Body dengan gradient yang memudar
-        final alpha = (255 * (1 - i / snake.length * 0.7)).toInt();
-        paint.color = Color.fromARGB(alpha, 0, 177, 79);
-      }
-
-      // Glow effect untuk head
-      if (isHead) {
+        // Head dengan glow
         final glowPaint = Paint()
-          ..color = const Color(0xFF00E676).withOpacity(0.3)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.outer, 8);
-
+          ..color = const Color(0xFF00E676).withOpacity(0.4)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
         canvas.drawRRect(
-          RRect.fromRectAndRadius(rect.inflate(4), const Radius.circular(8)),
+          RRect.fromRectAndRadius(rect.inflate(3), const Radius.circular(8)),
           glowPaint,
         );
-      }
 
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(rect, Radius.circular(isHead ? 8 : 6)),
-        paint,
-      );
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(rect, const Radius.circular(8)),
+          headPaint,
+        );
 
-      // Snake eyes untuk head
-      if (isHead) {
-        final eyeSize = cellWidth * 0.15;
+        // Simple eyes
+        final eyeSize = cellSize * 0.12;
         final eyePaint = Paint()..color = Colors.white;
-
-        canvas.drawCircle(
-          Offset(rect.center.dx - eyeSize, rect.center.dy - eyeSize / 2),
-          eyeSize / 2,
-          eyePaint,
-        );
-        canvas.drawCircle(
-          Offset(rect.center.dx + eyeSize, rect.center.dy - eyeSize / 2),
-          eyeSize / 2,
-          eyePaint,
-        );
-
-        // Pupils
         final pupilPaint = Paint()..color = Colors.black;
-        canvas.drawCircle(
-          Offset(rect.center.dx - eyeSize, rect.center.dy - eyeSize / 2),
-          eyeSize / 4,
-          pupilPaint,
+
+        final leftEye = Offset(
+          rect.center.dx - eyeSize * 1.5,
+          rect.center.dy - eyeSize,
         );
-        canvas.drawCircle(
-          Offset(rect.center.dx + eyeSize, rect.center.dy - eyeSize / 2),
-          eyeSize / 4,
-          pupilPaint,
+        final rightEye = Offset(
+          rect.center.dx + eyeSize * 1.5,
+          rect.center.dy - eyeSize,
+        );
+
+        canvas.drawCircle(leftEye, eyeSize, eyePaint);
+        canvas.drawCircle(rightEye, eyeSize, eyePaint);
+        canvas.drawCircle(leftEye, eyeSize * 0.5, pupilPaint);
+        canvas.drawCircle(rightEye, eyeSize * 0.5, pupilPaint);
+      } else {
+        // Body dengan opacity gradient
+        final alpha = (255 * (1 - i / snake.length * 0.6)).toInt();
+        final bodyPaint = Paint()..color = Color.fromARGB(alpha, 0, 182, 83);
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(rect, const Radius.circular(6)),
+          bodyPaint,
         );
       }
     }
 
-    // Draw food dengan animasi dan glow effect
+    // Draw food dengan pulse effect
     final foodRect = Rect.fromLTWH(
-      food.x * cellWidth + 3,
-      food.y * cellHeight + 3,
-      cellWidth - 6,
-      cellHeight - 6,
+      food.x * cellSize + 3,
+      food.y * cellSize + 3,
+      cellSize - 6,
+      cellSize - 6,
     );
 
-    // Pulsing glow effect
-    final glowRadius = 15 + (foodAnimation.value * 10);
-    final glowPaint = Paint()
-      ..color = Colors.red.withOpacity(0.4)
-      ..maskFilter = MaskFilter.blur(BlurStyle.outer, glowRadius);
-
-    canvas.drawOval(foodRect.inflate(glowRadius), glowPaint);
-
-    // Food dengan gradient
-    final foodPaint = Paint()
-      ..shader = RadialGradient(
-        colors: [Colors.red.shade400, Colors.red.shade600, Colors.red.shade800],
-      ).createShader(foodRect);
-
-    // Pulsing scale effect
-    final scale = 1.0 + (foodAnimation.value * 0.2);
     final scaledRect = Rect.fromCenter(
       center: foodRect.center,
-      width: foodRect.width * scale,
-      height: foodRect.height * scale,
+      width: foodRect.width * foodScale,
+      height: foodRect.height * foodScale,
     );
 
+    // Glow
+    final glowPaint = Paint()
+      ..color = Colors.red.withOpacity(0.5)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+    canvas.drawOval(scaledRect.inflate(6), glowPaint);
+
+    // Food gradient
+    final foodPaint = Paint()
+      ..shader = RadialGradient(
+        colors: [Colors.red.shade400, Colors.red.shade700],
+      ).createShader(scaledRect);
     canvas.drawOval(scaledRect, foodPaint);
 
-    // Food highlight
-    final highlightPaint = Paint()..color = Colors.white.withOpacity(0.6);
+    // Highlight
+    final highlightPaint = Paint()..color = Colors.white.withOpacity(0.7);
     canvas.drawOval(
       Rect.fromCenter(
         center: scaledRect.center,
-        width: scaledRect.width * 0.4,
-        height: scaledRect.height * 0.4,
+        width: scaledRect.width * 0.35,
+        height: scaledRect.height * 0.35,
       ),
       highlightPaint,
     );
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return true;
+  bool shouldRepaint(OptimizedSnakePainter oldDelegate) {
+    return snake != oldDelegate.snake ||
+        food != oldDelegate.food ||
+        foodScale != oldDelegate.foodScale;
   }
 }

@@ -1,5 +1,6 @@
 // lib/games/endless_runner_game.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:async';
 import 'dart:math';
 
@@ -11,47 +12,36 @@ class EndlessRunnerGame extends StatefulWidget {
 }
 
 class _EndlessRunnerGameState extends State<EndlessRunnerGame>
-    with TickerProviderStateMixin {
+    with SingleTickerProviderStateMixin {
   // Game Variables
   Timer? gameTimer;
-  double playerY = 0.5; // 0.0 = top, 1.0 = bottom
+  double playerY = 100.0; // Y position from bottom
   double playerVelocity = 0;
-  bool isJumping = false;
+  bool isOnGround = true;
   bool gameStarted = false;
   bool gameOver = false;
   int score = 0;
-  int coins = 0;
-  double gameSpeed = 1.0;
+  double gameSpeed = 5.0;
 
   // Game Objects
-  List<Obstacle> obstacles = [];
-  List<Coin> gameCoins = [];
-  double obstacleTimer = 0;
-  double coinTimer = 0;
+  List<GameObject> gameObjects = [];
+  List<Particle> particles = [];
+  double spawnTimer = 0;
 
-  // Animation Controllers
-  late AnimationController playerAnimController;
-  late AnimationController backgroundController;
+  // Animation
+  late AnimationController rotationController;
 
   // Constants
-  final double gravity = 0.008;
-  final double jumpStrength = -0.15;
-  final double groundLevel = 0.7;
+  final double gravity = 1200; // pixels per second²
+  final double jumpVelocity = 550; // pixels per second (POSITIVE for up)
+  final double playerSize = 30;
+  final double groundY = 100; // Ground position from bottom
 
   @override
   void initState() {
     super.initState();
-    initializeAnimations();
-  }
-
-  void initializeAnimations() {
-    playerAnimController = AnimationController(
-      duration: const Duration(milliseconds: 200),
-      vsync: this,
-    )..repeat(reverse: true);
-
-    backgroundController = AnimationController(
-      duration: const Duration(seconds: 2),
+    rotationController = AnimationController(
+      duration: const Duration(milliseconds: 600),
       vsync: this,
     )..repeat();
   }
@@ -63,66 +53,61 @@ class _EndlessRunnerGameState extends State<EndlessRunnerGame>
       gameStarted = true;
       gameOver = false;
       score = 0;
-      coins = 0;
-      playerY = groundLevel;
-      obstacles.clear();
-      gameCoins.clear();
-      gameSpeed = 1.0;
+      playerY = groundY;
+      playerVelocity = 0;
+      isOnGround = true;
+      gameObjects.clear();
+      particles.clear();
+      gameSpeed = 5.0;
     });
 
     gameTimer = Timer.periodic(const Duration(milliseconds: 16), (timer) {
-      updateGame();
+      updateGame(0.016); // ~60 FPS
     });
   }
 
-  void updateGame() {
-    if (gameOver) return;
+  void updateGame(double dt) {
+    if (gameOver || !mounted) return;
 
     setState(() {
       // Update score
-      score += (gameSpeed * 0.5).round();
+      score += (gameSpeed * 0.1).round();
 
-      // Increase difficulty
-      if (score % 500 == 0) {
-        gameSpeed += 0.1;
+      // Increase difficulty gradually
+      if (score % 500 == 0 && gameSpeed < 12) {
+        gameSpeed += 0.2;
       }
 
       // Update player physics
-      if (isJumping || playerY < groundLevel) {
-        playerVelocity += gravity;
-        playerY += playerVelocity;
+      if (!isOnGround) {
+        playerVelocity -= gravity * dt; // Gravity pulls DOWN (negative)
+        playerY += playerVelocity * dt;
 
-        if (playerY >= groundLevel) {
-          playerY = groundLevel;
-          isJumping = false;
+        // Check if landed
+        if (playerY <= groundY) {
+          playerY = groundY;
           playerVelocity = 0;
+          isOnGround = true;
         }
       }
 
-      // Spawn obstacles
-      obstacleTimer += gameSpeed;
-      if (obstacleTimer > 80) {
-        spawnObstacle();
-        obstacleTimer = 0;
+      // Spawn objects
+      spawnTimer += dt * gameSpeed;
+      if (spawnTimer > 1.0) {
+        spawnGameObject();
+        spawnTimer = 0;
       }
 
-      // Spawn coins
-      coinTimer += gameSpeed;
-      if (coinTimer > 120) {
-        spawnCoin();
-        coinTimer = 0;
-      }
-
-      // Update obstacles
-      obstacles.removeWhere((obstacle) {
-        obstacle.x -= 0.02 * gameSpeed;
-        return obstacle.x < -0.1;
+      // Update game objects
+      gameObjects.removeWhere((obj) {
+        obj.x -= gameSpeed * dt * 100;
+        return obj.x < -50;
       });
 
-      // Update coins
-      gameCoins.removeWhere((coin) {
-        coin.x -= 0.02 * gameSpeed;
-        return coin.x < -0.1;
+      // Update particles
+      particles.removeWhere((p) {
+        p.update(dt);
+        return p.life <= 0;
       });
 
       // Check collisions
@@ -130,60 +115,89 @@ class _EndlessRunnerGameState extends State<EndlessRunnerGame>
     });
   }
 
-  void spawnObstacle() {
+  void spawnGameObject() {
     final random = Random();
-    final type = random.nextInt(3);
+    final type = random.nextInt(100);
 
-    obstacles.add(
-      Obstacle(
-        x: 1.1,
-        y: type == 0
-            ? groundLevel + 0.1
-            : groundLevel - 0.2, // Ground or air obstacle
-        width: 0.08,
-        height: type == 0 ? 0.15 : 0.08,
-        type: type,
-      ),
-    );
-  }
-
-  void spawnCoin() {
-    final random = Random();
-    gameCoins.add(
-      Coin(x: 1.1, y: groundLevel - random.nextDouble() * 0.3, size: 0.06),
-    );
+    if (type < 60) {
+      // Spike on ground
+      gameObjects.add(
+        GameObject(
+          x: 400,
+          y: groundY,
+          width: 30,
+          height: 30,
+          type: GameObjectType.spike,
+        ),
+      );
+    } else if (type < 85) {
+      // Platform in air
+      gameObjects.add(
+        GameObject(
+          x: 400,
+          y: groundY + 80,
+          width: 80,
+          height: 20,
+          type: GameObjectType.platform,
+        ),
+      );
+    } else {
+      // Moving spike in air
+      gameObjects.add(
+        GameObject(
+          x: 400,
+          y: groundY + 60,
+          width: 25,
+          height: 25,
+          type: GameObjectType.movingSpike,
+        ),
+      );
+    }
   }
 
   void checkCollisions() {
-    // Check obstacle collisions
-    for (final obstacle in obstacles) {
-      if (obstacle.x < 0.2 && obstacle.x > 0.0) {
-        if ((playerY + 0.08) > obstacle.y &&
-            (playerY - 0.08) < (obstacle.y + obstacle.height)) {
-          endGame();
-          return;
-        }
+    final playerLeft = 50;
+    final playerRight = 50 + playerSize;
+    final playerBottom = playerY; // Bottom of player
+    final playerTop = playerY + playerSize; // Top of player
+
+    for (final obj in gameObjects) {
+      if (obj.type == GameObjectType.platform) continue;
+
+      final objLeft = obj.x;
+      final objRight = obj.x + obj.width;
+      final objBottom = obj.y; // Bottom of object
+      final objTop = obj.y + obj.height; // Top of object
+
+      // Simple AABB collision
+      if (playerRight > objLeft &&
+          playerLeft < objRight &&
+          playerTop > objBottom &&
+          playerBottom < objTop) {
+        endGame();
+        return;
       }
     }
-
-    // Check coin collisions
-    gameCoins.removeWhere((coin) {
-      if (coin.x < 0.2 && coin.x > 0.0) {
-        if ((playerY - coin.y).abs() < 0.08) {
-          coins++;
-          return true;
-        }
-      }
-      return false;
-    });
   }
 
   void jump() {
-    if (!isJumping && playerY >= groundLevel) {
+    if (isOnGround && !gameOver) {
       setState(() {
-        isJumping = true;
-        playerVelocity = jumpStrength;
+        isOnGround = false;
+        playerVelocity = jumpVelocity;
       });
+      HapticFeedback.lightImpact();
+
+      // Spawn jump particles
+      for (int i = 0; i < 5; i++) {
+        particles.add(
+          Particle(
+            x: 50 + playerSize / 2,
+            y: playerY + playerSize,
+            color: Colors.cyan,
+          ),
+        );
+      }
     }
   }
 
@@ -192,6 +206,18 @@ class _EndlessRunnerGameState extends State<EndlessRunnerGame>
       gameOver = true;
     });
     gameTimer?.cancel();
+    HapticFeedback.heavyImpact();
+
+    // Death particles
+    for (int i = 0; i < 15; i++) {
+      particles.add(
+        Particle(
+          x: 50 + playerSize / 2,
+          y: playerY + playerSize / 2,
+          color: Colors.red,
+        ),
+      );
+    }
   }
 
   void resetGame() {
@@ -199,126 +225,75 @@ class _EndlessRunnerGameState extends State<EndlessRunnerGame>
     setState(() {
       gameStarted = false;
       gameOver = false;
-      playerY = groundLevel;
+      playerY = groundY;
       playerVelocity = 0;
-      obstacles.clear();
-      gameCoins.clear();
+      isOnGround = true;
+      gameObjects.clear();
+      particles.clear();
     });
   }
 
   @override
   void dispose() {
     gameTimer?.cancel();
-    playerAnimController.dispose();
-    backgroundController.dispose();
+    rotationController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF0D1421),
       body: GestureDetector(
         onTap: gameStarted ? jump : startGame,
-        child: Container(
-          width: double.infinity,
-          height: double.infinity,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                const Color(0xFF0A0A2E),
-                const Color(0xFF16213E),
-                const Color(0xFF0F3460),
-              ],
+        child: Stack(
+          children: [
+            // Game area
+            Container(
+              width: double.infinity,
+              height: double.infinity,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [const Color(0xFF0D1421), const Color(0xFF1B2332)],
+                ),
+              ),
+              child: gameStarted ? _buildGameArea() : _buildStartScreen(),
             ),
-          ),
-          child: Stack(
-            children: [
-              // Background effects
-              _buildBackground(),
 
-              // Game area
-              if (gameStarted) _buildGameArea(),
+            // UI Overlay
+            if (gameStarted) _buildUI(),
 
-              // UI
-              _buildUI(),
-
-              // Game over overlay
-              if (gameOver) _buildGameOverOverlay(),
-            ],
-          ),
+            // Game over overlay
+            if (gameOver) _buildGameOverOverlay(),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildBackground() {
-    return AnimatedBuilder(
-      animation: backgroundController,
-      builder: (context, child) {
-        return CustomPaint(
-          painter: BackgroundPainter(backgroundController.value),
-          size: Size.infinite,
-        );
-      },
-    );
-  }
-
-  Widget _buildGameArea() {
-    final size = MediaQuery.of(context).size;
-
-    return Stack(
-      children: [
-        // Ground line
-        Positioned(
-          bottom: size.height * (1 - groundLevel - 0.05),
-          left: 0,
-          right: 0,
-          height: 4,
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.cyan.withOpacity(0.5),
-                  Colors.cyan,
-                  Colors.cyan.withOpacity(0.5),
-                ],
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.cyan.withOpacity(0.5),
-                  blurRadius: 10,
-                  spreadRadius: 2,
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        // Player
-        AnimatedPositioned(
-          duration: const Duration(milliseconds: 100),
-          left: size.width * 0.1,
-          bottom: size.height * (1 - playerY - 0.08),
-          child: AnimatedBuilder(
-            animation: playerAnimController,
+  Widget _buildStartScreen() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          AnimatedBuilder(
+            animation: rotationController,
             builder: (context, child) {
               return Transform.rotate(
-                angle: playerVelocity * 2,
+                angle: rotationController.value * 2 * pi,
                 child: Container(
-                  width: size.width * 0.08,
-                  height: size.height * 0.08,
+                  width: 80,
+                  height: 80,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.cyan, const Color(0xFF1565C0)],
-                    ),
+                    color: Colors.cyan,
                     borderRadius: BorderRadius.circular(8),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.cyan.withOpacity(0.6),
-                        blurRadius: 15,
-                        spreadRadius: playerAnimController.value * 3,
+                        blurRadius: 20,
+                        spreadRadius: 5,
                       ),
                     ],
                   ),
@@ -326,87 +301,73 @@ class _EndlessRunnerGameState extends State<EndlessRunnerGame>
               );
             },
           ),
-        ),
-
-        // Obstacles
-        ...obstacles.map((obstacle) => _buildObstacle(size, obstacle)),
-
-        // Coins
-        ...gameCoins.map((coin) => _buildCoin(size, coin)),
-      ],
-    );
-  }
-
-  Widget _buildObstacle(Size size, Obstacle obstacle) {
-    Color color;
-    switch (obstacle.type) {
-      case 0: // Ground spike
-        color = Colors.red;
-        break;
-      case 1: // Air block
-        color = Colors.orange;
-        break;
-      default:
-        color = Colors.purple;
-    }
-
-    return Positioned(
-      left: size.width * obstacle.x,
-      bottom: size.height * (1 - obstacle.y - obstacle.height),
-      child: Container(
-        width: size.width * obstacle.width,
-        height: size.height * obstacle.height,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              color,
-              Color.fromRGBO(
-                color.red ~/ 1.5,
-                color.green ~/ 1.5,
-                color.blue ~/ 1.5,
-                1.0,
+          const SizedBox(height: 30),
+          const Text(
+            'GEOMETRY DASH',
+            style: TextStyle(
+              fontSize: 36,
+              fontWeight: FontWeight.bold,
+              color: Colors.cyan,
+              letterSpacing: 2,
+              shadows: [Shadow(color: Colors.black, blurRadius: 10)],
+            ),
+          ),
+          const SizedBox(height: 15),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Text(
+              'Tap to jump and avoid obstacles!',
+              style: TextStyle(fontSize: 16, color: Colors.white70),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 40),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 18),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Colors.cyan, Color(0xFF0D7377)],
               ),
-            ],
-          ),
-          borderRadius: BorderRadius.circular(4),
-          boxShadow: [
-            BoxShadow(
-              color: color.withOpacity(0.5),
-              blurRadius: 8,
-              spreadRadius: 2,
+              borderRadius: BorderRadius.circular(30),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.cyan.withOpacity(0.5),
+                  blurRadius: 20,
+                  spreadRadius: 3,
+                ),
+              ],
             ),
-          ],
-        ),
+            child: const Text(
+              'TAP TO START',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.5,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildCoin(Size size, Coin coin) {
-    return Positioned(
-      left: size.width * coin.x,
-      bottom: size.height * (1 - coin.y - coin.size / 2),
-      child: Container(
-        width: size.width * coin.size,
-        height: size.width * coin.size,
-        decoration: BoxDecoration(
-          gradient: RadialGradient(
-            colors: [Colors.yellow, const Color(0xFFE65100)],
-          ),
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.yellow.withOpacity(0.8),
-              blurRadius: 15,
-              spreadRadius: 3,
-            ),
-          ],
-        ),
-        child: Icon(
-          Icons.star,
-          color: Colors.white,
-          size: size.width * coin.size * 0.6,
-        ),
+  Widget _buildGameArea() {
+    return CustomPaint(
+      painter: GamePainter(
+        playerY: playerY,
+        playerSize: playerSize,
+        groundY: groundY,
+        gameObjects: gameObjects,
+        particles: particles,
+        rotationValue: rotationController.value,
+        isOnGround: isOnGround,
       ),
+      child: Container(),
     );
   }
 
@@ -414,103 +375,30 @@ class _EndlessRunnerGameState extends State<EndlessRunnerGame>
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(20),
-        child: Column(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // Top UI
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Back button
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
-                ),
-                // Score and coins
-                if (gameStarted) ...[
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        'Score: $score',
-                        style: const TextStyle(
-                          color: Colors.cyan,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        '⭐ $coins',
-                        style: const TextStyle(
-                          color: Colors.yellow,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ],
+            IconButton(
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(Icons.arrow_back, color: Colors.cyan, size: 28),
             ),
-
-            const Spacer(),
-
-            // Start message
-            if (!gameStarted && !gameOver) ...[
-              Column(
-                children: [
-                  const Icon(
-                    Icons.directions_run,
-                    size: 80,
-                    color: Colors.cyan,
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    '🏃‍♂️ Cyber Runner',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.cyan,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    'Tap to jump and avoid obstacles!',
-                    style: TextStyle(fontSize: 16, color: Colors.white70),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 30),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 30,
-                      vertical: 15,
-                    ),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Colors.cyan, const Color(0xFF1976D2)],
-                      ),
-                      borderRadius: BorderRadius.circular(25),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.cyan.withOpacity(0.5),
-                          blurRadius: 15,
-                          spreadRadius: 2,
-                        ),
-                      ],
-                    ),
-                    child: const Text(
-                      'TAP TO START',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.5),
+                borderRadius: BorderRadius.circular(15),
+                border: Border.all(color: Colors.cyan, width: 2),
               ),
-            ],
-
-            const SizedBox(height: 100),
+              child: Text(
+                'SCORE: $score',
+                style: const TextStyle(
+                  color: Colors.cyan,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1,
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -519,68 +407,90 @@ class _EndlessRunnerGameState extends State<EndlessRunnerGame>
 
   Widget _buildGameOverOverlay() {
     return Container(
-      color: Colors.black.withOpacity(0.8),
+      decoration: BoxDecoration(color: Colors.black.withOpacity(0.9)),
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            const Icon(Icons.close, size: 80, color: Colors.red),
+            const SizedBox(height: 20),
             const Text(
-              '💥 GAME OVER',
+              'GAME OVER',
               style: TextStyle(
-                fontSize: 36,
+                fontSize: 42,
                 fontWeight: FontWeight.bold,
                 color: Colors.red,
+                letterSpacing: 2,
+                shadows: [Shadow(color: Colors.black, blurRadius: 10)],
               ),
             ),
             const SizedBox(height: 20),
-            Text(
-              'Final Score: $score',
-              style: const TextStyle(
-                fontSize: 24,
-                color: Colors.cyan,
-                fontWeight: FontWeight.bold,
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+              decoration: BoxDecoration(
+                color: Colors.cyan.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(15),
+                border: Border.all(color: Colors.cyan, width: 2),
+              ),
+              child: Text(
+                'FINAL SCORE: $score',
+                style: const TextStyle(
+                  fontSize: 24,
+                  color: Colors.cyan,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1,
+                ),
               ),
             ),
-            Text(
-              '⭐ Stars Collected: $coins',
-              style: const TextStyle(fontSize: 18, color: Colors.yellow),
-            ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 50),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                ElevatedButton(
-                  onPressed: resetGame,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.cyan,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 30,
-                      vertical: 15,
-                    ),
-                  ),
-                  child: const Text(
+                ElevatedButton.icon(
+                  onPressed: () {
+                    resetGame();
+                    startGame();
+                  },
+                  icon: const Icon(Icons.replay, color: Colors.white),
+                  label: const Text(
                     'PLAY AGAIN',
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.cyan,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 30,
+                      vertical: 16,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
                     ),
                   ),
                 ),
                 const SizedBox(width: 20),
-                ElevatedButton(
+                ElevatedButton.icon(
                   onPressed: () => Navigator.pop(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey.shade700,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 30,
-                      vertical: 15,
-                    ),
-                  ),
-                  child: const Text(
+                  icon: const Icon(Icons.home, color: Colors.white70),
+                  label: const Text(
                     'MENU',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: Colors.white70,
                       fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white24,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 30,
+                      vertical: 16,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
                     ),
                   ),
                 ),
@@ -594,11 +504,13 @@ class _EndlessRunnerGameState extends State<EndlessRunnerGame>
 }
 
 // Game Objects
-class Obstacle {
-  double x, y, width, height;
-  int type;
+enum GameObjectType { spike, platform, movingSpike }
 
-  Obstacle({
+class GameObject {
+  double x, y, width, height;
+  GameObjectType type;
+
+  GameObject({
     required this.x,
     required this.y,
     required this.width,
@@ -607,35 +519,207 @@ class Obstacle {
   });
 }
 
-class Coin {
-  double x, y, size;
+class Particle {
+  double x, y;
+  double vx, vy;
+  Color color;
+  double life;
 
-  Coin({required this.x, required this.y, required this.size});
+  Particle({required this.x, required this.y, required this.color})
+    : vx = (Random().nextDouble() - 0.5) * 200,
+      vy = Random().nextDouble() * 150 + 50, // Positive = upward
+      life = 1.0;
+
+  void update(double dt) {
+    x += vx * dt;
+    y += vy * dt;
+    vy -= 500 * dt; // Gravity pulls down
+    life -= dt * 2;
+  }
 }
 
-// Background Painter
-class BackgroundPainter extends CustomPainter {
-  final double animationValue;
+// Game Painter
+class GamePainter extends CustomPainter {
+  final double playerY;
+  final double playerSize;
+  final double groundY;
+  final List<GameObject> gameObjects;
+  final List<Particle> particles;
+  final double rotationValue;
+  final bool isOnGround;
 
-  BackgroundPainter(this.animationValue);
+  GamePainter({
+    required this.playerY,
+    required this.playerSize,
+    required this.groundY,
+    required this.gameObjects,
+    required this.particles,
+    required this.rotationValue,
+    required this.isOnGround,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.cyan.withOpacity(0.1)
+    // Draw ground
+    final groundPaint = Paint()
+      ..color = Colors.cyan.withOpacity(0.3)
+      ..style = PaintingStyle.fill;
+
+    canvas.drawRect(
+      Rect.fromLTWH(0, size.height - groundY, size.width, groundY),
+      groundPaint,
+    );
+
+    // Draw ground line with glow
+    final glowPaint = Paint()
+      ..color = Colors.cyan.withOpacity(0.5)
+      ..strokeWidth = 3
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);
+
+    canvas.drawLine(
+      Offset(0, size.height - groundY),
+      Offset(size.width, size.height - groundY),
+      glowPaint,
+    );
+
+    final linePaint = Paint()
+      ..color = Colors.cyan
       ..strokeWidth = 2;
 
-    // Moving lines effect
-    for (int i = 0; i < 5; i++) {
-      final x = (size.width * (i * 0.3 + animationValue)) % (size.width * 1.5);
-      canvas.drawLine(
-        Offset(x, 0),
-        Offset(x - size.height * 0.3, size.height),
-        paint,
+    canvas.drawLine(
+      Offset(0, size.height - groundY),
+      Offset(size.width, size.height - groundY),
+      linePaint,
+    );
+
+    // Draw particles
+    for (final particle in particles) {
+      final particlePaint = Paint()
+        ..color = particle.color.withOpacity(particle.life);
+
+      canvas.drawCircle(
+        Offset(particle.x, size.height - particle.y),
+        3,
+        particlePaint,
       );
     }
+
+    // Draw game objects
+    for (final obj in gameObjects) {
+      switch (obj.type) {
+        case GameObjectType.spike:
+          _drawSpike(canvas, size, obj);
+          break;
+        case GameObjectType.platform:
+          _drawPlatform(canvas, size, obj);
+          break;
+        case GameObjectType.movingSpike:
+          _drawMovingSpike(canvas, size, obj);
+          break;
+      }
+    }
+
+    // Draw player with rotation
+    canvas.save();
+    canvas.translate(
+      50 + playerSize / 2,
+      size.height - playerY - playerSize / 2,
+    );
+    canvas.rotate(rotationValue * 2 * pi);
+
+    // Player glow
+    final playerGlow = Paint()
+      ..color = Colors.cyan.withOpacity(0.5)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 15);
+
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromCenter(
+          center: Offset.zero,
+          width: playerSize + 10,
+          height: playerSize + 10,
+        ),
+        const Radius.circular(8),
+      ),
+      playerGlow,
+    );
+
+    // Player body
+    final playerPaint = Paint()..color = Colors.cyan;
+
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromCenter(
+          center: Offset.zero,
+          width: playerSize,
+          height: playerSize,
+        ),
+        const Radius.circular(5),
+      ),
+      playerPaint,
+    );
+
+    canvas.restore();
+  }
+
+  void _drawSpike(Canvas canvas, Size size, GameObject obj) {
+    final paint = Paint()..color = Colors.red;
+
+    final glowPaint = Paint()
+      ..color = Colors.red.withOpacity(0.3)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+
+    final path = Path();
+    final baseY = size.height - obj.y;
+    path.moveTo(obj.x, baseY);
+    path.lineTo(obj.x + obj.width / 2, baseY - obj.height);
+    path.lineTo(obj.x + obj.width, baseY);
+    path.close();
+
+    canvas.drawPath(path, glowPaint);
+    canvas.drawPath(path, paint);
+  }
+
+  void _drawPlatform(Canvas canvas, Size size, GameObject obj) {
+    final paint = Paint()..color = Colors.orange;
+
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(
+          obj.x,
+          size.height - obj.y - obj.height,
+          obj.width,
+          obj.height,
+        ),
+        const Radius.circular(4),
+      ),
+      paint,
+    );
+  }
+
+  void _drawMovingSpike(Canvas canvas, Size size, GameObject obj) {
+    final paint = Paint()..color = Colors.purple;
+    final glowPaint = Paint()
+      ..color = Colors.purple.withOpacity(0.4)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
+
+    final centerY = size.height - obj.y - obj.height / 2;
+
+    canvas.drawCircle(
+      Offset(obj.x + obj.width / 2, centerY),
+      obj.width / 2 + 5,
+      glowPaint,
+    );
+
+    canvas.drawCircle(
+      Offset(obj.x + obj.width / 2, centerY),
+      obj.width / 2,
+      paint,
+    );
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant GamePainter oldDelegate) {
+    return true;
+  }
 }

@@ -3,8 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/media_item.dart';
 
 class VideoService {
-  static const String _baseUrl =
-      'https://acorned-willis-overneatly.ngrok-free.dev'; // ganti dengan IP real device jika butuh
+  static const String _baseUrl = 'https://maxg.gvisignagesystem.com';
 
   Future<List<MediaItem>> fetchMusic() async {
     final response = await http.get(Uri.parse('$_baseUrl/api/media'));

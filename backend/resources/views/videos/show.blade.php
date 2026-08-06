@@ -2,7 +2,7 @@
 
 @section('content')
 <!-- Background with gradient effect -->
-<div class="min-h-screen flex text-gray-700 overflow-hidden relative" style="background-image: url('{{ asset('images/background/Background_Color.png') }}'); background-size: cover; background-position: center;">
+<div class="min-h-screen flex text-gray-700 overflow-hidden relative" style="background-image: url('{{ asset('images/background/Background_Color.webp') }}'); background-size: cover; background-position: center;">
   <!-- Enhanced overlay pattern -->
   <div class="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-slate-800/10 to-slate-900/30"></div>
 

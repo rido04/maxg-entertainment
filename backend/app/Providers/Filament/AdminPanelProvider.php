@@ -7,6 +7,7 @@ use Filament\Panel;
 use Filament\Widgets;
 use App\Models\NewsArticle;
 use Filament\PanelProvider;
+use App\Models\PassengerSession;
 use Filament\Support\Colors\Color;
 use App\Filament\Resources\MediaResource;
 use Filament\Http\Middleware\Authenticate;
@@ -17,6 +18,8 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use App\Filament\Resources\AdvertisementResource;
 use Filament\Http\Middleware\AuthenticateSession;
+use App\Filament\Resources\PassengerSessionResource;
+use App\Filament\Resources\RunningTextResource;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -54,6 +57,8 @@ class AdminPanelProvider extends PanelProvider
                 MediaResource::class,
                 AdvertisementResource::class,
                 NewsArticleResource::class,
+                PassengerSessionResource::class,
+                RunningTextResource::class
             ])
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([

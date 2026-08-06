@@ -159,15 +159,31 @@ class VideoController extends Controller
 
         Log::info('Processing file:', ['file' => $fileName, 'path' => $filePath]);
 
-        // PERBAIKAN 1: Pengecekan duplikasi yang lebih ketat - prioritas utama file_path
+        // Cek file_path dulu (primary check)
         $existingByPath = Media::where('file_path', $filePath)->first();
 
         if ($existingByPath) {
-            Log::info('File skipped - already exists by path:', ['file' => $fileName]);
-            return [
-                'status' => 'skipped',
-                'message' => 'File already exists in database (same path)'
-            ];
+            if ($this->needsMetadataUpdate($existingByPath)) {
+                Log::info('Updating incomplete metadata for:', ['title' => $existingByPath->title]);
+
+                if ($this->tmdb->updateMediaWithTmdbData($existingByPath)) {
+                    return [
+                        'status' => 'processed',
+                        'message' => 'Metadata updated successfully',
+                        'media_id' => $existingByPath->id
+                    ];
+                } else {
+                    Log::warning('Failed to update metadata for:', ['title' => $existingByPath->title]);
+                    $existingByPath->delete();
+                    Log::info('Deleted old media entry, will re-process file');
+                }
+            } else {
+                Log::info('File skipped - already exists with complete metadata:', ['file' => $fileName]);
+                return [
+                    'status' => 'skipped',
+                    'message' => 'File already exists with complete metadata'
+                ];
+            }
         }
 
         // Extract title dan year dari filename
@@ -176,21 +192,33 @@ class VideoController extends Controller
 
         Log::info('Extracted data:', ['title' => $titleData, 'year' => $year]);
 
-        // PERBAIKAN 2: Pengecekan duplikasi berdasarkan title+year (lebih akurat)
+        // Cek duplikasi berdasarkan title+year
         if (!empty($titleData)) {
             $duplicateQuery = Media::where('title', $titleData)->where('type', 'video');
 
             if ($year) {
-                // Jika ada year, cek kombinasi title+year
                 $duplicateQuery->where(function($query) use ($year) {
                     $query->whereYear('release_date', $year)
-                          ->orWhereNull('release_date'); // Include records tanpa release_date
+                        ->orWhereNull('release_date');
                 });
             }
 
             $existingByTitle = $duplicateQuery->first();
 
             if ($existingByTitle) {
+                // PERBAIKAN: Cek metadata sebelum skip
+                if ($this->needsMetadataUpdate($existingByTitle)) {
+                    Log::info('Updating incomplete metadata for duplicate:', ['title' => $existingByTitle->title]);
+
+                    if ($this->tmdb->updateMediaWithTmdbData($existingByTitle)) {
+                        return [
+                            'status' => 'processed',
+                            'message' => 'Duplicate found - metadata updated',
+                            'media_id' => $existingByTitle->id
+                        ];
+                    }
+                }
+
                 Log::info('File skipped - duplicate title found:', [
                     'file' => $fileName,
                     'existing_id' => $existingByTitle->id,
@@ -203,11 +231,10 @@ class VideoController extends Controller
             }
         }
 
-        // Get file metadata
+        // ... sisanya tetap sama (create new media)
         $fileMetadata = $this->getFileMetadata($file);
         Log::info('File metadata:', $fileMetadata);
 
-        // Get TMDB data
         $tmdbData = $this->getTmdbData($titleData, $year);
 
         if ($tmdbData) {
@@ -216,7 +243,6 @@ class VideoController extends Controller
             Log::info('No TMDB data found for:', ['title' => $titleData, 'year' => $year]);
         }
 
-        // Validate content appropriateness
         if ($tmdbData && !$this->isContentAppropriate($tmdbData)) {
             Log::info('File skipped - inappropriate content:', ['file' => $fileName]);
             return [
@@ -225,14 +251,11 @@ class VideoController extends Controller
             ];
         }
 
-        // PERBAIKAN 3: Gunakan updateOrCreate untuk menghindari race condition
         $mediaData = $this->buildMediaData($titleData, $filePath, $fileMetadata, $tmdbData);
 
         try {
             $savedMedia = Media::updateOrCreate(
-                [
-                    'file_path' => $filePath // Primary key untuk pengecekan
-                ],
+                ['file_path' => $filePath],
                 $mediaData
             );
 
@@ -241,7 +264,6 @@ class VideoController extends Controller
                 'title' => $savedMedia->title,
                 'file_path' => $savedMedia->file_path,
                 'tmdb_id' => $savedMedia->tmdb_id,
-                'is_adult_content' => $savedMedia->is_adult_content,
                 'cast' => $savedMedia->cast,
                 'director' => $savedMedia->director,
                 'was_recently_created' => $savedMedia->wasRecentlyCreated
@@ -261,6 +283,29 @@ class VideoController extends Controller
             ]);
             throw $e;
         }
+    }
+
+    /**
+     * Helper: Cek apakah media butuh update metadata
+     */
+    private function needsMetadataUpdate(Media $media): bool
+    {
+        // Untuk video, cek metadata penting dari TMDb
+        if ($media->type === 'video') {
+            return empty($media->cast)
+                || empty($media->director)
+                || empty($media->content_rating)
+                || empty($media->duration);
+        }
+
+        // Untuk audio, cek metadata dari Spotify
+        if ($media->type === 'audio') {
+            return empty($media->artist)
+                || empty($media->album)
+                || empty($media->thumbnail);
+        }
+
+        return false;
     }
 
     private function extractTitleFromFilename($fileName)

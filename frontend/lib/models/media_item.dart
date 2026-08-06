@@ -105,8 +105,7 @@ class MediaItem {
   }
 
   // Getter untuk download URL
-  String get downloadUrl =>
-      'https://acorned-willis-overneatly.ngrok-free.dev/$fileUrl';
+  String get downloadUrl => 'https://maxg.gvisignagesystem.com/$fileUrl';
 
   // Getter untuk ekstensi file
   String get fileExtension {

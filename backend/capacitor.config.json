@@ -1,0 +1,10 @@
+{
+    "appId": "com.maxg.entertainment",
+    "appName": "MaxG Entertainment",
+    "webDir": "public",
+    "bundledWebRuntime": false,
+    "server": {
+        "url": "https://maxg.app.medialoger.com",
+        "cleartext": true
+    }
+}

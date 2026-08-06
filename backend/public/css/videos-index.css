@@ -54,15 +54,15 @@
 .main-content-scroll {
     scroll-behavior: smooth;
     scroll-snap-type: y mandatory; /* Snap ke setiap section */
-}
+}git add ., 
 
 /* Movie item transitions */
 .movie-item {
     background: linear-gradient(
         135deg,
-        #bfdbfe 0%,
-        #93c5fd 50%,
-        #7dd3fc 100%
+        #f0b513 0%,
+        #f5d271 50%,
+        #f2d78a 100%
     ) !important;
     border: 1px solid rgba(147, 197, 253, 0.3) !important;
     border-radius: 0 70px 70px 0 !important; /* Reduced radius untuk lebih subtle */

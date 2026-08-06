@@ -621,7 +621,7 @@ class _MusicScreenState extends State<MusicScreen> {
               final artistSong = musicList.firstWhere(
                 (music) => music.artist == artist,
               );
-              return _buildArtistCard(artist, artistSong, isTablet);
+              return _buildArtistCard(artist, artistSong, musicList, isTablet);
             },
           ),
         ),
@@ -629,7 +629,12 @@ class _MusicScreenState extends State<MusicScreen> {
     );
   }
 
-  Widget _buildArtistCard(String artist, MediaItem artistSong, bool isTablet) {
+  Widget _buildArtistCard(
+    String artist,
+    MediaItem artistSong,
+    List<MediaItem> allMusic,
+    bool isTablet,
+  ) {
     return Container(
       width: isTablet ? 160 : 120,
       margin: const EdgeInsets.only(right: 16),
@@ -640,8 +645,12 @@ class _MusicScreenState extends State<MusicScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>
-                      ArtistDetailScreen(artistName: artist, musicList: []),
+                  builder: (context) => ArtistDetailScreen(
+                    artistName: artist,
+                    musicList: allMusic
+                        .where((m) => m.artist == artist)
+                        .toList(),
+                  ),
                 ),
               );
             },

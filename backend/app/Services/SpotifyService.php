@@ -28,10 +28,25 @@ class SpotifyService
      * @param \App\Models\Media $media
      * @return void
      */
-    public function enrich(Media $media)
+    /**
+     * Enrich a media model with data from Spotify.
+     *
+     * @param \App\Models\Media $media
+     * @return bool Success status
+     */
+    public function enrich(Media $media): bool
     {
+        // Cek apakah metadata sudah lengkap
+        if ($this->hasCompleteMetadata($media)) {
+            Log::info("Spotify metadata already complete for: {$media->title}");
+            return true; // Sudah lengkap
+        }
+
         $token = $this->getAccessToken();
-        if (!$token) return;
+        if (!$token) {
+            Log::error("Failed to get Spotify access token");
+            return false;
+        }
 
         $query = $media->artist
             ? "{$media->title} {$media->artist}"
@@ -46,41 +61,56 @@ class SpotifyService
 
         $track = $response['tracks']['items'][0] ?? null;
 
-        if ($track) {
-            $media->update([
-                'artist' => $track['artists'][0]['name'] ?? null,
-                'album' => $track['album']['name'] ?? null,
-                'thumbnail' => $track['album']['images'][0]['url'] ?? null,
-                'release_date' => $track['album']['release_date'] ?? null,
-                'description' => 'From album: ' . ($track['album']['name'] ?? ''),
-            ]);
+        if (!$track) {
+            Log::warning("No Spotify track found for: {$media->title}");
+            return false;
+        }
 
-            // Download preview URL jika tersedia
-            $previewUrl = $track['preview_url'];
-            if ($previewUrl) {
-                $downloader = new MediaDownloader();
-                $result = $downloader->download($previewUrl, 'media/music');
-                if ($result['success']) {
-                    $media->file_path = $result['path'];
-                    $media->checksum = hash_file('sha256', storage_path('app/public/' . Str::after($result['path'], '/storage/')));
-                    $media->save(); // Jangan lupa save setelah update file_path dan checksum
-                }
-            }
+        $media->update([
+            'artist' => $track['artists'][0]['name'] ?? null,
+            'album' => $track['album']['name'] ?? null,
+            'thumbnail' => $track['album']['images'][0]['url'] ?? null,
+            'release_date' => $track['album']['release_date'] ?? null,
+            'description' => 'From album: ' . ($track['album']['name'] ?? ''),
+        ]);
 
-            // Fetch artist image
-            $artistId = $track['artists'][0]['id'] ?? null;
-
-            if ($artistId) {
-                $artistResponse = Http::withToken($token)
-                    ->get("https://api.spotify.com/v1/artists/{$artistId}");
-
-                $artistImage = $artistResponse['images'][0]['url'] ?? null;
-
-                $media->update([
-                    'artist_image' => $artistImage,
-                ]);
-                Log::info("Artist Image for {$media->title}: {$artistImage}");
+        // Download preview URL jika tersedia
+        $previewUrl = $track['preview_url'];
+        if ($previewUrl) {
+            $downloader = new MediaDownloader();
+            $result = $downloader->download($previewUrl, 'media/music');
+            if ($result['success']) {
+                $media->file_path = $result['path'];
+                $media->checksum = hash_file('sha256', storage_path('app/public/' . Str::after($result['path'], '/storage/')));
+                $media->save();
             }
         }
+
+        // Fetch artist image
+        $artistId = $track['artists'][0]['id'] ?? null;
+
+        if ($artistId) {
+            $artistResponse = Http::withToken($token)
+                ->get("https://api.spotify.com/v1/artists/{$artistId}");
+
+            $artistImage = $artistResponse['images'][0]['url'] ?? null;
+
+            $media->update([
+                'artist_image' => $artistImage,
+            ]);
+            Log::info("Artist Image for {$media->title}: {$artistImage}");
+        }
+
+        return true;
+    }
+
+    /**
+     * Cek apakah metadata Spotify sudah lengkap
+     */
+    protected function hasCompleteMetadata(Media $media): bool
+    {
+        return !empty($media->artist)
+            && !empty($media->album)
+            && !empty($media->thumbnail);
     }
 }

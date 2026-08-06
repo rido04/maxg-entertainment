@@ -11,7 +11,8 @@ class PacmanGame extends StatefulWidget {
   State<PacmanGame> createState() => _PacmanGameState();
 }
 
-class _PacmanGameState extends State<PacmanGame> with TickerProviderStateMixin {
+class _PacmanGameState extends State<PacmanGame>
+    with SingleTickerProviderStateMixin {
   // Game Variables
   Timer? gameTimer;
   bool gameStarted = false;
@@ -20,24 +21,14 @@ class _PacmanGameState extends State<PacmanGame> with TickerProviderStateMixin {
   int score = 0;
   int lives = 3;
 
-  // Animation Controllers
-  late AnimationController pacmanController;
-  late AnimationController ghostController;
-  late AnimationController powerPelletController;
-  late AnimationController moveAnimationController;
-  late AnimationController scoreAnimationController;
-
-  // Smooth Movement Variables
-  double pacmanAnimX = 9.0;
-  double pacmanAnimY = 15.0;
-  List<Offset> ghostAnimPositions = [];
+  // Single Animation Controller untuk semua animasi
+  late AnimationController animationController;
 
   // Player
   int pacmanX = 9;
   int pacmanY = 15;
   String direction = 'right';
   String nextDirection = 'right';
-  bool isMoving = false;
 
   // Ghosts
   List<Ghost> ghosts = [];
@@ -49,12 +40,6 @@ class _PacmanGameState extends State<PacmanGame> with TickerProviderStateMixin {
   List<List<int>> maze = [];
   int totalDots = 0;
   int dotsCollected = 0;
-  int comboMultiplier = 1;
-  int scorePopup = 0;
-
-  // Visual Effects
-  List<ParticleEffect> particles = [];
-  Color mazeColor = const Color(0xFF1565C0);
 
   // Grid size
   final int rows = 21;
@@ -64,55 +49,23 @@ class _PacmanGameState extends State<PacmanGame> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     initializeGame();
-    setupAnimations();
+    setupAnimation();
   }
 
-  void setupAnimations() {
-    pacmanController = AnimationController(
-      duration: const Duration(milliseconds: 200),
+  void setupAnimation() {
+    animationController = AnimationController(
+      duration: const Duration(milliseconds: 500),
       vsync: this,
     )..repeat();
-
-    ghostController = AnimationController(
-      duration: const Duration(milliseconds: 1000),
-      vsync: this,
-    )..repeat(reverse: true);
-
-    powerPelletController = AnimationController(
-      duration: const Duration(milliseconds: 600),
-      vsync: this,
-    )..repeat(reverse: true);
-
-    moveAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 150),
-      vsync: this,
-    );
-
-    scoreAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-
-    moveAnimationController.addListener(() {
-      if (mounted) setState(() {});
-    });
   }
 
   void initializeGame() {
     createMaze();
     setupGhosts();
-    setupGhostAnimPositions();
     countDots();
   }
 
-  void setupGhostAnimPositions() {
-    ghostAnimPositions = ghosts
-        .map((ghost) => Offset(ghost.x.toDouble(), ghost.y.toDouble()))
-        .toList();
-  }
-
   void createMaze() {
-    // Enhanced maze layout with better visual design
     maze = [
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
       [1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1],
@@ -140,34 +93,10 @@ class _PacmanGameState extends State<PacmanGame> with TickerProviderStateMixin {
 
   void setupGhosts() {
     ghosts = [
-      Ghost(
-        x: 9,
-        y: 9,
-        color: const Color(0xFFFF4444),
-        direction: 'up',
-        name: 'Blinky',
-      ),
-      Ghost(
-        x: 8,
-        y: 9,
-        color: const Color(0xFFFF69B4),
-        direction: 'left',
-        name: 'Pinky',
-      ),
-      Ghost(
-        x: 10,
-        y: 9,
-        color: const Color(0xFF00FFFF),
-        direction: 'right',
-        name: 'Inky',
-      ),
-      Ghost(
-        x: 9,
-        y: 10,
-        color: const Color(0xFFFFB852),
-        direction: 'down',
-        name: 'Clyde',
-      ),
+      Ghost(x: 9, y: 9, color: const Color(0xFFFF4444), direction: 'up'),
+      Ghost(x: 8, y: 9, color: const Color(0xFFFF69B4), direction: 'left'),
+      Ghost(x: 10, y: 9, color: const Color(0xFF00FFFF), direction: 'right'),
+      Ghost(x: 9, y: 10, color: const Color(0xFFFFB852), direction: 'down'),
     ];
   }
 
@@ -192,67 +121,29 @@ class _PacmanGameState extends State<PacmanGame> with TickerProviderStateMixin {
       dotsCollected = 0;
       pacmanX = 9;
       pacmanY = 15;
-      pacmanAnimX = 9.0;
-      pacmanAnimY = 15.0;
       direction = 'right';
       nextDirection = 'right';
       powerMode = false;
-      comboMultiplier = 1;
-      particles.clear();
     });
 
     createMaze();
     setupGhosts();
-    setupGhostAnimPositions();
     countDots();
 
-    gameTimer = Timer.periodic(const Duration(milliseconds: 120), (timer) {
+    gameTimer = Timer.periodic(const Duration(milliseconds: 150), (timer) {
       updateGame();
     });
   }
 
   void updateGame() {
-    if (gameOver || gameWon) return;
+    if (gameOver || gameWon || !mounted) return;
 
     setState(() {
-      if (!isMoving) {
-        movePacman();
-        moveGhosts();
-      }
-      updateParticles();
+      movePacman();
+      moveGhosts();
       checkCollisions();
       checkWinCondition();
-      updatePowerModeTimer();
     });
-  }
-
-  void updatePowerModeTimer() {
-    if (powerMode) {
-      powerModeTimeLeft = ((powerModeTimer?.tick ?? 0) * 120 / 1000).floor();
-    }
-  }
-
-  void updateParticles() {
-    particles.removeWhere((particle) => particle.life <= 0);
-    for (var particle in particles) {
-      particle.update();
-    }
-  }
-
-  void addParticleEffect(double x, double y, Color color, int count) {
-    for (int i = 0; i < count; i++) {
-      particles.add(
-        ParticleEffect(
-          x: x,
-          y: y,
-          color: color,
-          velocity: Offset(
-            (Random().nextDouble() - 0.5) * 4,
-            (Random().nextDouble() - 0.5) * 4,
-          ),
-        ),
-      );
-    }
   }
 
   void movePacman() {
@@ -262,8 +153,6 @@ class _PacmanGameState extends State<PacmanGame> with TickerProviderStateMixin {
     }
 
     if (canMove(pacmanX, pacmanY, direction)) {
-      isMoving = true;
-
       int newX = pacmanX;
       int newY = pacmanY;
 
@@ -286,89 +175,27 @@ class _PacmanGameState extends State<PacmanGame> with TickerProviderStateMixin {
       if (newX < 0) newX = cols - 1;
       if (newX >= cols) newX = 0;
 
-      // Animate smooth movement
-      animatePacmanMovement(newX.toDouble(), newY.toDouble());
-
       pacmanX = newX;
       pacmanY = newY;
 
       // Collect dots and power pellets
       if (maze[pacmanY][pacmanX] == 2) {
         maze[pacmanY][pacmanX] = 4;
-        int points = 10 * comboMultiplier;
-        score += points;
+        score += 10;
         dotsCollected++;
-        showScorePopup(points);
-        addParticleEffect(
-          pacmanX.toDouble(),
-          pacmanY.toDouble(),
-          Colors.yellow,
-          3,
-        );
         HapticFeedback.lightImpact();
-
-        if (comboMultiplier < 5) comboMultiplier++;
       } else if (maze[pacmanY][pacmanX] == 3) {
         maze[pacmanY][pacmanX] = 4;
-        int points = 50 * comboMultiplier;
-        score += points;
-        showScorePopup(points);
-        addParticleEffect(
-          pacmanX.toDouble(),
-          pacmanY.toDouble(),
-          Colors.orange,
-          8,
-        );
+        score += 50;
         activatePowerMode();
         HapticFeedback.mediumImpact();
-      } else {
-        comboMultiplier = 1; // Reset combo if no dot collected
       }
     }
   }
 
-  void animatePacmanMovement(double targetX, double targetY) {
-    final startX = pacmanAnimX;
-    final startY = pacmanAnimY;
-
-    moveAnimationController.reset();
-    moveAnimationController.forward().then((_) {
-      isMoving = false;
-    });
-
-    final animation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: moveAnimationController, curve: Curves.easeOut),
-    );
-
-    animation.addListener(() {
-      pacmanAnimX = startX + (targetX - startX) * animation.value;
-      pacmanAnimY = startY + (targetY - startY) * animation.value;
-    });
-  }
-
-  void showScorePopup(int points) {
-    setState(() {
-      scorePopup = points;
-    });
-
-    scoreAnimationController.reset();
-    scoreAnimationController.forward();
-
-    Timer(const Duration(milliseconds: 800), () {
-      if (mounted) {
-        setState(() {
-          scorePopup = 0;
-        });
-      }
-    });
-  }
-
   void moveGhosts() {
-    for (int i = 0; i < ghosts.length; i++) {
-      var ghost = ghosts[i];
-
-      // Enhanced AI behavior
-      String targetDirection = getGhostTargetDirection(ghost, i);
+    for (var ghost in ghosts) {
+      String targetDirection = getGhostDirection(ghost);
 
       List<String> possibleDirections = [];
       if (canMove(ghost.x, ghost.y, 'up')) possibleDirections.add('up');
@@ -377,26 +204,15 @@ class _PacmanGameState extends State<PacmanGame> with TickerProviderStateMixin {
       if (canMove(ghost.x, ghost.y, 'right')) possibleDirections.add('right');
 
       if (possibleDirections.isNotEmpty) {
-        // Prefer target direction if possible
         if (possibleDirections.contains(targetDirection)) {
           ghost.direction = targetDirection;
         } else {
-          // Avoid reversing direction unless necessary
-          String oppositeDirection = getOppositeDirection(ghost.direction);
-          if (possibleDirections.length > 1) {
-            possibleDirections.removeWhere((dir) => dir == oppositeDirection);
-          }
-
-          // Choose best direction towards target
-          ghost.direction = getBestDirection(
-            possibleDirections,
-            ghost,
-            targetDirection,
-          );
+          ghost.direction =
+              possibleDirections[Random().nextInt(possibleDirections.length)];
         }
       }
 
-      // Move ghost with animation
+      // Move ghost
       if (canMove(ghost.x, ghost.y, ghost.direction)) {
         int newX = ghost.x;
         int newY = ghost.y;
@@ -422,78 +238,16 @@ class _PacmanGameState extends State<PacmanGame> with TickerProviderStateMixin {
 
         ghost.x = newX;
         ghost.y = newY;
-
-        // Animate ghost movement
-        animateGhostMovement(i, newX.toDouble(), newY.toDouble());
       }
     }
   }
 
-  void animateGhostMovement(int ghostIndex, double targetX, double targetY) {
-    if (ghostIndex < ghostAnimPositions.length) {
-      final startPos = ghostAnimPositions[ghostIndex];
-      ghostAnimPositions[ghostIndex] = Offset(
-        startPos.dx + (targetX - startPos.dx) * 0.3,
-        startPos.dy + (targetY - startPos.dy) * 0.3,
-      );
-    }
-  }
-
-  String getGhostTargetDirection(Ghost ghost, int ghostIndex) {
-    // Different AI behaviors for each ghost
-    switch (ghostIndex) {
-      case 0: // Blinky - aggressive, targets Pacman directly
-        return getDirectionToTarget(ghost.x, ghost.y, pacmanX, pacmanY);
-      case 1: // Pinky - tries to ambush Pacman
-        int targetX = pacmanX;
-        int targetY = pacmanY;
-        switch (direction) {
-          case 'up':
-            targetY -= 4;
-            break;
-          case 'down':
-            targetY += 4;
-            break;
-          case 'left':
-            targetX -= 4;
-            break;
-          case 'right':
-            targetX += 4;
-            break;
-        }
-        return getDirectionToTarget(ghost.x, ghost.y, targetX, targetY);
-      case 2: // Inky - unpredictable
-        if (Random().nextDouble() < 0.7) {
-          return getDirectionToTarget(ghost.x, ghost.y, pacmanX, pacmanY);
-        } else {
-          return ['up', 'down', 'left', 'right'][Random().nextInt(4)];
-        }
-      case 3: // Clyde - runs away when close
-        double distance = sqrt(
-          pow(ghost.x - pacmanX, 2) + pow(ghost.y - pacmanY, 2),
-        );
-        if (distance < 8 && !powerMode) {
-          // Run away
-          return getDirectionToTarget(
-            ghost.x,
-            ghost.y,
-            pacmanX < cols / 2 ? cols - 1 : 0,
-            pacmanY < rows / 2 ? rows - 1 : 0,
-          );
-        } else {
-          return getDirectionToTarget(ghost.x, ghost.y, pacmanX, pacmanY);
-        }
-      default:
-        return getDirectionToTarget(ghost.x, ghost.y, pacmanX, pacmanY);
-    }
-  }
-
-  String getDirectionToTarget(int fromX, int fromY, int targetX, int targetY) {
-    int deltaX = targetX - fromX;
-    int deltaY = targetY - fromY;
+  String getGhostDirection(Ghost ghost) {
+    int deltaX = pacmanX - ghost.x;
+    int deltaY = pacmanY - ghost.y;
 
     if (powerMode) {
-      // Run away from Pacman in power mode
+      // Run away from Pacman
       deltaX = -deltaX;
       deltaY = -deltaY;
     }
@@ -502,43 +256,6 @@ class _PacmanGameState extends State<PacmanGame> with TickerProviderStateMixin {
       return deltaX > 0 ? 'right' : 'left';
     } else {
       return deltaY > 0 ? 'down' : 'up';
-    }
-  }
-
-  String getBestDirection(
-    List<String> directions,
-    Ghost ghost,
-    String preferred,
-  ) {
-    if (directions.contains(preferred)) return preferred;
-
-    // Return direction closest to preferred
-    final directionPriority = {
-      'up': ['up', 'left', 'right', 'down'],
-      'down': ['down', 'left', 'right', 'up'],
-      'left': ['left', 'up', 'down', 'right'],
-      'right': ['right', 'up', 'down', 'left'],
-    };
-
-    for (String dir in directionPriority[preferred] ?? directions) {
-      if (directions.contains(dir)) return dir;
-    }
-
-    return directions.first;
-  }
-
-  String getOppositeDirection(String dir) {
-    switch (dir) {
-      case 'up':
-        return 'down';
-      case 'down':
-        return 'up';
-      case 'left':
-        return 'right';
-      case 'right':
-        return 'left';
-      default:
-        return 'up';
     }
   }
 
@@ -572,15 +289,15 @@ class _PacmanGameState extends State<PacmanGame> with TickerProviderStateMixin {
     setState(() {
       powerMode = true;
       powerModeTimeLeft = 8;
-      mazeColor = Colors.purple;
     });
 
     powerModeTimer?.cancel();
     powerModeTimer = Timer(const Duration(seconds: 8), () {
-      setState(() {
-        powerMode = false;
-        mazeColor = const Color(0xFF1565C0);
-      });
+      if (mounted) {
+        setState(() {
+          powerMode = false;
+        });
+      }
     });
   }
 
@@ -589,26 +306,12 @@ class _PacmanGameState extends State<PacmanGame> with TickerProviderStateMixin {
       if (ghosts[i].x == pacmanX && ghosts[i].y == pacmanY) {
         if (powerMode) {
           // Eat ghost
-          int points = 200 * (i + 1);
-          score += points;
-          showScorePopup(points);
-          addParticleEffect(
-            pacmanX.toDouble(),
-            pacmanY.toDouble(),
-            ghosts[i].color,
-            10,
-          );
+          score += 200;
           respawnGhost(i);
           HapticFeedback.heavyImpact();
         } else {
           // Lose life
           lives--;
-          addParticleEffect(
-            pacmanX.toDouble(),
-            pacmanY.toDouble(),
-            Colors.red,
-            15,
-          );
           HapticFeedback.heavyImpact();
 
           if (lives <= 0) {
@@ -630,24 +333,19 @@ class _PacmanGameState extends State<PacmanGame> with TickerProviderStateMixin {
       'left',
       'right',
     ][Random().nextInt(4)];
-    ghostAnimPositions[index] = const Offset(9.0, 9.0);
   }
 
   void resetPositions() {
     pacmanX = 9;
     pacmanY = 15;
-    pacmanAnimX = 9.0;
-    pacmanAnimY = 15.0;
     direction = 'right';
     nextDirection = 'right';
     setupGhosts();
-    setupGhostAnimPositions();
 
-    // Brief pause before continuing
     gameTimer?.cancel();
     Timer(const Duration(milliseconds: 1000), () {
-      if (gameStarted && !gameOver) {
-        gameTimer = Timer.periodic(const Duration(milliseconds: 120), (timer) {
+      if (gameStarted && !gameOver && mounted) {
+        gameTimer = Timer.periodic(const Duration(milliseconds: 150), (timer) {
           updateGame();
         });
       }
@@ -660,12 +358,6 @@ class _PacmanGameState extends State<PacmanGame> with TickerProviderStateMixin {
         gameWon = true;
       });
       gameTimer?.cancel();
-      addParticleEffect(
-        pacmanX.toDouble(),
-        pacmanY.toDouble(),
-        Colors.amber,
-        20,
-      );
       HapticFeedback.heavyImpact();
     }
   }
@@ -686,9 +378,6 @@ class _PacmanGameState extends State<PacmanGame> with TickerProviderStateMixin {
       gameOver = false;
       gameWon = false;
       powerMode = false;
-      particles.clear();
-      comboMultiplier = 1;
-      scorePopup = 0;
     });
   }
 
@@ -705,11 +394,7 @@ class _PacmanGameState extends State<PacmanGame> with TickerProviderStateMixin {
   void dispose() {
     gameTimer?.cancel();
     powerModeTimer?.cancel();
-    pacmanController.dispose();
-    ghostController.dispose();
-    powerPelletController.dispose();
-    moveAnimationController.dispose();
-    scoreAnimationController.dispose();
+    animationController.dispose();
     super.dispose();
   }
 
@@ -719,16 +404,16 @@ class _PacmanGameState extends State<PacmanGame> with TickerProviderStateMixin {
       backgroundColor: const Color(0xFF0A0A0A),
       body: GestureDetector(
         onPanUpdate: (details) {
-          // Enhanced swipe detection
-          const double threshold = 8.0;
-          if (details.delta.dx > threshold)
+          const double threshold = 10.0;
+          if (details.delta.dx > threshold) {
             handleSwipe('right');
-          else if (details.delta.dx < -threshold)
+          } else if (details.delta.dx < -threshold) {
             handleSwipe('left');
-          else if (details.delta.dy > threshold)
+          } else if (details.delta.dy > threshold) {
             handleSwipe('down');
-          else if (details.delta.dy < -threshold)
+          } else if (details.delta.dy < -threshold) {
             handleSwipe('up');
+          }
         },
         onTap: !gameStarted ? startGame : null,
         child: SafeArea(
@@ -738,7 +423,6 @@ class _PacmanGameState extends State<PacmanGame> with TickerProviderStateMixin {
               Expanded(
                 child: gameStarted ? _buildGameArea() : _buildStartScreen(),
               ),
-              if (gameOver || gameWon) _buildGameOverOverlay(),
             ],
           ),
         ),
@@ -749,13 +433,7 @@ class _PacmanGameState extends State<PacmanGame> with TickerProviderStateMixin {
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.transparent, Colors.black.withOpacity(0.3)],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
-      ),
+      decoration: BoxDecoration(color: Colors.black.withOpacity(0.3)),
       child: Row(
         children: [
           IconButton(
@@ -764,61 +442,73 @@ class _PacmanGameState extends State<PacmanGame> with TickerProviderStateMixin {
           ),
           const Spacer(),
           if (gameStarted) ...[
-            Column(
-              children: [
-                Text(
-                  'Score: $score',
-                  style: const TextStyle(
-                    color: Colors.yellow,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    shadows: [Shadow(color: Colors.black, blurRadius: 2)],
-                  ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.yellow.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.yellow),
+              ),
+              child: Text(
+                'SCORE: $score',
+                style: const TextStyle(
+                  color: Colors.yellow,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
-                if (comboMultiplier > 1)
+              ),
+            ),
+            const SizedBox(width: 16),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.red),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.favorite, color: Colors.red, size: 20),
+                  const SizedBox(width: 6),
                   Text(
-                    'x$comboMultiplier Combo!',
-                    style: TextStyle(
-                      color: Colors.orange,
-                      fontSize: 12,
+                    '$lives',
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-              ],
+                ],
+              ),
             ),
-            const SizedBox(width: 20),
-            Column(
-              children: [
-                Row(
-                  children: List.generate(
-                    lives,
-                    (index) => Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 2),
-                      child: const Text('🟡', style: TextStyle(fontSize: 24)),
-                    ),
-                  ),
+            if (powerMode) ...[
+              const SizedBox(width: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
                 ),
-                if (powerMode)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.purple,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      'POWER: ${powerModeTimeLeft}s',
+                decoration: BoxDecoration(
+                  color: Colors.purple.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.purple),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.flash_on, color: Colors.purple, size: 18),
+                    const SizedBox(width: 4),
+                    Text(
+                      'POWER',
                       style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
+                        color: Colors.purple,
+                        fontSize: 12,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ),
-              ],
-            ),
+                  ],
+                ),
+              ),
+            ],
           ],
         ],
       ),
@@ -826,164 +516,114 @@ class _PacmanGameState extends State<PacmanGame> with TickerProviderStateMixin {
   }
 
   Widget _buildStartScreen() {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: RadialGradient(
-          center: Alignment.center,
-          colors: [Colors.yellow.withOpacity(0.1), Colors.transparent],
-        ),
-      ),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Animated Pacman
-            AnimatedBuilder(
-              animation: pacmanController,
-              builder: (context, child) {
-                return Transform.scale(
-                  scale: 1.0 + (pacmanController.value * 0.1),
-                  child: const Text('🟡', style: TextStyle(fontSize: 100)),
-                );
-              },
-            ),
-            const SizedBox(height: 30),
-            ShaderMask(
-              shaderCallback: (bounds) => LinearGradient(
-                colors: [Colors.yellow, Colors.orange, Colors.red],
-              ).createShader(bounds),
-              child: const Text(
-                'PAC-MAN',
-                style: TextStyle(
-                  fontSize: 48,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  shadows: [
-                    Shadow(
-                      color: Colors.black,
-                      blurRadius: 4,
-                      offset: Offset(2, 2),
-                    ),
-                  ],
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          AnimatedBuilder(
+            animation: animationController,
+            builder: (context, child) {
+              return Transform.scale(
+                scale: 1.0 + (sin(animationController.value * 2 * pi) * 0.1),
+                child: Container(
+                  width: 100,
+                  height: 100,
+                  decoration: const BoxDecoration(
+                    color: Colors.yellow,
+                    shape: BoxShape.circle,
+                  ),
                 ),
-              ),
+              );
+            },
+          ),
+          const SizedBox(height: 30),
+          const Text(
+            'PAC-MAN',
+            style: TextStyle(
+              fontSize: 48,
+              fontWeight: FontWeight.bold,
+              color: Colors.yellow,
+              shadows: [
+                Shadow(
+                  color: Colors.black,
+                  blurRadius: 4,
+                  offset: Offset(2, 2),
+                ),
+              ],
             ),
-            const SizedBox(height: 15),
-            const Text(
-              'Collect all dots and avoid ghosts!',
+          ),
+          const SizedBox(height: 15),
+          const Text(
+            'Collect all dots and avoid ghosts!',
+            style: TextStyle(fontSize: 16, color: Colors.white70),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 40),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 18),
+            decoration: BoxDecoration(
+              color: Colors.yellow,
+              borderRadius: BorderRadius.circular(30),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.yellow.withOpacity(0.6),
+                  blurRadius: 20,
+                  spreadRadius: 3,
+                ),
+              ],
+            ),
+            child: const Text(
+              'TAP TO START',
               style: TextStyle(
-                fontSize: 18,
-                color: Colors.white70,
-                fontWeight: FontWeight.w300,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 40),
-            AnimatedBuilder(
-              animation: powerPelletController,
-              builder: (context, child) {
-                return Transform.scale(
-                  scale: 1.0 + (powerPelletController.value * 0.05),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 40,
-                      vertical: 18,
-                    ),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.yellow,
-                          Color(0xFFFFA000),
-                          Colors.orange,
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(30),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.yellow.withOpacity(0.6),
-                          blurRadius: 20,
-                          spreadRadius: 3,
-                        ),
-                      ],
-                    ),
-                    child: const Text(
-                      'TAP TO START',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 30),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.5),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.yellow.withOpacity(0.3)),
-              ),
-              child: const Column(
-                children: [
-                  Text(
-                    '🎮 Controls',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.yellow,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Swipe to change direction',
-                    style: TextStyle(fontSize: 14, color: Colors.white70),
-                  ),
-                  Text(
-                    'Eat power pellets to turn the tables!',
-                    style: TextStyle(fontSize: 12, color: Colors.white60),
-                  ),
-                ],
+                color: Colors.black,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
               ),
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 30),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.yellow.withOpacity(0.3)),
+            ),
+            child: const Column(
+              children: [
+                Icon(Icons.swipe, color: Colors.yellow, size: 32),
+                SizedBox(height: 8),
+                Text(
+                  'Swipe to change direction',
+                  style: TextStyle(fontSize: 14, color: Colors.white70),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildGameArea() {
-    return Container(
-      margin: const EdgeInsets.all(8),
+    return Center(
       child: AspectRatio(
         aspectRatio: cols / rows,
-        child: Stack(
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                gradient: RadialGradient(
-                  center: Alignment.center,
-                  colors: [Colors.black, Color(0xFF1A1A1A)],
-                ),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: powerMode ? Colors.purple : mazeColor,
-                  width: 3,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: (powerMode ? Colors.purple : mazeColor).withOpacity(
-                      0.5,
-                    ),
-                    blurRadius: 15,
-                    spreadRadius: 2,
-                  ),
-                ],
-              ),
-              child: GridView.builder(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 600, maxHeight: 800),
+          margin: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.black,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: powerMode ? Colors.purple : const Color(0xFF1565C0),
+              width: 3,
+            ),
+          ),
+          child: Stack(
+            children: [
+              GridView.builder(
                 physics: const NeverScrollableScrollPhysics(),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: cols,
@@ -995,123 +635,35 @@ class _PacmanGameState extends State<PacmanGame> with TickerProviderStateMixin {
                   return _buildMazeCell(x, y);
                 },
               ),
-            ),
-            // Particle effects layer
-            ...particles.map((particle) => _buildParticle(particle)),
-            // Score popup
-            if (scorePopup > 0) _buildScorePopup(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildParticle(ParticleEffect particle) {
-    return Positioned(
-      left: particle.x * (MediaQuery.of(context).size.width - 16) / cols,
-      top: particle.y * (MediaQuery.of(context).size.width - 16) / cols,
-      child: Container(
-        width: 4,
-        height: 4,
-        decoration: BoxDecoration(
-          color: particle.color.withOpacity(particle.life / 100),
-          shape: BoxShape.circle,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildScorePopup() {
-    return AnimatedBuilder(
-      animation: scoreAnimationController,
-      builder: (context, child) {
-        return Positioned(
-          left: pacmanAnimX * (MediaQuery.of(context).size.width - 16) / cols,
-          top:
-              (pacmanAnimY - scoreAnimationController.value * 2) *
-              (MediaQuery.of(context).size.width - 16) /
-              cols,
-          child: Transform.scale(
-            scale: 1.0 + scoreAnimationController.value * 0.5,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.yellow,
-                borderRadius: BorderRadius.circular(8),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.yellow.withOpacity(0.8),
-                    blurRadius: 8,
-                  ),
-                ],
-              ),
-              child: Text(
-                '+$scorePopup',
-                style: const TextStyle(
-                  color: Colors.black,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
+              if (gameOver || gameWon) _buildGameOverOverlay(),
+            ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
   Widget _buildMazeCell(int x, int y) {
-    Widget content;
-
-    // Check if Pacman is here
-    if (pacmanX == x && pacmanY == y) {
-      content = _buildPacman();
-    }
-    // Check if any ghost is here
-    else {
-      Ghost? ghostHere;
-      int ghostIndex = -1;
-      for (int i = 0; i < ghosts.length; i++) {
-        if (ghosts[i].x == x && ghosts[i].y == y) {
-          ghostHere = ghosts[i];
-          ghostIndex = i;
-          break;
-        }
-      }
-
-      if (ghostHere != null) {
-        content = _buildGhost(ghostHere, ghostIndex);
-      } else {
-        content = _buildMazeElement(maze[y][x]);
-      }
-    }
-
-    return Container(
-      decoration: BoxDecoration(
-        color: maze[y][x] == 1
-            ? (powerMode
-                  ? Colors.purple.withOpacity(0.8)
-                  : mazeColor.withOpacity(0.8))
-            : Colors.transparent,
-        borderRadius: maze[y][x] == 1 ? BorderRadius.circular(2) : null,
-        boxShadow: maze[y][x] == 1
-            ? [
-                BoxShadow(
-                  color: (powerMode ? Colors.purple : mazeColor).withOpacity(
-                    0.3,
-                  ),
-                  blurRadius: 2,
-                ),
-              ]
-            : null,
-      ),
-      child: content,
+    bool isPacman = pacmanX == x && pacmanY == y;
+    Ghost? ghost = ghosts.firstWhere(
+      (g) => g.x == x && g.y == y,
+      orElse: () =>
+          Ghost(x: -1, y: -1, color: Colors.transparent, direction: ''),
     );
+    bool isGhost = ghost.x != -1;
+
+    if (isPacman) {
+      return _buildPacman();
+    } else if (isGhost) {
+      return _buildGhost(ghost);
+    } else {
+      return _buildMazeElement(maze[y][x]);
+    }
   }
 
   Widget _buildPacman() {
     return AnimatedBuilder(
-      animation: pacmanController,
+      animation: animationController,
       builder: (context, child) {
         double rotation = 0;
         switch (direction) {
@@ -1134,59 +686,52 @@ class _PacmanGameState extends State<PacmanGame> with TickerProviderStateMixin {
           child: Container(
             margin: const EdgeInsets.all(1),
             decoration: BoxDecoration(
-              gradient: RadialGradient(
-                colors: [Colors.yellow, Color(0xFFFFA000)],
-              ),
+              color: Colors.yellow,
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.yellow.withOpacity(0.8),
-                  blurRadius: 12,
-                  spreadRadius: 3,
+                  color: Colors.yellow.withOpacity(0.6),
+                  blurRadius: 8,
+                  spreadRadius: 2,
                 ),
               ],
             ),
-            child: CustomPaint(painter: PacmanPainter(pacmanController.value)),
+            child: CustomPaint(
+              painter: PacmanPainter(animationController.value),
+            ),
           ),
         );
       },
     );
   }
 
-  Widget _buildGhost(Ghost ghost, int ghostIndex) {
-    Color ghostColor = powerMode ? Colors.blue.withOpacity(0.8) : ghost.color;
+  Widget _buildGhost(Ghost ghost) {
+    Color ghostColor = powerMode ? Colors.blue : ghost.color;
     bool isFlashing = powerMode && powerModeTimeLeft <= 2;
 
     return AnimatedBuilder(
-      animation: ghostController,
+      animation: animationController,
       builder: (context, child) {
+        // Flash between blue and white when power mode ending
         Color currentColor = ghostColor;
-        if (isFlashing && ghostController.value > 0.5) {
+        if (isFlashing && sin(animationController.value * 4 * pi) > 0) {
           currentColor = Colors.white;
         }
 
-        return Transform.scale(
-          scale: 0.85 + (ghostController.value * 0.15),
-          child: Container(
-            margin: const EdgeInsets.all(1),
-            decoration: BoxDecoration(
-              gradient: RadialGradient(
-                colors: [currentColor, currentColor.withOpacity(0.7)],
+        return Container(
+          margin: const EdgeInsets.all(1),
+          decoration: BoxDecoration(
+            color: currentColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+            boxShadow: [
+              BoxShadow(
+                color: currentColor.withOpacity(0.6),
+                blurRadius: 6,
+                spreadRadius: 1,
               ),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(14),
-                topRight: Radius.circular(14),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: currentColor.withOpacity(0.6),
-                  blurRadius: 8,
-                  spreadRadius: 2,
-                ),
-              ],
-            ),
-            child: CustomPaint(painter: GhostPainter(currentColor, powerMode)),
+            ],
           ),
+          child: CustomPaint(painter: GhostPainter(currentColor, powerMode)),
         );
       },
     );
@@ -1194,53 +739,52 @@ class _PacmanGameState extends State<PacmanGame> with TickerProviderStateMixin {
 
   Widget _buildMazeElement(int cellType) {
     switch (cellType) {
+      case 1: // Wall
+        return Container(
+          margin: const EdgeInsets.all(1),
+          decoration: BoxDecoration(
+            color: powerMode
+                ? Colors.purple.withOpacity(0.8)
+                : const Color(0xFF1565C0).withOpacity(0.8),
+            borderRadius: BorderRadius.circular(2),
+          ),
+        );
       case 2: // Dot
         return Center(
           child: Container(
-            width: 8,
-            height: 8,
-            decoration: BoxDecoration(
-              gradient: RadialGradient(
-                colors: [Colors.yellow, Color(0xFFFFA000)],
-              ),
+            width: 6,
+            height: 6,
+            decoration: const BoxDecoration(
+              color: Colors.yellow,
               shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.yellow.withOpacity(0.8),
-                  blurRadius: 6,
-                  spreadRadius: 1,
-                ),
-              ],
             ),
           ),
         );
       case 3: // Power Pellet
-        return AnimatedBuilder(
-          animation: powerPelletController,
-          builder: (context, child) {
-            return Center(
-              child: Transform.scale(
-                scale: 0.7 + (powerPelletController.value * 0.6),
+        return Center(
+          child: AnimatedBuilder(
+            animation: animationController,
+            builder: (context, child) {
+              return Transform.scale(
+                scale: 0.8 + (sin(animationController.value * 2 * pi) * 0.3),
                 child: Container(
-                  width: 20,
-                  height: 20,
+                  width: 14,
+                  height: 14,
                   decoration: BoxDecoration(
-                    gradient: RadialGradient(
-                      colors: [Colors.yellow, Color(0xFFFFA000), Colors.orange],
-                    ),
+                    color: Colors.orange,
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.yellow.withOpacity(0.9),
-                        blurRadius: 15,
-                        spreadRadius: 3,
+                        color: Colors.orange.withOpacity(0.8),
+                        blurRadius: 10,
+                        spreadRadius: 2,
                       ),
                     ],
                   ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         );
       default:
         return const SizedBox.shrink();
@@ -1250,174 +794,96 @@ class _PacmanGameState extends State<PacmanGame> with TickerProviderStateMixin {
   Widget _buildGameOverOverlay() {
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Colors.black.withOpacity(0.9),
-            Colors.black.withOpacity(0.95),
-          ],
-        ),
+        color: Colors.black.withOpacity(0.9),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            AnimatedBuilder(
-              animation: scoreAnimationController,
-              builder: (context, child) {
-                return Transform.scale(
-                  scale: 1.0 + (scoreAnimationController.value * 0.1),
-                  child: Text(
-                    gameWon ? '🎉 VICTORY!' : '👻 GAME OVER',
-                    style: TextStyle(
-                      fontSize: 42,
-                      fontWeight: FontWeight.bold,
-                      foreground: Paint()
-                        ..shader =
-                            LinearGradient(
-                              colors: gameWon
-                                  ? [Colors.amber, Colors.yellow, Colors.orange]
-                                  : [Colors.red, Colors.pink, Colors.purple],
-                            ).createShader(
-                              const Rect.fromLTWH(0.0, 0.0, 200.0, 70.0),
-                            ),
-                      shadows: [
-                        Shadow(
-                          color: Colors.black,
-                          blurRadius: 8,
-                          offset: Offset(3, 3),
-                        ),
-                      ],
-                    ),
+            Text(
+              gameWon ? 'VICTORY!' : 'GAME OVER',
+              style: TextStyle(
+                fontSize: 42,
+                fontWeight: FontWeight.bold,
+                color: gameWon ? Colors.amber : Colors.red,
+                shadows: const [
+                  Shadow(
+                    color: Colors.black,
+                    blurRadius: 8,
+                    offset: Offset(3, 3),
                   ),
-                );
-              },
+                ],
+              ),
             ),
             const SizedBox(height: 25),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.yellow.withOpacity(0.2),
-                    Colors.orange.withOpacity(0.2),
-                  ],
-                ),
+                color: Colors.yellow.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(15),
                 border: Border.all(color: Colors.yellow, width: 2),
               ),
               child: Text(
-                'Final Score: $score',
+                'FINAL SCORE: $score',
                 style: const TextStyle(
-                  fontSize: 28,
+                  fontSize: 24,
                   color: Colors.yellow,
                   fontWeight: FontWeight.bold,
-                  shadows: [Shadow(color: Colors.black, blurRadius: 4)],
                 ),
               ),
             ),
-            const SizedBox(height: 15),
-            if (gameWon)
-              Text(
-                'All dots collected! 🟡',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white70,
-                  fontWeight: FontWeight.w300,
-                ),
-              )
-            else
-              Text(
-                'Better luck next time! 👾',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white70,
-                  fontWeight: FontWeight.w300,
-                ),
-              ),
-            const SizedBox(height: 50),
+            const SizedBox(height: 40),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                AnimatedBuilder(
-                  animation: powerPelletController,
-                  builder: (context, child) {
-                    return Transform.scale(
-                      scale: 1.0 + (powerPelletController.value * 0.02),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          HapticFeedback.mediumImpact();
-                          resetGame();
-                          startGame();
-                        },
-                        style:
-                            ElevatedButton.styleFrom(
-                              backgroundColor: Colors.transparent,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 35,
-                                vertical: 18,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25),
-                              ),
-                              side: BorderSide(color: Colors.yellow, width: 2),
-                            ).copyWith(
-                              backgroundColor:
-                                  MaterialStateProperty.resolveWith((states) {
-                                    return states.contains(
-                                          MaterialState.pressed,
-                                        )
-                                        ? Colors.yellow.withOpacity(0.2)
-                                        : Colors.yellow.withOpacity(0.1);
-                                  }),
-                            ),
-                        child: const Text(
-                          'PLAY AGAIN',
-                          style: TextStyle(
-                            color: Colors.yellow,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            letterSpacing: 1,
-                          ),
-                        ),
-                      ),
-                    );
+                ElevatedButton(
+                  onPressed: () {
+                    HapticFeedback.mediumImpact();
+                    resetGame();
+                    startGame();
                   },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.yellow,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 35,
+                      vertical: 18,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                  ),
+                  child: const Text(
+                    'PLAY AGAIN',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
                 ),
-                const SizedBox(width: 25),
+                const SizedBox(width: 20),
                 ElevatedButton(
                   onPressed: () {
                     HapticFeedback.lightImpact();
                     Navigator.pop(context);
                   },
-                  style:
-                      ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 35,
-                          vertical: 18,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
-                        ),
-                        side: BorderSide(color: Colors.white54, width: 2),
-                      ).copyWith(
-                        backgroundColor: MaterialStateProperty.resolveWith((
-                          states,
-                        ) {
-                          return states.contains(MaterialState.pressed)
-                              ? Colors.white.withOpacity(0.1)
-                              : Colors.transparent;
-                        }),
-                      ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white24,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 35,
+                      vertical: 18,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                  ),
                   child: const Text(
                     'MENU',
                     style: TextStyle(
                       color: Colors.white70,
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
-                      letterSpacing: 1,
                     ),
                   ),
                 ),
@@ -1430,46 +896,20 @@ class _PacmanGameState extends State<PacmanGame> with TickerProviderStateMixin {
   }
 }
 
-// Enhanced Ghost Class
 class Ghost {
   int x, y;
   Color color;
   String direction;
-  String name;
 
   Ghost({
     required this.x,
     required this.y,
     required this.color,
     required this.direction,
-    required this.name,
   });
 }
 
-// Particle Effect Class
-class ParticleEffect {
-  double x, y;
-  Color color;
-  Offset velocity;
-  double life;
-
-  ParticleEffect({
-    required this.x,
-    required this.y,
-    required this.color,
-    required this.velocity,
-    this.life = 100.0,
-  });
-
-  void update() {
-    x += velocity.dx * 0.1;
-    y += velocity.dy * 0.1;
-    life -= 3.0;
-    velocity = velocity * 0.98; // Friction
-  }
-}
-
-// Enhanced Pacman Painter
+// Optimized Pacman Painter (safe, no shader issues)
 class PacmanPainter extends CustomPainter {
   final double animationValue;
 
@@ -1484,22 +924,27 @@ class PacmanPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2;
 
-    // Draw mouth opening with smoother animation
-    double mouthAngle = (sin(animationValue * pi * 2) * 0.5 + 0.5) * pi * 0.8;
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      -mouthAngle / 2,
-      mouthAngle,
-      true,
-      paint,
-    );
+    // Draw mouth opening with animation
+    double mouthAngle = (sin(animationValue * pi * 2) * 0.5 + 0.5) * pi * 0.6;
+
+    if (size.width > 0 && size.height > 0) {
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        -mouthAngle / 2,
+        mouthAngle,
+        true,
+        paint,
+      );
+    }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant PacmanPainter oldDelegate) {
+    return animationValue != oldDelegate.animationValue;
+  }
 }
 
-// Enhanced Ghost Painter
+// Optimized Ghost Painter (no shader, solid colors only)
 class GhostPainter extends CustomPainter {
   final Color color;
   final bool powerMode;
@@ -1508,18 +953,36 @@ class GhostPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
+    if (size.width <= 0 || size.height <= 0) return;
+
+    // Draw eyes
+    final eyePaint = Paint()
       ..color = Colors.white
       ..style = PaintingStyle.fill;
 
-    // Draw eyes
     final eyeRadius = size.width * 0.08;
     final leftEye = Offset(size.width * 0.35, size.height * 0.35);
     final rightEye = Offset(size.width * 0.65, size.height * 0.35);
 
-    // In power mode, draw different eyes (scared)
     if (powerMode) {
-      // Draw zigzag mouth
+      // Scared eyes - simple lines
+      final linePaint = Paint()
+        ..color = Colors.white
+        ..strokeWidth = 2
+        ..style = PaintingStyle.stroke;
+
+      canvas.drawLine(
+        Offset(leftEye.dx - eyeRadius, leftEye.dy),
+        Offset(leftEye.dx + eyeRadius, leftEye.dy),
+        linePaint,
+      );
+      canvas.drawLine(
+        Offset(rightEye.dx - eyeRadius, rightEye.dy),
+        Offset(rightEye.dx + eyeRadius, rightEye.dy),
+        linePaint,
+      );
+
+      // Draw wavy mouth
       final mouthPaint = Paint()
         ..color = Colors.white
         ..strokeWidth = 2
@@ -1533,43 +996,29 @@ class GhostPainter extends CustomPainter {
       path.lineTo(size.width * 0.7, size.height * 0.6);
 
       canvas.drawPath(path, mouthPaint);
-
-      // Draw straight line eyes
-      final eyePaint = Paint()
-        ..color = Colors.white
-        ..strokeWidth = 3
-        ..style = PaintingStyle.stroke;
-
-      canvas.drawLine(
-        Offset(leftEye.dx - eyeRadius, leftEye.dy),
-        Offset(leftEye.dx + eyeRadius, leftEye.dy),
-        eyePaint,
-      );
-      canvas.drawLine(
-        Offset(rightEye.dx - eyeRadius, rightEye.dy),
-        Offset(rightEye.dx + eyeRadius, rightEye.dy),
-        eyePaint,
-      );
     } else {
       // Normal eyes
-      canvas.drawCircle(leftEye, eyeRadius, paint);
-      canvas.drawCircle(rightEye, eyeRadius, paint);
+      canvas.drawCircle(leftEye, eyeRadius, eyePaint);
+      canvas.drawCircle(rightEye, eyeRadius, eyePaint);
 
       // Draw pupils
-      paint.color = Colors.black;
-      canvas.drawCircle(leftEye, eyeRadius * 0.6, paint);
-      canvas.drawCircle(rightEye, eyeRadius * 0.6, paint);
+      final pupilPaint = Paint()..color = Colors.black;
+      canvas.drawCircle(leftEye, eyeRadius * 0.5, pupilPaint);
+      canvas.drawCircle(rightEye, eyeRadius * 0.5, pupilPaint);
     }
 
-    // Draw bottom wavy part (more detailed)
-    paint.color = color;
+    // Draw wavy bottom (no shader, solid color)
+    final wavePaint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
     final path = Path();
     path.moveTo(0, size.height * 0.65);
 
-    const int waves = 5;
-    for (int i = 0; i < waves; i++) {
-      final waveX = (i + 1) * size.width / waves;
-      final waveY = size.height * (0.75 + (i % 2 == 0 ? 0.15 : -0.05));
+    const int waves = 4;
+    for (int i = 0; i <= waves; i++) {
+      final waveX = i * size.width / waves;
+      final waveY = size.height * (i % 2 == 0 ? 0.85 : 0.75);
       path.lineTo(waveX, waveY);
     }
 
@@ -1577,9 +1026,11 @@ class GhostPainter extends CustomPainter {
     path.lineTo(0, size.height);
     path.close();
 
-    canvas.drawPath(path, paint);
+    canvas.drawPath(path, wavePaint);
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant GhostPainter oldDelegate) {
+    return color != oldDelegate.color || powerMode != oldDelegate.powerMode;
+  }
 }

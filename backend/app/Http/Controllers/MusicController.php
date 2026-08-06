@@ -35,12 +35,31 @@ class MusicController extends Controller
             $files = Storage::disk('public')->files('media/musics');
 
             $syncCount = 0;
+            $enrichedCount = 0;
+            $failedEnrich = 0;
 
             foreach ($files as $file) {
                 $fileName = basename($file);
-                $filePath = 'storage/' . $file; // Perhatikan penambahan 'storage/' di sini
+                $filePath = 'storage/' . $file;
 
-                if (Media::where('file_path', $filePath)->exists()) {
+                // Cek apakah media sudah ada
+                $existingMedia = Media::where('file_path', $filePath)->first();
+
+                if ($existingMedia) {
+                    // PERBAIKAN: Cek apakah metadata Spotify sudah lengkap
+                    if (empty($existingMedia->artist) || empty($existingMedia->album) || empty($existingMedia->thumbnail)) {
+                        Log::info("Re-enriching incomplete music metadata: {$existingMedia->title}");
+
+                        if ($this->spotify->enrich($existingMedia)) {
+                            $enrichedCount++;
+                            Log::info("Successfully enriched: {$existingMedia->title}");
+                        } else {
+                            $failedEnrich++;
+                            Log::warning("Failed to enrich: {$existingMedia->title}");
+                        }
+                    } else {
+                        Log::info("Skipping - metadata already complete: {$existingMedia->title}");
+                    }
                     continue;
                 }
 
@@ -64,15 +83,32 @@ class MusicController extends Controller
                     'artist' => null,
                     'album' => null,
                 ]);
+
                 $syncCount++;
-                $this->spotify->enrich($media);
+
+                // PERBAIKAN: Cek hasil enrich
+                Log::info("Attempting to enrich new music: {$media->title}");
+
+                if ($this->spotify->enrich($media)) {
+                    $enrichedCount++;
+                    Log::info("Successfully enriched new music: {$media->title}");
+                } else {
+                    $failedEnrich++;
+                    Log::warning("Failed to enrich new music: {$media->title}");
+                }
             }
 
             return response()->json([
                 'success' => true,
-                'message' => 'Music sync completed successfully, please restart the page.'
+                'message' => "Music sync completed! New: {$syncCount}, Enriched: {$enrichedCount}, Failed: {$failedEnrich}",
+                'stats' => [
+                    'new_songs' => $syncCount,
+                    'enriched' => $enrichedCount,
+                    'failed_enrich' => $failedEnrich
+                ]
             ]);
         } catch (Exception $e) {
+            Log::error('Music sync failed:', ['error' => $e->getMessage()]);
             return response()->json([
                 'success' => false,
                 'message' => 'Sync failed: ' . $e->getMessage()

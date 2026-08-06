@@ -36,13 +36,12 @@ class AdvertisementItem {
 
     if (fileUrl.isEmpty && json['file_path'] != null) {
       // Build URL dari file_path
-      const baseUrl = 'https://stateless-audrianna-unstingingly.ngrok-free.dev';
+      const baseUrl = 'https://maxg.gvisignagesystem.com';
       fileUrl = '$baseUrl/storage/${json['file_path']}';
       print('   ⚠️ file_url not found, building from file_path: $fileUrl');
     }
 
     print('   file_url: $fileUrl');
-    print('   Raw JSON: $json');
 
     if (fileUrl.isEmpty) {
       print('⚠️ WARNING: file_url is EMPTY for ad ${json['id']}');
@@ -68,6 +67,22 @@ class AdvertisementItem {
               .toList() ??
           ['all'],
     );
+  }
+
+  // 👇 TAMBAH: toJson untuk Hive caching
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'description': description,
+      'type': type,
+      'file_url': fileUrl,
+      'thumbnail_url': thumbnailUrl,
+      'duration': duration,
+      'priority': priority,
+      'target_gender': targetGender,
+      'target_age_group': targetAgeGroup,
+    };
   }
 
   bool matchesProfile({required String gender, String? ageGroup}) {

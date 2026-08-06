@@ -1,80 +1,121 @@
 // lib/models/passenger_session.dart
 
 import 'package:uuid/uuid.dart';
+import 'ad_view_record.dart';
 
 class PassengerSession {
   final String sessionId;
+  final String gender;
+  final String ageGroup;
   final DateTime startTime;
   DateTime? endTime;
-  final String gender; // 'male', 'female', 'unknown'
-  final String? ageGroup; // 'child', 'teen', 'adult', 'senior'
-  int adViewCount;
-  List<int> viewedAdIds;
-  Map<String, dynamic>? metadata;
+
+  int adViewCount = 0; // Legacy counter (bisa dihapus nanti)
+  List<AdViewRecord> viewedAds = []; // 👈 BARU - Detailed ad tracking
+
+  Map<String, dynamic> metadata = {};
 
   PassengerSession({
     required this.sessionId,
+    required this.gender,
+    required this.ageGroup,
     required this.startTime,
     this.endTime,
-    required this.gender,
-    this.ageGroup,
-    this.adViewCount = 0,
-    List<int>? viewedAdIds,
-    this.metadata,
-  }) : viewedAdIds = viewedAdIds ?? [];
+    this.metadata = const {},
+  });
 
-  // Factory constructor untuk membuat session baru
-  factory PassengerSession.create({required String gender, String? ageGroup}) {
+  // Factory constructor
+  factory PassengerSession.create({
+    required String gender,
+    required String ageGroup,
+  }) {
     return PassengerSession(
       sessionId: const Uuid().v4(),
-      startTime: DateTime.now(),
       gender: gender,
       ageGroup: ageGroup,
+      startTime: DateTime.now(),
     );
   }
 
-  // Duration getter
-  Duration get duration {
-    final end = endTime ?? DateTime.now();
-    return end.difference(startTime);
-  }
+  // Track ad view dengan detail
+  void trackAdView(int adId, String adTitle) {
+    viewedAds.add(
+      AdViewRecord(adId: adId, adTitle: adTitle, viewedAt: DateTime.now()),
+    );
 
-  int get durationSeconds => duration.inSeconds;
+    adViewCount++; // Keep legacy counter for backward compatibility
 
-  // Track viewed ad
-  void trackAdView(int adId) {
-    if (!viewedAdIds.contains(adId)) {
-      viewedAdIds.add(adId);
-      adViewCount++;
-    }
+    print('📊 Ad tracked: $adTitle (Total: ${viewedAds.length})');
   }
 
   // End session
   void end() {
     endTime = DateTime.now();
+    print('🏁 Session ended: $sessionId');
   }
 
-  // To JSON for API
+  // Get duration in seconds
+  int get durationSeconds {
+    if (endTime == null) {
+      return DateTime.now().difference(startTime).inSeconds;
+    }
+    return endTime!.difference(startTime).inSeconds;
+  }
+
+  // Check if session is active
+  bool get isActive => endTime == null;
+
+  // To JSON (untuk dikirim ke backend)
   Map<String, dynamic> toJson() {
     return {
       'session_id': sessionId,
-      'device_id': 'TABLET_001', // TODO: Get from device info
-      'driver_id': null, // TODO: Get from app state if available
-      'start_time': startTime.toUtc().toIso8601String(),
-      'end_time':
-          endTime?.toUtc().toIso8601String() ??
-          DateTime.now().toUtc().toIso8601String(),
-      'duration_seconds': durationSeconds,
       'gender': gender,
       'age_group': ageGroup,
+      'start_time': startTime.toIso8601String(),
+      'end_time': endTime?.toIso8601String(),
+      'duration_seconds': durationSeconds,
       'ad_view_count': adViewCount,
-      'viewed_ads': viewedAdIds,
-      'metadata': metadata ?? {'app_version': '1.0.0'},
+      'viewed_ads': viewedAds.map((ad) => ad.toJson()).toList(), // 👈 BARU
+      'metadata': metadata,
     };
   }
 
+  // From JSON (untuk restore dari queue)
+  factory PassengerSession.fromJson(Map<String, dynamic> json) {
+  final session = PassengerSession(
+    sessionId: json['session_id'] as String,
+    gender: json['gender'] as String,
+    ageGroup: json['age_group'] as String,
+    startTime: DateTime.parse(json['start_time'] as String),
+    endTime: json['end_time'] != null
+        ? DateTime.parse(json['end_time'] as String)
+        : null,
+    metadata: json['metadata'] != null 
+        ? Map<String, dynamic>.from(json['metadata'] as Map)
+        : {},
+  );
+
+  session.adViewCount = json['ad_view_count'] as int? ?? 0;
+
+  // 👇 FIX: Handle Map<dynamic, dynamic> dari Hive
+  if (json['viewed_ads'] != null) {
+    session.viewedAds = (json['viewed_ads'] as List)
+        .map((ad) {
+          // Convert Map<dynamic, dynamic> → Map<String, dynamic>
+          final adMap = ad is Map<String, dynamic> 
+              ? ad 
+              : Map<String, dynamic>.from(ad as Map);
+          return AdViewRecord.fromJson(adMap);
+        })
+        .toList();
+  }
+
+  return session;
+}
+
   @override
   String toString() {
-    return 'PassengerSession(id: $sessionId, gender: $gender, duration: ${durationSeconds}s)';
+    return 'PassengerSession(id: $sessionId, gender: $gender, age: $ageGroup, '
+        'duration: ${durationSeconds}s, ads: ${viewedAds.length})';
   }
 }

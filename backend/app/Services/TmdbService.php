@@ -420,11 +420,17 @@ class TmdbService
         }
 
         $existingMedia = Media::where('tmdb_id', $tmdbData['id'])
-                             ->orWhere('title', $tmdbData['title'])
-                             ->first();
+                            ->orWhere('title', $tmdbData['title'])
+                            ->first();
 
+        // Cek apakah metadata sudah lengkap
         if ($existingMedia) {
-            return 'Movie already exists.';
+            // Jika metadata belum lengkap, update
+            if ($this->needsMetadataUpdate($existingMedia)) {
+                $this->updateMediaWithTmdbData($existingMedia);
+                return 'Movie metadata updated successfully.';
+            }
+            return 'Movie already exists with complete metadata.';
         }
 
         if (!isset($tmdbData['poster_path']) || !$tmdbData['poster_path']) {
@@ -445,7 +451,6 @@ class TmdbService
         $genres = $tmdbData['genres'] ?? [];
         $category = count($genres) > 0 ? implode(', ', array_column($genres, 'name')) : 'Unknown';
 
-        // Get detailed movie info dan credits
         $movieDetail = $this->getMovieDetail($tmdbData['id']);
         $credits = $this->getMovieCredits($tmdbData['id']);
         $castData = $this->processCastData($credits ?? []);
@@ -473,6 +478,18 @@ class TmdbService
         ]);
 
         return 'Movie stored successfully.';
+    }
+
+    /**
+     * Cek apakah media butuh update metadata
+     */
+    protected function needsMetadataUpdate(Media $media): bool
+    {
+        // Cek field-field penting yang biasanya kosong
+        return empty($media->cast)
+            || empty($media->director)
+            || empty($media->content_rating)
+            || empty($media->duration);
     }
 
     public function getGenreName($genreId)

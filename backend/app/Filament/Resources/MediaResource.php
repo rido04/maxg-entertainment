@@ -50,6 +50,7 @@ class MediaResource extends Resource
             FileUpload::make('file_path')
                 ->label('Upload File')
                 ->required()
+                ->disk('public')
                 ->directory(fn ($get) => $get('type') === 'video' ? 'media/videos' : 'media/musics')
                 ->getUploadedFileNameForStorageUsing(
                     fn (TemporaryUploadedFile $file, $get): string =>
@@ -57,13 +58,14 @@ class MediaResource extends Resource
                 )
                 ->reactive()
                 ->visibility('public')
-                ->acceptedFileTypes(['video/mp4', 'audio/mpeg', 'audio/mp3']),
-            
+                ->acceptedFileTypes(['video/mp4', 'audio/mpeg', 'audio/mp3'])
+                ->maxSize(4194304),
+
             FileUpload::make('thumbnail')
                 ->label('Thumbnail Poster')
                 ->visible(fn ($get) => $get('type') === 'video')
                 ->helperText('This One Optional, just in Case the movie poster doesnt accurate to your mean'),
-            
+
             TextInput::make('release_date')
                 ->label('Year of Release')
                 ->type('number')

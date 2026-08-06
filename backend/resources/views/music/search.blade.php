@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="min-h-screen text-gray-800" style="background-image: url('{{ asset('images/background/Background_Color.png') }}'); background-size: cover; background-position: center;">
+<div class="min-h-screen text-gray-800" style="background-image: url('{{ asset('images/background/Background_Color.webp') }}'); background-size: cover; background-position: center;">
     <div class="flex items-center justify-between p-6 pb-4">
         <a href="{{ route('music.index') }}" class="flex items-center space-x-2 text-gray-200 hover:text-red-700 transition-colors group">
           <svg class="w-6 h-6 transform group-hover:-translate-x-1 transition-transform" fill="currentColor" viewBox="0 0 20 20">
@@ -379,13 +379,13 @@ function onAudioError(e) {
     console.error('Audio error:', e);
     console.error('Error code:', currentAudio?.error?.code);
     console.error('Error message:', currentAudio?.error?.message);
-    
+
     // Clear any loading timeouts
     if (audioLoadTimeout) {
         clearTimeout(audioLoadTimeout);
         audioLoadTimeout = null;
     }
-    
+
     // Try next song if in playlist mode
     if (isPlayingAll && currentSongIndex < playlist.length - 1) {
         console.log('Audio error, trying next song...');
@@ -425,7 +425,7 @@ function onLoadEnd() {
 // Update progress bar in mini player
 function updateProgressBar() {
     if (!currentAudio || !currentAudio.duration) return;
-    
+
     const progressBar = document.getElementById('miniProgressBar');
     const currentTimeSpan = document.getElementById('miniCurrentTime');
     const totalTimeSpan = document.getElementById('miniTotalTime');
@@ -482,7 +482,7 @@ function playSong(index) {
 
     // Attempt to play with error handling
     const playPromise = currentAudio.play();
-    
+
     if (playPromise !== undefined) {
         playPromise
             .then(() => {
@@ -651,12 +651,12 @@ function stopPlayback() {
         currentAudio.pause();
         currentAudio.currentTime = 0;
     }
-    
+
     if (audioLoadTimeout) {
         clearTimeout(audioLoadTimeout);
         audioLoadTimeout = null;
     }
-    
+
     isPlaying = false;
     isPlayingAll = false;
     updatePlayButtons();
@@ -905,7 +905,7 @@ window.addEventListener('beforeunload', function() {
         currentAudio.pause();
         currentAudio.src = '';
     }
-    
+
     if (audioLoadTimeout) {
         clearTimeout(audioLoadTimeout);
     }

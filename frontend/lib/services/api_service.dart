@@ -5,10 +5,8 @@ import '../models/media_item.dart';
 import 'storage_service.dart';
 
 class ApiService {
-  static const String baseUrl =
-      'https://acorned-willis-overneatly.ngrok-free.dev/api';
-  static const String downloadBaseUrl =
-      'https://acorned-willis-overneatly.ngrok-free.dev';
+  static const String baseUrl = 'https://maxg.gvisignagesystem.com/api';
+  static const String downloadBaseUrl = 'https://maxg.gvisignagesystem.com';
   static const Duration timeoutDuration = Duration(seconds: 15);
 
   static Dio _createDio() {

@@ -1,7 +1,7 @@
 @extends('layouts.app', ['title' => 'Games Zone'] )
 
 @section('content')
-<div class="min-h-screen" style="background-image: url('{{ asset('images/background/Background_Color.png') }}'); background-size: cover; background-position: center;">
+<div class="min-h-screen" style="background-image: url('{{ asset('images/background/Background_Color.webp') }}'); background-size: cover; background-position: center;">
   <!-- Header Section -->
   <div class="relative px-3 sm:px-6 pt-4 sm:pt-6 pb-3 sm:pb-4">
     <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">

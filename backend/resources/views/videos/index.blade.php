@@ -1,7 +1,7 @@
 @extends('layouts.app', ['title' => 'Maxg Cinema'])
 
 @section('content')
-<div class="min-h-screen text-gray-800" style="background-image: url('{{ asset('images/background/Background_Color.png') }}'); background-size: cover; background-position: center;">
+<div class="min-h-screen text-gray-800" style="background-image: url('{{ asset('images/background/Background_Color.webp') }}'); background-size: cover; background-position: center;">
     <!-- Header Section -->
     <div class="relative px-4 md:px-6 pt-6 md:pt-8 pb-4 md:pb-6 mx-4 md:mx-8 lg:mx-14">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -13,7 +13,7 @@
                     <!-- Sync Button -->
                     <button type="button"
                     onclick="document.getElementById('syncModal').classList.remove('hidden')"
-                    class="inline-flex items-center text-xs px-3 py-1.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-xl shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300 border border-blue-400/20 w-fit">
+                    class="inline-flex items-center text-xs px-3 py-1.5 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white font-medium rounded-xl shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300 border border-yellow-400/20 w-fit">
                     <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                     </svg>
@@ -33,7 +33,7 @@
         <div class="flex-1">
             <form action="/search-movie" method="GET" class="relative max-w-full lg:max-w-lg">
                 <input type="text" name="q" placeholder="Lagi mau nonton apa nih?...."
-                    class="w-full px-4 py-2.5 md:py-3 bg-white border border-gray-300 rounded-3xl text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 shadow-sm text-sm md:text-base"
+                    class="w-full px-4 py-2.5 md:py-3 bg-white border border-gray-300 rounded-3xl text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-all duration-300 shadow-sm text-sm md:text-base"
                     value="{{ old('q') }}"
                     onfocus="this.setAttribute('readonly', false);">
                 <button type="submit" class="absolute right-3 top-1/2 transform -translate-y-1/2 p-2 text-green-500 hover:text-green-600 transition-colors duration-300">
@@ -50,7 +50,7 @@
                 <!-- Category Filter -->
                 <div class="flex flex-col space-y-1">
                     <label class="text-xs font-medium text-gray-200 uppercase tracking-wider">Genre</label>
-                    <select name="category" class="px-3 md:px-4 py-2.5 md:py-3 bg-white/50 border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:bg-gray-50 min-w-[120px] md:min-w-[150px] shadow-sm text-sm">
+                    <select name="category" class="px-3 md:px-4 py-2.5 md:py-3 bg-white/50 border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-all duration-300 hover:bg-gray-50 min-w-[120px] md:min-w-[150px] shadow-sm text-sm">
                         <option value="">Semua Genre's</option>
                         @foreach($categories as $cat)
                             <option value="{{ $cat }}" {{ request('category') == $cat ? 'selected' : '' }}>
@@ -63,7 +63,7 @@
                 <!-- Action Buttons -->
                 <div class="flex items-end space-x-2 sm:space-x-3 sm:ml-auto mt-3 sm:mt-5">
                     <!-- Filter Button -->
-                    <button type="submit" class="px-4 md:px-6 py-2.5 md:py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300 font-semibold shadow-md hover:shadow-lg hover:scale-105 flex items-center space-x-2 text-sm">
+                    <button type="submit" class="px-4 md:px-6 py-2.5 md:py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition-all duration-300 font-semibold shadow-md hover:shadow-lg hover:scale-105 flex items-center space-x-2 text-sm">
                         <svg class="w-3 h-3 md:w-4 md:h-4" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd" />
                         </svg>
@@ -89,9 +89,9 @@
                 <span class="text-sm text-gray-200 font-medium">Filter aktif:</span>
 
                 @if(request('category'))
-                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
                     Genre: {{ request('category') }}
-                    <a href="{{ request()->fullUrlWithQuery(['category' => null]) }}" class="ml-2 hover:text-blue-600">
+                    <a href="{{ request()->fullUrlWithQuery(['category' => null]) }}" class="ml-2 hover:text-yellow-600">
                         <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
                         </svg>
@@ -113,7 +113,7 @@
     <!-- Browse All Movies Section -->
     <div class="px-4 md:px-8 mx-4 md:mx-8 lg:mx-14">
         <h2 class="text-lg md:text-xl font-bold text-gray-200 flex items-center">
-            <span class="w-1 h-5 md:h-6 bg-gradient-to-b from-blue-500 to-blue-600 rounded-full mr-3"></span>
+            <span class="w-1 h-5 md:h-6 bg-gradient-to-b from-yellow-500 to-yellow-600 rounded-full mr-3"></span>
             List semua film
         </h2>
     </div>
@@ -128,7 +128,7 @@
                 <!-- Left Grid - Movie List -->
                 <div class="w-1/2 space-y-4" id="movies-container">
                     @foreach($videos as $video)
-                    <div class="group relative bg-blue-400 hover:bg-green-700 rounded-xl overflow-hidden transition-all duration-500 hover:scale-[1.02] border border-gray-200 cursor-pointer movie-item mobile-movie-item mt-5"
+                    <div class="group relative bg-yellow-400 hover:bg-green-700 rounded-xl overflow-hidden transition-all duration-500 hover:scale-[1.02] border border-gray-200 cursor-pointer movie-item mobile-movie-item mt-5"
                         data-thumbnail="{{ $video->thumbnail }}"
                         data-title="{{ $video->title }}"
                         data-description="{{ $video->description ?? 'Movie description...' }}"
@@ -219,7 +219,7 @@
                     </span>
                 @else
                     <a href="{{ $videos->appends(request()->query())->previousPageUrl() }}"
-                       class="px-3 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors duration-300">
+                       class="px-3 py-2 text-white bg-yellow-600 hover:bg-yellow-700 rounded-lg transition-colors duration-300">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                         </svg>
@@ -229,7 +229,7 @@
                 {{-- Pagination Elements --}}
                 @foreach ($videos->appends(request()->query())->getUrlRange(1, $videos->lastPage()) as $page => $url)
                     @if ($page == $videos->currentPage())
-                        <span class="px-4 py-2 text-white bg-blue-600 rounded-lg font-semibold">{{ $page }}</span>
+                        <span class="px-4 py-2 text-white bg-yellow-600 rounded-lg font-semibold">{{ $page }}</span>
                     @else
                         <a href="{{ $url }}"
                            class="px-4 py-2 text-gray-200 bg-white/10 hover:bg-white/20 rounded-lg transition-colors duration-300">
@@ -241,7 +241,7 @@
                 {{-- Next Page Link --}}
                 @if ($videos->hasMorePages())
                     <a href="{{ $videos->appends(request()->query())->nextPageUrl() }}"
-                       class="px-3 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors duration-300">
+                       class="px-3 py-2 text-white bg-yellow-600 hover:bg-yellow-700 rounded-lg transition-colors duration-300">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                         </svg>
@@ -264,7 +264,7 @@
                 @endforeach
 
                 <select name="per_page" onchange="this.form.submit()"
-                        class="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        class="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500">
                     <option value="8" {{ request('per_page', 8) == 8 ? 'selected' : '' }}>8 per halaman</option>
                     <option value="12" {{ request('per_page') == 12 ? 'selected' : '' }}>12 per halaman</option>
                     <option value="16" {{ request('per_page') == 16 ? 'selected' : '' }}>16 per halaman</option>
@@ -278,7 +278,7 @@
 <div class="fixed bottom-6 right-6 z-20">
     <div class="bg-white/60 backdrop-blur-lg border border-white/20 rounded-xl px-4 py-3 shadow-[0_8px_32px_0_rgba(31,38,135,0.37)] hover:bg-white/15 hover:scale-105 transition-all duration-300">
         <div class="text-right text-gray-700">
-            <div class="text-xs text-blue-500 font-semibold tracking-wider">NOW</div>
+            <div class="text-xs text-yellow-500 font-semibold tracking-wider">NOW</div>
             <div class="text-lg font-bold" id="current-time">10:58 AM</div>
         </div>
     </div>
@@ -290,7 +290,7 @@
         <!-- Header -->
         <div class="flex items-center justify-between p-6 border-b border-gray-200">
             <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+                <div class="w-10 h-10 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-full flex items-center justify-center">
                     <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                     </svg>
@@ -323,7 +323,7 @@
                                name="password"
                                required
                                autofocus
-                               class="w-full px-4 py-3 border text-gray-800 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 pr-12"
+                               class="w-full px-4 py-3 border text-gray-800 border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-colors duration-200 pr-12"
                                placeholder="Enter your password">
                         <button type="button"
                                 onclick="togglePasswordVisibility()"
@@ -369,7 +369,7 @@
                 </button>
                 <button type="submit"
                         id="syncBtn"
-                        class="px-6 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
+                        class="px-6 py-2 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white rounded-lg transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
                     <span id="sync-btn-text">Start Sync</span>
                     <svg id="sync-loading" class="hidden animate-spin w-4 h-4 ml-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
@@ -400,7 +400,7 @@
                     <div class="flex justify-end space-x-3 p-6 border-t border-gray-200">
                         <button type="button"
                                 onclick="location.reload()"
-                                class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all duration-200 font-medium shadow-md hover:shadow-lg">
+                                class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-all duration-200 font-medium shadow-md hover:shadow-lg">
                             Refresh Page
                         </button>
                         <button type="button"

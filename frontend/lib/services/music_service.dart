@@ -9,7 +9,7 @@ import '../models/media_item.dart';
 
 class MusicService {
   static const String _baseUrl =
-      'https://acorned-willis-overneatly.ngrok-free.dev';
+      'https://maxg.gvisignagesystem.com'; 
   static const String _downloadedMusicKey = 'downloaded_music';
 
   // Check internet connectivity

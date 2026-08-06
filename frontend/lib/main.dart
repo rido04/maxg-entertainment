@@ -1,4 +1,5 @@
-// lib/main.dart - Updated version
+// lib/main.dart - Updated with global SessionManager & Hive
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
@@ -8,27 +9,54 @@ import 'layouts/main_layouts.dart';
 import 'services/storage_service.dart';
 import 'services/api_service.dart';
 import 'services/global_audio_service.dart';
-import 'services/activity_tracker_service.dart'; // Import service baru
+import 'services/activity_tracker_service.dart';
+import 'services/session_manager_service.dart'; // 👈 TAMBAH
+import 'services/hive_storage_service.dart'; // 👈 TAMBAH
+import 'services/session_log_service.dart'; // 👈 TAMBAH
 import 'widgets/mini_player.dart';
 import 'widgets/map_trigger_button.dart';
 import 'widgets/map_modal_widget.dart';
-import 'widgets/activity_tracker_wrapper.dart'; // Import wrapper baru
+import 'widgets/activity_tracker_wrapper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.landscapeLeft,
     DeviceOrientation.landscapeRight,
   ]);
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.landscapeLeft,
-    DeviceOrientation.landscapeRight,
-  ]);
 
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  // 👇 TAMBAH: Initialize global services
+  await _initializeGlobalServices();
 
   runApp(const MaxgApp());
+}
+
+/// Initialize global services (Hive, SessionManager, etc.)
+Future<void> _initializeGlobalServices() async {
+  print('🚀 Initializing global services...');
+
+  try {
+    // 1. Initialize Hive Storage
+    await HiveStorageService.initialize();
+    print('✅ Hive Storage initialized');
+
+    // 2. Initialize SessionManager
+    await SessionManagerService().initialize();
+    print('✅ SessionManager initialized');
+
+    // 3. Process queued logs (if any from previous sessions)
+    final queueSize = await SessionLogService.getQueueSize();
+    if (queueSize > 0) {
+      print('📤 Found $queueSize queued logs, processing...');
+      await SessionLogService.processQueuedLogs();
+    }
+
+    print('✅ All global services initialized');
+  } catch (e) {
+    print('❌ Failed to initialize global services: $e');
+  }
 }
 
 void syncAllMedia() async {
@@ -141,6 +169,7 @@ class _MainLayoutWrapperState extends State<MainLayoutWrapper> {
   @override
   void initState() {
     super.initState();
+
     // Initialize services
     GlobalAudioService().initialize();
     _setFullscreen();

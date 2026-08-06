@@ -8,7 +8,10 @@ import 'dart:async';
 import 'dart:io';
 import '../services/session_manager_service.dart';
 import '../services/advertisement_service.dart';
+import '../services/running_text_service.dart';
 import '../models/advertisement_item.dart';
+import '../models/running_text_item.dart';
+import '../widgets/running_text_widget.dart';
 
 class ScreensaverScreen extends StatefulWidget {
   @override
@@ -18,13 +21,15 @@ class ScreensaverScreen extends StatefulWidget {
 class _ScreensaverScreenState extends State<ScreensaverScreen> {
   PageController _pageController = PageController();
   Timer? _autoPlayTimer;
+  Timer? _runningTextRefreshTimer;
   int _currentAdIndex = 0;
-  int? _pausedVideoIndex; // 👈 Tambah variable ini di class state
-  Duration? _pausedVideoPosition; // 👈 Simpan posisi video
+  int? _pausedVideoIndex;
+  Duration? _pausedVideoPosition;
   List<VideoPlayerController> _videoControllers = [];
 
   final SessionManagerService _sessionManager = SessionManagerService();
   List<AdvertisementItem> _advertisements = [];
+  List<RunningTextItem> _runningTexts = [];
   bool _isLoadingAds = true;
 
   @override
@@ -33,15 +38,20 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     _setFullScreen();
     _initializeSessionManager();
     _loadDefaultAdvertisements();
+    _loadRunningTexts();
+    _startRunningTextRefresh();
   }
 
   @override
   void dispose() {
     _autoPlayTimer?.cancel();
+    _runningTextRefreshTimer?.cancel();
     _pageController.dispose();
     _disposeVideoControllers();
-    _sessionManager.stopMonitoring();
-    _sessionManager.dispose();
+
+    _sessionManager.pauseMonitoring();
+    // JANGAN dispose SessionManager, biar session tetap jalan!
+
     super.dispose();
   }
 
@@ -59,13 +69,38 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     );
   }
 
+  Future<void> _loadRunningTexts() async {
+    try {
+      print('📜 Loading running texts...');
+      final texts = await RunningTextService.fetchActiveRunningTexts();
+
+      if (mounted) {
+        setState(() {
+          _runningTexts = texts;
+        });
+        print('✅ Loaded ${texts.length} running texts');
+      }
+    } catch (e) {
+      print('❌ Failed to load running texts: $e');
+    }
+  }
+
+  void _startRunningTextRefresh() {
+    _runningTextRefreshTimer?.cancel();
+    _runningTextRefreshTimer = Timer.periodic(const Duration(minutes: 1), (
+      timer,
+    ) {
+      _loadRunningTexts();
+    });
+  }
+
   Future<void> _initializeSessionManager() async {
     print('🚀 Initializing session manager...');
 
-    await _sessionManager.initialize();
+    // SessionManager sudah di-initialize di main.dart
+    // Di sini kita cuma set context & callbacks
     _sessionManager.setContext(context);
 
-    // 👇 Set pause/resume controls
     _sessionManager.setVideoControls(
       onPauseVideo: _pauseAllVideos,
       onResumeVideo: _resumeAllVideos,
@@ -77,7 +112,7 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
 
     _sessionManager.onSessionEnded = (session) {
       print(
-        '📊 Session ended: Duration=${session.durationSeconds}s, Ads viewed=${session.adViewCount}',
+        '📊 Session ended: Duration=${session.durationSeconds}s, Ads viewed=${session.viewedAds.length}',
       );
       _loadDefaultAdvertisements();
     };
@@ -86,7 +121,6 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       print('🎯 Ads updated: ${ads.length} targeted ads');
       _updateAdvertisements(ads);
 
-      // 👇 TAMBAH INI - Pause semua video setelah ads di-update
       Future.delayed(Duration(milliseconds: 300), () {
         if (_sessionManager.state == SessionState.detected ||
             _sessionManager.state == SessionState.active) {
@@ -100,13 +134,16 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       print('🔄 State changed: $state');
     };
 
-    _sessionManager.startMonitoring();
+    if (_sessionManager.isMonitoringPaused) {
+      _sessionManager.resumeMonitoring();
+    } else {
+      _sessionManager.startMonitoring();
+    }
 
     print('✅ Session manager ready');
   }
 
   void _pauseAllVideos() {
-    // 👇 Pause SEMUA video controllers
     for (int i = 0; i < _videoControllers.length; i++) {
       final controller = _videoControllers[i];
       if (controller.value.isInitialized) {
@@ -115,7 +152,6 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       }
     }
 
-    // Simpan posisi video yang lagi aktif
     final videoIndex = _getVideoControllerIndex(_currentAdIndex);
     if (videoIndex >= 0 && videoIndex < _videoControllers.length) {
       _pausedVideoIndex = videoIndex;
@@ -132,15 +168,12 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       final controller = _videoControllers[_pausedVideoIndex!];
 
       if (controller.value.isInitialized) {
-        // Restore posisi
         if (_pausedVideoPosition != null) {
           controller.seekTo(_pausedVideoPosition!);
         }
 
-        // 👇 Set volume dulu, baru play
         controller.setVolume(1.0);
 
-        // 👇 Delay kecil
         Future.delayed(Duration(milliseconds: 100), () {
           controller.play();
         });
@@ -214,7 +247,8 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       _videoControllers[0].play();
 
       if (_sessionManager.isActive) {
-        _sessionManager.trackAdView(_advertisements[0].id);
+        final firstAd = _advertisements[0];
+        _sessionManager.trackAdView(firstAd.id, firstAd.title);
       }
     }
 
@@ -271,7 +305,8 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     _currentAdIndex = (_currentAdIndex + 1) % _advertisements.length;
 
     if (_sessionManager.isActive) {
-      _sessionManager.trackAdView(_advertisements[_currentAdIndex].id);
+      final currentAd = _advertisements[_currentAdIndex];
+      _sessionManager.trackAdView(currentAd.id, currentAd.title);
     }
 
     final nextVideoIndex = _getVideoControllerIndex(_currentAdIndex);
@@ -304,27 +339,10 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       }
     }
 
-    _sessionManager.stopMonitoring();
+    // Session tetap jalan di background!
+    _sessionManager.pauseMonitoring();
 
     Navigator.of(context).pushReplacementNamed('/main');
-  }
-
-  void _muteAllVideos() {
-    for (var controller in _videoControllers) {
-      if (controller.value.isInitialized) {
-        controller.setVolume(0.0);
-      }
-    }
-    print('🔇 All videos muted');
-  }
-
-  void _unmuteAllVideos() {
-    for (var controller in _videoControllers) {
-      if (controller.value.isInitialized) {
-        controller.setVolume(1.0);
-      }
-    }
-    print('🔊 All videos unmuted');
   }
 
   Widget _buildAdPlayer(int index) {
@@ -368,9 +386,6 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
   }
 
   Widget _buildImagePlayer(AdvertisementItem ad) {
-    print('🖼️ Loading image for ad: ${ad.title}');
-    print('   File URL: ${ad.fileUrl}');
-
     return FutureBuilder<String?>(
       future: AdvertisementService.getLocalAdPath(ad),
       builder: (context, snapshot) {
@@ -434,6 +449,7 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
         onTap: _exitScreensaver,
         child: Stack(
           children: [
+            // Main content
             if (_isLoadingAds)
               const Center(
                 child: Column(
@@ -473,7 +489,8 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
                   });
 
                   if (_sessionManager.isActive) {
-                    _sessionManager.trackAdView(_advertisements[index].id);
+                    final currentAd = _advertisements[index];
+                    _sessionManager.trackAdView(currentAd.id, currentAd.title);
                   }
 
                   final nextVideoIndex = _getVideoControllerIndex(
@@ -489,6 +506,33 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
                 },
               ),
 
+            // Running Text BOTTOM
+            if (_runningTexts.any((rt) => rt.isBottom))
+              Positioned(
+                bottom: 90,
+                left: 0,
+                right: 0,
+                child: RunningTextWidget(
+                  key: ValueKey('running_text_bottom'),
+                  runningTexts: _runningTexts,
+                  isTop: false,
+                ),
+              ),
+
+            // Running Text TOP
+            if (_runningTexts.any((rt) => rt.isTop))
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: RunningTextWidget(
+                  key: ValueKey('running_text_top'),
+                  runningTexts: _runningTexts,
+                  isTop: true,
+                ),
+              ),
+
+            // Touch icon
             if (!_isLoadingAds && _advertisements.isNotEmpty)
               Positioned(
                 bottom: 40,

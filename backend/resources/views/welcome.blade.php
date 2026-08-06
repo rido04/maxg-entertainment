@@ -6,7 +6,7 @@
 <div class="fixed inset-0 bg-gradient-to-br from-slate-900/25 via-blue-900/15 to-slate-800/25 overflow-hidden">
     <!-- Airplane background -->
     <div class="absolute inset-0">
-        <img src="{{ asset('images/background/Background_Color.png') }}" alt="bg maxg" class="w-full h-full object-cover">
+        <img src="{{ asset('images/background/Background_Color.webp') }}" alt="bg maxg" class="w-full h-full object-cover">
     </div>
     <!-- Overlay gradient -->
 </div>

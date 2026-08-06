@@ -1,65 +1,188 @@
 // lib/services/advertisement_service.dart
 
 import 'package:dio/dio.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import '../models/advertisement_item.dart';
 import 'storage_service.dart';
+import 'hive_storage_service.dart';
 
 class AdvertisementService {
-  static const String baseUrl =
-      'https://acorned-willis-overneatly.ngrok-free.dev/api';
+  static const String baseUrl = 'https://maxg.gvisignagesystem.com/api';
+  static bool _isSyncing = false;
 
+  /// Fetch advertisements (OFFLINE-FIRST)
   static Future<List<AdvertisementItem>> fetchAdvertisements({
     String? gender,
     String? ageGroup,
   }) async {
+    print('📺 Fetching advertisements (gender: $gender, age: $ageGroup)...');
+
+    // 1. Try to get from cache first
+    final cachedAds = await HiveStorageService.getCachedAds();
+
+    if (cachedAds.isNotEmpty) {
+      print('✅ Using cached ads (${cachedAds.length})');
+
+      // Filter by gender/age if specified
+      final filteredAds = _filterAds(
+        cachedAds,
+        gender: gender,
+        ageGroup: ageGroup,
+      );
+
+      // Try to sync in background (non-blocking)
+      _syncAdsInBackground();
+
+      return filteredAds;
+    }
+
+    // 2. No cache available, try to fetch from API
+    print('⚠️ No cached ads, fetching from API...');
+
+    try {
+      final apiAds = await _fetchFromApi(gender: gender, ageGroup: ageGroup);
+
+      if (apiAds.isNotEmpty) {
+        // Save to cache for next time
+        await HiveStorageService.saveAds(apiAds);
+
+        // Download media files
+        await _downloadAdvertisements(apiAds);
+
+        return apiAds;
+      }
+    } catch (e) {
+      print('❌ API fetch failed: $e');
+    }
+
+    // 3. Fallback: return empty list
+    print('⚠️ No advertisements available (offline & no cache)');
+    return [];
+  }
+
+  /// Fetch from API (with connectivity check)
+  static Future<List<AdvertisementItem>> _fetchFromApi({
+    String? gender,
+    String? ageGroup,
+  }) async {
+    // Check connectivity first
+    final hasInternet = await _checkConnectivity();
+    if (!hasInternet) {
+      print('📵 No internet connection');
+      throw Exception('No internet connection');
+    }
+
     try {
       final dio = Dio();
-
-      // 🔍 Add logging interceptor
-      dio.interceptors.add(
-        LogInterceptor(requestBody: true, responseBody: true),
-      );
 
       final queryParams = <String, dynamic>{};
       if (gender != null) queryParams['gender'] = gender;
       if (ageGroup != null) queryParams['age_group'] = ageGroup;
 
-      print('Fetching ads with params: $queryParams');
+      print('🌐 Fetching from API with params: $queryParams');
 
       final response = await dio.get(
         '$baseUrl/advertisements',
         queryParameters: queryParams,
+        options: Options(
+          sendTimeout: const Duration(seconds: 10),
+          receiveTimeout: const Duration(seconds: 10),
+        ),
       );
-
-      // 🔍 Print raw response
-      print('📡 Raw response data: ${response.data}');
 
       if (response.statusCode == 200 && response.data['success'] == true) {
         final List<dynamic> data = response.data['data'];
-
-        // 🔍 Print each item
-        for (var item in data) {
-          print('📦 Item: $item');
-        }
-
         final ads = data
             .map((json) => AdvertisementItem.fromJson(json))
             .toList();
 
-        print('✅ Fetched ${ads.length} advertisements');
-        await _downloadAdvertisements(ads);
-
+        print('✅ Fetched ${ads.length} advertisements from API');
         return ads;
       }
 
       return [];
-    } catch (e, stackTrace) {
-      print('❌ Failed to fetch advertisements: $e');
-      print('Stack trace: $stackTrace');
-      return [];
+    } on DioException catch (e) {
+      print('❌ API request failed: ${e.message}');
+      rethrow;
+    } catch (e) {
+      print('❌ Unexpected error: $e');
+      rethrow;
     }
   }
 
+  /// Filter ads by gender and age group
+  static List<AdvertisementItem> _filterAds(
+    List<AdvertisementItem> ads, {
+    String? gender,
+    String? ageGroup,
+  }) {
+    if (gender == null && ageGroup == null) {
+      return ads;
+    }
+
+    return ads.where((ad) {
+      return ad.matchesProfile(gender: gender ?? 'all', ageGroup: ageGroup);
+    }).toList();
+  }
+
+  /// Background sync (non-blocking)
+  static Future<void> _syncAdsInBackground() async {
+    if (_isSyncing) {
+      print('⏳ Sync already in progress, skipping...');
+      return;
+    }
+
+    _isSyncing = true;
+
+    try {
+      // Check if cache is recent
+      final hasRecentCache = await HiveStorageService.hasRecentAdsCache(
+        maxAge: const Duration(hours: 1), // Refresh every 1 hour
+      );
+
+      if (hasRecentCache) {
+        print('✅ Cache is recent, skipping sync');
+        return;
+      }
+
+      print('🔄 Syncing ads in background...');
+
+      final apiAds = await _fetchFromApi();
+
+      if (apiAds.isNotEmpty) {
+        await HiveStorageService.saveAds(apiAds);
+        await _downloadAdvertisements(apiAds);
+        print('✅ Background sync completed');
+      }
+    } catch (e) {
+      print('⚠️ Background sync failed (not critical): $e');
+    } finally {
+      _isSyncing = false;
+    }
+  }
+
+  /// Force sync ads (manual refresh)
+  static Future<bool> syncAds() async {
+    print('🔄 Force syncing advertisements...');
+
+    try {
+      final apiAds = await _fetchFromApi();
+
+      if (apiAds.isNotEmpty) {
+        await HiveStorageService.saveAds(apiAds);
+        await _downloadAdvertisements(apiAds);
+        print('✅ Force sync completed: ${apiAds.length} ads');
+        return true;
+      }
+
+      return false;
+    } catch (e) {
+      print('❌ Force sync failed: $e');
+      return false;
+    }
+  }
+
+  /// Download advertisement media files
   static Future<void> _downloadAdvertisements(
     List<AdvertisementItem> ads,
   ) async {
@@ -70,7 +193,7 @@ class AdvertisementService {
         );
 
         if (!isDownloaded) {
-          print('Downloading ad: ${ad.title}');
+          print('⬇️ Downloading ad: ${ad.title}');
           await StorageService.downloadMedia(ad.fileUrl, ad.localFileName);
 
           // Download thumbnail if available
@@ -80,12 +203,12 @@ class AdvertisementService {
           }
         }
       } catch (e) {
-        print('Failed to download ad ${ad.id}: $e');
+        print('❌ Failed to download ad ${ad.id}: $e');
       }
     }
   }
 
-  // Get local file path for ad
+  /// Get local file path for ad
   static Future<String?> getLocalAdPath(AdvertisementItem ad) async {
     final isDownloaded = await StorageService.isMediaDownloaded(
       ad.localFileName,
@@ -94,5 +217,22 @@ class AdvertisementService {
       return await StorageService.getLocalFilePath(ad.localFileName);
     }
     return null;
+  }
+
+  /// Check internet connectivity
+  static Future<bool> _checkConnectivity() async {
+    try {
+      final result = await Connectivity().checkConnectivity();
+      return result == (ConnectivityResult.mobile) ||
+          result == (ConnectivityResult.wifi);
+    } catch (e) {
+      print('❌ Connectivity check failed: $e');
+      return false;
+    }
+  }
+
+  /// Get cache stats (untuk debugging)
+  static Future<Map<String, dynamic>> getCacheStats() async {
+    return await HiveStorageService.getStats();
   }
 }

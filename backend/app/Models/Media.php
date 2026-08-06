@@ -37,4 +37,12 @@ class Media extends Model
         'duration' => 'integer',
         'release_date' => 'date',
     ];
+
+    public function setFilePathAttribute($value)
+    {
+        if (!str_starts_with($value, 'storage/')) {
+            $value = 'storage/' . ltrim($value, '/');
+        }
+        $this->attributes['file_path'] = $value;
+    }
 }

@@ -1,7 +1,7 @@
 @extends('layouts.app', ['title' => 'Music Library'])
 
 @section('content')
-<div class="min-h-screen text-gray-800" style="background-image: url('{{ asset('images/background/Background_Color.png') }}'); background-size: cover; background-position: center;">
+<div class="min-h-screen text-gray-800" style="background-image: url('{{ asset('images/background/Background_Color.webp') }}'); background-size: cover; background-position: center;">
 
   <!-- Header Section -->
     <div class="relative pt-4 md:pt-8 pb-4 md:pb-6 md:mx-14 sm:mx-8">
@@ -14,7 +14,7 @@
             <!-- Sync Button -->
             <button type="button"
                 onclick="document.getElementById('syncModal').classList.remove('hidden')"
-                class="inline-flex items-center text-xs px-3 py-2 bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 w-fit">
+                class="inline-flex items-center text-xs px-3 py-2 bg-gradient-to-r from-yellow-600 to-yellow-600 hover:from-yellow-700 hover:to-yellow-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 w-fit">
                 <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                 </svg>
@@ -33,9 +33,9 @@
             <form action="{{ route('music.search') }}" method="GET" class="relative mb-6">
                 <div class="flex items-center bg-white/80 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden border border-gray-300/50">
                     <input type="text" name="q" placeholder="Search for songs..."
-                           class="w-full px-4 py-3 bg-white text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm md:text-base"
+                           class="w-full px-4 py-3 bg-white text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-400 text-sm md:text-base"
                            onfocus="this.setAttribute('readonly', false);">
-                    <button type="submit" class="px-3 md:px-4 py-3 bg-teal-600 hover:bg-amber-500 text-white rounded-r-xl transition-all duration-300">
+                    <button type="submit" class="px-3 md:px-4 py-3 bg-yellow-600 hover:bg-amber-500 text-white rounded-r-xl transition-all duration-300">
                         <svg class="w-4 md:w-5 h-4 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                         </svg>
@@ -50,10 +50,10 @@
     <div class="max-w-7xl mx-auto">
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
         @foreach($music->take(6) as $song)
-        <div class="group bg-white/70 hover:bg-white/90 backdrop-blur-sm rounded-xl p-3 flex items-center cursor-pointer transition-all duration-300 border border-gray-300/30 hover:border-blue-400/50 shadow-sm hover:shadow-lg"
+        <div class="group bg-white/70 hover:bg-white/90 backdrop-blur-sm rounded-xl p-3 flex items-center cursor-pointer transition-all duration-300 border border-gray-300/30 hover:border-yellow-400/50 shadow-sm hover:shadow-lg"
         onclick="playAudio('{{ $song->id }}', '{{ $song->file_path }}', '{{ $song->title }}', '{{ $song->artist ?? "Unknown Artist" }}', '{{ $song->thumbnail }}')">
           <!-- Thumbnail -->
-          <div class="w-12 sm:w-14 md:w-16 h-12 sm:h-14 md:h-16 rounded-xl bg-gradient-to-br from-blue-500 to-teal-600 flex items-center justify-center mr-3 md:mr-4 flex-shrink-0 shadow-lg">
+          <div class="w-12 sm:w-14 md:w-16 h-12 sm:h-14 md:h-16 rounded-xl bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center mr-3 md:mr-4 flex-shrink-0 shadow-lg">
             @if($song->thumbnail)
               <img src="{{ $song->thumbnail }}" alt="{{ $song->title }}" class="w-full h-full object-cover rounded-xl">
             @else
@@ -65,7 +65,7 @@
 
           <!-- Song Info -->
           <div class="flex-1 min-w-0">
-            <h4 class="font-semibold text-gray-800 text-sm sm:text-base truncate group-hover:text-blue-600 transition-colors">
+            <h4 class="font-semibold text-gray-800 text-sm sm:text-base truncate group-hover:text-yellow-600 transition-colors">
               {{ $song->title }}
             </h4>
             <p class="text-xs sm:text-sm text-gray-600 truncate">{{ $song->artist ?? 'Unknown Artist' }}</p>
@@ -74,7 +74,7 @@
           <!-- More Button -->
           <a href="{{ route('music.show', $song) }}"
             onclick="event.stopPropagation()"
-            class="opacity-100 text-blue-600 hover:text-blue-700 text-xs sm:text-sm font-medium transition-all ml-2">
+            class="opacity-100 text-yellow-600 hover:text-yellow-700 text-xs sm:text-sm font-medium transition-all ml-2">
             More
           </a>
               </div>
@@ -88,7 +88,7 @@
         <div class="max-w-7xl mx-auto">
             <div class="flex items-center justify-between mb-4 md:mb-6">
                 <h2 class="text-xl md:text-2xl font-bold text-yellow-500 hover:underline cursor-pointer">Featured Artists</h2>
-                <a href="{{ route('music.all-artist') }}" class="text-[#005572] hover:text-blue-900 text-xs md:text-sm font-semibold uppercase tracking-wider transition-colors">
+                <a href="{{ route('music.all-artist') }}" class="text-[#005572] hover:text-yellow-900 text-xs md:text-sm font-semibold uppercase tracking-wider transition-colors">
                     Show all
                 </a>
             </div>
@@ -103,7 +103,7 @@
                 <div class="group min-w-[120px] md:min-w-[160px] max-w-[120px] md:max-w-[160px] cursor-pointer transition-all duration-300 hover:scale-105 flex-shrink-0">
                     <!-- Artist Circle Image -->
                     <div class="relative mb-3 md:mb-4">
-                        <div class="w-24 md:w-32 h-24 md:h-32 mx-auto rounded-full bg-gradient-to-br from-teal-500 to-pink-600 flex items-center justify-center shadow-xl overflow-hidden group-hover:shadow-2xl transition-shadow duration-300">
+                        <div class="w-24 md:w-32 h-24 md:h-32 mx-auto rounded-full bg-gradient-to-br from-yellow-500 to-pink-600 flex items-center justify-center shadow-xl overflow-hidden group-hover:shadow-2xl transition-shadow duration-300">
                             @php
                                 $artistSong = $music->where('artist', $artist)->first();
                             @endphp
@@ -129,7 +129,7 @@
                     <!-- Artist Info -->
                     <div class="text-center">
                         <a href="{{ route('artist.show', $artist) }}" class="block">
-                            <h4 class="text-gray-200 hover:text-blue-600 transition-colors font-medium text-sm md:text-base leading-tight mb-1 truncate px-2"
+                            <h4 class="text-gray-200 hover:text-yellow-600 transition-colors font-medium text-sm md:text-base leading-tight mb-1 truncate px-2"
                                 title="{{ $artist }}">
                                 {{ Str::limit($artist, 15) }}
                             </h4>
@@ -155,7 +155,7 @@
             <div class="group bg-white/70 hover:bg-white/90 backdrop-blur-sm rounded-xl p-3 md:p-4 min-w-[160px] md:min-w-[200px] max-w-[160px] md:max-w-[200px] cursor-pointer transition-all duration-300 hover:scale-105 flex-shrink-0 border border-gray-300/30 shadow-sm hover:shadow-lg">
             <!-- Album Art -->
             <div class="relative mb-3 md:mb-4">
-                <div class="w-full aspect-square rounded-xl bg-gradient-to-br from-blue-500 to-teal-600 flex items-center justify-center shadow-xl overflow-hidden">
+                <div class="w-full aspect-square rounded-xl bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center shadow-xl overflow-hidden">
                 @if($song->thumbnail)
                     <img src="{{ $song->thumbnail }}" alt="{{ $song->title }}" class="w-full h-full object-cover rounded-xl"
                     onclick="playAudio('{{ $song->id }}', '{{ $song->file_path }}', '{{ $song->title }}', '{{ $song->artist ?? "Unknown Artist" }}', '{{ $song->thumbnail }}')">
@@ -172,7 +172,7 @@
                 <div class="flex items-start justify-between space-x-2">
                 <button onclick="playAudio('{{ $song->id }}', '{{ addslashes($song->file_path) }}', '{{ addslashes($song->title) }}', '{{ addslashes($song->artist ?? "Unknown Artist") }}', '{{ addslashes($song->thumbnail ?? "") }}')"
                         class="text-left flex-1 min-w-0 overflow-hidden">
-                    <h4 class="text-gray-800 hover:text-blue-600 transition-colors font-medium text-sm md:text-base leading-tight mb-1 break-words"
+                    <h4 class="text-gray-800 hover:text-yellow-600 transition-colors font-medium text-sm md:text-base leading-tight mb-1 break-words"
                         title="{{ $song->title }}">
                     {{ Str::limit($song->title, 20) }}
                     </h4>
@@ -190,7 +190,7 @@
                     @endif
                 </button>
                 <a href="{{ route('music.show', $song) }}"
-                    class="opacity-100 text-blue-600 hover:text-blue-700 text-xs font-medium transition-all whitespace-nowrap flex-shrink-0">
+                    class="opacity-100 text-yellow-600 hover:text-yellow-700 text-xs font-medium transition-all whitespace-nowrap flex-shrink-0">
                     More
                 </a>
                 </div>
@@ -244,7 +244,7 @@
             <!-- Track Number / Play Button -->
             <div class="col-span-1 text-center">
               <span class="group-hover:hidden text-gray-700 text-sm font-medium">{{ ($music->currentPage() - 1) * $music->perPage() + $index + 1 }}</span>
-              <a href="{{ route('music.show', $song) }}" class="hidden group-hover:block text-blue-600 hover:text-blue-700 hover:scale-110 transition-all">
+              <a href="{{ route('music.show', $song) }}" class="hidden group-hover:block text-yellow-600 hover:text-yellow-700 hover:scale-110 transition-all">
                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
                 </svg>
@@ -255,7 +255,7 @@
             <div class="col-span-6 min-w-0">
               <div class="flex items-center">
                 <!-- Mini Thumbnail -->
-                <div class="w-10 h-10 rounded bg-gradient-to-br from-blue-500 to-teal-600 flex items-center justify-center mr-3 flex-shrink-0">
+                <div class="w-10 h-10 rounded bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center mr-3 flex-shrink-0">
                   @if($song->thumbnail)
                     <img src="{{ $song->thumbnail }}" alt="{{ $song->title }}" class="w-full h-full object-cover rounded">
                   @else
@@ -267,7 +267,7 @@
 
                 <div class="min-w-0">
                   <a href="{{ route('music.show', $song) }}" class="block">
-                    <h4 class="text-gray-900 hover:text-blue-600 transition-colors truncate font-medium text-base">
+                    <h4 class="text-gray-900 hover:text-yellow-600 transition-colors truncate font-medium text-base">
                       {{ $song->title }}
                     </h4>
                     @if($song->album)
@@ -305,7 +305,7 @@
           <div class="md:hidden group bg-white/70 hover:bg-white/90 backdrop-blur-sm rounded-xl p-4 mb-3 border border-gray-300/30 shadow-sm hover:shadow-lg transition-all duration-200">
             <div class="flex items-center space-x-3">
               <!-- Thumbnail -->
-              <div class="w-12 h-12 rounded bg-gradient-to-br from-blue-500 to-teal-600 flex items-center justify-center flex-shrink-0">
+              <div class="w-12 h-12 rounded bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center flex-shrink-0">
                 @if($song->thumbnail)
                   <img src="{{ $song->thumbnail }}" alt="{{ $song->title }}" class="w-full h-full object-cover rounded">
                 @else
@@ -318,7 +318,7 @@
               <!-- Song Info -->
               <div class="flex-1 min-w-0">
                 <a href="{{ route('music.show', $song) }}" class="block">
-                  <h4 class="text-gray-900 hover:text-blue-600 transition-colors truncate font-medium text-base">
+                  <h4 class="text-gray-900 hover:text-yellow-600 transition-colors truncate font-medium text-base">
                     {{ $song->title }}
                   </h4>
                   <p class="text-sm text-gray-600 truncate">{{ $song->artist ?? 'Unknown Artist' }}</p>
@@ -378,7 +378,7 @@
             @foreach ($music->getUrlRange(1, $music->lastPage()) as $page => $url)
             @if ($page == 1 || $page == $music->lastPage() || ($page >= $music->currentPage() - 2 && $page <= $music->currentPage() + 2))
                 @if ($page == $music->currentPage())
-                    <span class="px-4 py-2 bg-teal-600 text-white rounded-lg font-medium">{{ $page }}</span>
+                    <span class="px-4 py-2 bg-yellow-600 text-white rounded-lg font-medium">{{ $page }}</span>
                 @else
                     <a href="{{ $url }}" class="px-4 py-2 text-gray-700 bg-white hover:bg-gray-100 hover:text-gray-900 rounded-lg transition-all duration-200 border border-gray-300">{{ $page }}</a>
                 @endif
@@ -421,7 +421,7 @@
   <div class="fixed bottom-6 right-6 z-20">
     <div class="bg-white/60 backdrop-blur-lg border border-white/20 rounded-xl px-4 py-3 shadow-[0_8px_32px_0_rgba(31,38,135,0.37)] hover:bg-white/15 hover:scale-105 transition-all duration-300 opacity-60">
         <div class="text-right flex-col text-gray-700">
-            <div class="text-xs inline-flex text-blue-500 font-semibold tracking-wider">NOW</div>
+            <div class="text-xs inline-flex text-yellow-500 font-semibold tracking-wider">NOW</div>
             <div class="text-lg inline-flex font-bold" id="current-time">10:58 AM</div>
         </div>
     </div>
@@ -432,10 +432,10 @@
         <div class="max-w-7xl mx-auto flex items-center justify-between">
         <!-- Song Info -->
         <div class="flex items-center space-x-4 flex-1 min-w-0">
-            <div class="w-14 h-14 rounded bg-gradient-to-br from-blue-600 to-blue-800 flex-shrink-0">
+            <div class="w-14 h-14 rounded bg-gradient-to-br from-yellow-600 to-yellow-800 flex-shrink-0">
             <img id="miniThumbnail" src="" alt="" class="w-full h-full object-cover rounded hidden">
             <div id="miniThumbnailPlaceholder" class="w-full h-full flex items-center justify-center">
-                <svg class="w-6 h-6 text-blue-300" fill="currentColor" viewBox="0 0 20 20">
+                <svg class="w-6 h-6 text-yellow-300" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M18 3a1 1 0 00-1.447-.894L8.763 6H5a3 3 0 000 6h.28l1.771 5.316A1 1 0 008 18h1a1 1 0 001-1v-4.382l6.553 3.276A1 1 0 0018 15V3z" clip-rule="evenodd" />
                 </svg>
             </div>
@@ -458,7 +458,7 @@
                 <path d="M8.445 14.832A1 1 0 0010 14v-2.798l5.445 3.63A1 1 0 0017 14V6a1 1 0 00-1.555-.832L10 8.798V6a1 1 0 00-1.555-.832l-6 4a1 1 0 000 1.664l6 4z" />
             </svg>
             </button>
-            <button id="miniPlayBtn" class="w-8 h-8 bg-gradient-to-r from-blue-500 to-teal-600 text-white rounded-full flex items-center justify-center hover:scale-105 transition-transform">
+            <button id="miniPlayBtn" class="w-8 h-8 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white rounded-full flex items-center justify-center hover:scale-105 transition-transform">
             <svg id="miniPlayIcon" class="w-4 h-4 ml-0.5" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
             </svg>
@@ -487,7 +487,7 @@
         <!-- Header -->
         <div class="flex items-center justify-between p-6 border-b border-gray-200">
             <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 bg-gradient-to-r from-blue-600 to-teal-600 rounded-full flex items-center justify-center">
+                <div class="w-10 h-10 bg-gradient-to-r from-yellow-600 to-yellow-600 rounded-full flex items-center justify-center">
                     <svg class="w-5 h-5 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                     </svg>
@@ -520,7 +520,7 @@
                                name="password"
                                required
                                autofocus
-                               class="w-full px-4 py-3 border text-black border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 pr-12"
+                               class="w-full px-4 py-3 border text-black border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-colors duration-200 pr-12"
                                placeholder="Enter your password">
                         <button type="button"
                                 onclick="togglePasswordVisibility()"
@@ -566,7 +566,7 @@
                 </button>
                 <button type="submit"
                         id="syncBtn"
-                        class="px-6 py-2 bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 text-gray-200 rounded-lg transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
+                        class="px-6 py-2 bg-gradient-to-r from-yellow-600 to-yellow-600 hover:from-yellow-700 hover:to-yellow-700 text-gray-200 rounded-lg transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
                     <span id="sync-btn-text">Start Sync</span>
                     <svg id="sync-loading" class="hidden animate-spin w-4 h-4 ml-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
@@ -597,7 +597,7 @@
                     <div class="flex justify-end space-x-3 p-6 border-t border-gray-200">
                         <button type="button"
                                 onclick="location.reload()"
-                                class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all duration-200 font-medium shadow-md hover:shadow-lg">
+                                class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-all duration-200 font-medium shadow-md hover:shadow-lg">
                             Refresh Page
                         </button>
                         <button type="button"
